@@ -3,7 +3,8 @@
 #include <vector>
 #include <string>
 #include <functional>
-#include <SD.h>
+#include <Arduino.h>
+// #include <SD.h>
 
 using namespace std;
 
@@ -53,5 +54,3 @@ struct func {
   std::function<void()> f;
   const char *name;
 };
-
-#endif // TADPOLE_SOFTWARE_ROUTER_H
