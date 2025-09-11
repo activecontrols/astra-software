@@ -1,5 +1,6 @@
 // #include <Arduino.h>
 #include "Router.h"
+#include "gimbal_servos.h"
 
 void ping() {
   Router::info("pong");
@@ -15,6 +16,7 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
+  gimbal_servos::centerServos();
 }
 
 void loop() {
