@@ -3,6 +3,7 @@
 #include "Mag.h"
 #include "Prop.h"
 #include "Router.h"
+#include "gimbal_servos.h"
 #include <Arduino.h>
 
 void ping(const char *args) {
@@ -23,6 +24,8 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
+
+  gimbal_servos::centerServos();
 }
 
 void loop() {

@@ -11,10 +11,10 @@
 #define SERVO_PIN_1 D6
 #define SERVO_PIN_2 D7
 
-
-int servoPitch = -1;
-int servoRoll = -1;
-
+namespace {
+    int servoPitch = -1;
+    int servoRoll = -1;
+}
 
 
 void gimbal_servos::centerServos()
@@ -31,6 +31,7 @@ void gimbal_servos::setServoAngle(float phi, float theta){
     Portenta_H7_ISR_Servos.setPosition(servoRoll, (int) theta);
 }
 
+/*
 void setup()
 {
     Serial.begin(115200);
@@ -48,3 +49,4 @@ void loop()
     float theta = 0.0;
     //setServoAngle(phi, theta);
 }
+    */
