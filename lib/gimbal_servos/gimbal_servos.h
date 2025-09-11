@@ -1,5 +1,5 @@
-#ifndef gimbal_servos.h
-#define gimbal_servos.h
+#ifndef gimbal_servos_h
+#define gimbal_servos_h
 
 namespace gimbal_servos{
     void centerServos();
