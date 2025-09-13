@@ -2,7 +2,7 @@
 #include "Router.h"
 #include "ICM40609D.h"
 
-ICM40609D icm;
+ICM40609D icm(D6);
 
 void print_imu_temp(){
   double temp = icm.get_temp_c();
@@ -19,8 +19,6 @@ void help() {
 }
 
 void setup() {
-
-  icm = ICM40609D(D6);
 
   Router::begin();
   Router::info("Controller started.");

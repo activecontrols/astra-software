@@ -51,11 +51,12 @@ REG_BANK_SEL - need to select register banks before accessing them
 
 ICM40609D::ICM40609D(int chip_sel){
     this->CS = chip_sel;
-    pinMode(this->CS, OUTPUT);
-    digitalWrite(this->CS, HIGH);
 }
 
 void ICM40609D::begin(){
+
+    pinMode(this->CS, OUTPUT);
+    digitalWrite(this->CS, HIGH);
     // enable recommended SPI settings 
     this->write_register_mask(DRIVE_CONFIG, 0b101, 0b00111111);
 
