@@ -13,6 +13,10 @@
 
 
 // register addresses
+#define DRIVE_CONFIG  0x13
+#define INTF_CONFIG0  0x4C
+#define TEMP_DATA1    0x1D
+#define PWR_MGMT0     0x4E
 
 
 #define SETTINGS SPISettings(SPI_HZ, MSBFIRST, SPI_MODE3)
@@ -53,12 +57,12 @@ ICM40609D::ICM40609D(int chip_sel){
 
 void ICM40609D::begin(){
     // enable recommended SPI settings 
-    this->write_register_mask(0x13, 0b101, 0b00111111);
+    this->write_register_mask(DRIVE_CONFIG, 0b101, 0b00111111);
 
     // do any other writing to registers for setup here
 
     // set fifo size reporting mode to report No. of entries instead of No. of bytes
-    this->write_register_mask(0x76, 0b01000000, 0b01000000);
+    this->write_register_mask(INTF_CONFIG0, 0b01000000, 0b01000000);
 
     //this->write_register_mask16(0x79, 0b, 0b1110000011100000);
 
@@ -74,7 +78,7 @@ void ICM40609D::begin(){
 
 // get the temperature in degrees celsius
 double ICM40609D::get_temp_c(){
-    return this->read_register16(0x1D) / 132.48 + 25.00;
+    return this->read_register16(TEMP_DATA1) / 132.48 + 25.00;
 }
 
 
@@ -110,7 +114,7 @@ uint8_t ICM40609D::read_register(uint8_t addr){
 
 // read 16-bit unsigned integer from addr
 // note: some register values are stored little endian and others are stored big endian
-// the caller will need to swap the order of the bytes
+// the caller will need to swap the order of the bytes on some reads
 // this function assumes the byte stored at (addr) is most significant
 uint16_t ICM40609D::read_register16(uint8_t addr){
     uint16_t res;
@@ -125,14 +129,14 @@ uint16_t ICM40609D::read_register16(uint8_t addr){
 
 void ICM40609D::write_register_mask(uint8_t addr, uint8_t data, uint8_t mask){
     uint8_t old_data = this->read_register(addr);
-    uint8_t new_data = (old_data & mask) | data;
+    uint8_t new_data = (old_data & ~mask) | (data & mask);
 
     this->write_register(addr, new_data);
 }
 
 void ICM40609D::write_register_mask16(uint8_t addr, uint16_t data, uint16_t mask){
     uint16_t old_data = this->read_register16(addr);
-    uint16_t new_data = (old_data & mask) | data;
+    uint16_t new_data = (old_data & ~mask) | (data & mask);
 
     this->write_register(addr, new_data);
 }
@@ -140,11 +144,11 @@ void ICM40609D::write_register_mask16(uint8_t addr, uint16_t data, uint16_t mask
 void ICM40609D::begin_transaction(){
     SPI.beginTransaction(SETTINGS);
     delayMicroseconds(1); // datasheet says wait at least 39ns
-    digitalWrite(this->CS, 0); // active low
+    digitalWrite(this->CS, LOW); // active low
 }
 
 void ICM40609D::end_transaction(){
-    digitalWrite(this->CS, 1);
+    digitalWrite(this->CS, HIGH);
     delayMicroseconds(1);
     SPI.endTransaction();
 }
@@ -153,10 +157,10 @@ void ICM40609D::end_transaction(){
 // note: wait 45ms after enabling before doing anything
 void ICM40609D::enable_accel_gyro(){
     // put both in LN mode
-    this->write_register_mask(0x4E, 0b00001111, 0b00001111);
+    this->write_register_mask(PWR_MGMT0, 0b00001111, 0b00001111);
 }
 
 // note: wait 200 microseconds after running this function before writing any other registers
 void ICM40609D::disable_accel_gyro(){
-    this->write_register_mask(0x4E, 0x00, 0b00001111);
+    this->write_register_mask(PWR_MGMT0, 0x00, 0b00001111);
 }
