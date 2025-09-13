@@ -1,5 +1,14 @@
 // #include <Arduino.h>
 #include "Router.h"
+#include "ICM40609D.h"
+
+ICM40609D icm;
+
+void print_imu_temp(){
+  double temp = icm.get_temp_c();
+
+  Router::info(std::to_string(temp));
+}
 
 void ping() {
   Router::info("pong");
@@ -10,11 +19,18 @@ void help() {
 }
 
 void setup() {
+
+  icm = ICM40609D(D6);
+
   Router::begin();
   Router::info("Controller started.");
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
+
+  Router::add({print_imu_temp, "print_imu_temp"});
+
+  icm.begin();
 }
 
 void loop() {
