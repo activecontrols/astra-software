@@ -17,7 +17,7 @@ File SDCard::open(const char *filename, char mode) {
   return SD.open(filename, mode);
 }
 
-void SDCard::ls() {
+void SDCard::ls(const char*) {
   String result = "";
   File root = SD.open("/");
   while (true) {
@@ -33,20 +33,25 @@ void SDCard::ls() {
   Router::info(result.c_str());
 }
 
-void SDCard::rm() {
-  Router::info_no_newline("Enter filename: ");
-  String filename = Router::read(50);
-  if (SD.remove(filename.c_str())) {
+void SDCard::rm(const char* filename) {
+  if (filename == nullptr || strlen(filename) == 0) {
+    Router::info_no_newline("Enter filename: ");
+    String fname = Router::read(50);
+    filename = (char*)fname.c_str();
+  }
+  if (SD.remove(filename)) {
     Router::info("File removed.");
   } else {
     Router::info("File not found.");
   }
 }
 
-void SDCard::cat() {
-  Router::info_no_newline("Enter filename: ");
-  String filename = Router::read(50);
-  File f = SD.open(filename.c_str(), FILE_READ);
+void SDCard::cat(const char* filename) { // okay technically this can only print one file at a time, so its not a real `cat`
+  if (filename == nullptr || strlen(filename) == 0) {
+    Router::info_no_newline("Enter filename: ");
+    filename = Router::read(50).c_str();
+  }
+  File f = SD.open(filename, FILE_READ);
   if (f) {
     while (f.available()) {
       Serial.println(f.readStringUntil('\n'));

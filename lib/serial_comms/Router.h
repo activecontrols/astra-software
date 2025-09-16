@@ -50,7 +50,12 @@ void print_all_cmds();
 
 }; // namespace Router
 
+// struct func {
+//   std::function<void()> f;
+//   const char *name;
+// };
+
 struct func {
-  std::function<void()> f;
+  std::function<void(const char*)> f;
   const char *name;
 };

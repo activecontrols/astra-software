@@ -1,18 +1,20 @@
 // #include <Arduino.h>
 #include "Router.h"
 
-void ping() {
+void ping(const char* args) {
   Router::info("pong");
+  Router::info_no_newline("args: ");
+  Router::info(args == nullptr ? "null" : args);
 }
 
-void help() {
+void help(const char* args) {
+  // ignore args
   Router::print_all_cmds();
 }
 
 void setup() {
   Router::begin();
   Router::info("Controller started.");
-
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
 }
