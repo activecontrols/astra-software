@@ -2,7 +2,7 @@
 #include "Mag.h"
 #include "Router.h"
 #include "Prop.h"
-#include <Arduino.h>
+#include "IMU.h"
 
 void ping(const char *args) {
   Router::println("pong");
@@ -25,10 +25,7 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
-
-  // while (true) {
-  //   GPS::pump_events();
-  // }
+  
 }
 
 void loop() {
