@@ -1,5 +1,6 @@
 // #include <Arduino.h>
 #include "Router.h"
+#include "IMU.h"
 
 void ping(const char* args) {
   Router::println("pong");
@@ -17,6 +18,7 @@ void setup() {
   Router::println("Controller started.");
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
+  
 }
 
 void loop() {
