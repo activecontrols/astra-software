@@ -1,4 +1,5 @@
 // #include <Arduino.h>
+#include <SPI.h>
 #include "Router.h"
 #include "ICM40609D.h"
 
@@ -28,6 +29,7 @@ void setup() {
 
   Router::add({print_imu_temp, "print_imu_temp"});
 
+  SPI.begin();
   icm.begin();
 }
 
