@@ -1,9 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include "PlatformBridge.h"
 #include <functional>
-#include <Arduino.h>
+#include <string>
+#include <vector>
+// #include <Arduino.h>
 // #include <SD.h>
 
 using namespace std;
@@ -21,10 +22,18 @@ void begin();
 // info sends a string & newline over serial
 void info(const char *msg);
 void info_no_newline(const char *msg);
-inline void info(const String &msg) { info(msg.c_str()); }
-inline void info_no_newline(const String &msg) { info_no_newline(msg.c_str()); }
-inline void info(const std::string &msg) { info(msg.c_str()); }
-inline void info_no_newline(const std::string &msg) { info_no_newline(msg.c_str()); }
+inline void info(const String &msg) {
+  info(msg.c_str());
+}
+inline void info_no_newline(const String &msg) {
+  info_no_newline(msg.c_str());
+}
+inline void info(const std::string &msg) {
+  info(msg.c_str());
+}
+inline void info_no_newline(const std::string &msg) {
+  info_no_newline(msg.c_str());
+}
 
 // send sends raw bytes over the serial port. the caller is responsible for
 // freeing the memory of the message
