@@ -43,6 +43,8 @@ extern "C" {
 
 #include "Invn/InvError.h"
 
+#include "Sensor_Event.h"
+
 #include <stdint.h>
 #include <string.h>
 
@@ -64,15 +66,6 @@ enum inv_icm406xx_sensor {
 	INV_ICM406XX_SENSOR_MAX
 };
 
-/** @brief Sensor event structure definition
- */
-typedef struct {
-	int      sensor_mask;
-	uint16_t timestamp_fsync;
-	int16_t  accel[3];
-	int16_t  gyro[3];
-	int16_t  temperature;
-} inv_icm406xx_sensor_event_t;
 
 /** @brief Icm406xx driver states definition
  */
