@@ -19,12 +19,12 @@ namespace Router {
 void begin();
 
 // info sends a string & newline over serial
-void info(const char *msg);
-void info_no_newline(const char *msg);
-inline void info(const String &msg) { info(msg.c_str()); }
-inline void info_no_newline(const String &msg) { info_no_newline(msg.c_str()); }
-inline void info(const std::string &msg) { info(msg.c_str()); }
-inline void info_no_newline(const std::string &msg) { info_no_newline(msg.c_str()); }
+void println(const char *msg);
+void print(const char *msg);
+inline void info(const String &msg) { println(msg.c_str()); }
+inline void print(const String &msg) { print(msg.c_str()); }
+inline void info(const std::string &msg) { println(msg.c_str()); }
+inline void print(const std::string &msg) { print(msg.c_str()); }
 
 // send sends raw bytes over the serial port. the caller is responsible for
 // freeing the memory of the message

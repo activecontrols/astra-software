@@ -54,21 +54,21 @@ void begin() {
   if (SDCard::begin()) {
     comms_log_file = SDCard::open("log.txt", FILE_WRITE);
   } else {
-    Router::info("SD card not found.");
+    Router::println("SD card not found.");
     while (true) {
-      Router::info("Reboot once SD card inserted...");
+      Router::println("Reboot once SD card inserted...");
       delay(1000);
     }
   }
 }
 
-void info(const char *msg) {
+void println(const char *msg) {
   COMMS_SERIAL.println(msg);
   comms_log_file.println(msg);
   comms_log_file.flush();
 }
 
-void info_no_newline(const char *msg) {
+void print(const char *msg) {
   COMMS_SERIAL.print(msg);
   comms_log_file.print(msg);
   comms_log_file.flush();
@@ -116,15 +116,15 @@ void add(func f) {
       }
     }
     if (!cmd_found) {
-      info("Command not found.");
+      println("Command not found.");
     }
   }
 }
 
 void print_all_cmds() {
-  info("All commands: ");
+  println("All commands: ");
   for (auto &f : funcs) {
-    info(f.name);
+    println(f.name);
   }
 }
 } // namespace Router
