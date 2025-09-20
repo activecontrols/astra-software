@@ -4,9 +4,10 @@
 #include "Prop.h"
 #include "IMU.h"
 #include <SPI.h>
+#include <Arduino.h>
 
 
-#define IMU_CS 0
+#define IMU_CS D6
 
 void fifo_callback(Sensor_Event*);
 IMU imu(IMU_CS, &SPI, &fifo_callback);
@@ -45,7 +46,7 @@ void read_sensor_packet(){
     "Sensor_mask:..........%s\n"
     "Timestamp_fsync:......%hu\n"
     "Accel (g):............[%6.4f, %6.4f, %6.4f]\n"
-    "Gyro (dps):...........[%9.2f, %6.2f, %6.2f]\n"
+    "Gyro (dps):...........[%9.2f, %9.2f, %9.2f]\n"
     "Temperature (C):......%.3f\n"
     "Packets read so far:..%d\n",
     sens_mask_str,
@@ -81,8 +82,9 @@ void setup() {
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
   Router::add({read_sensor_packet, "read_sensor_packet"});
-  
 
+  SPI.begin();
+  
   int error{0};
   error |= imu.begin();
   error |= imu.enable_accel();
