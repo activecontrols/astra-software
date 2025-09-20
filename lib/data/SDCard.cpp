@@ -1,12 +1,14 @@
-#include <SD.h>
 #include "SDCard.h"
 #include "Router.h"
+#include "portenta_pins.h"
+#include <SD.h>
 
 bool SDCard::begin() {
-  if (!SD.begin()) { // TODO RJN - set the SPI pins for the SD Card
+  if (!SD.begin(SD_CARD_CS)) {
     Router::println("No SD Card detected - continuing anyway...");
     return false;
   }
+
   Router::add({ls, "ls"});
   Router::add({rm, "rm"});
   Router::add({cat, "cat"});
@@ -17,7 +19,7 @@ File SDCard::open(const char *filename, char mode) {
   return SD.open(filename, mode);
 }
 
-void SDCard::ls(const char*) {
+void SDCard::ls(const char *) {
   String result = "";
   File root = SD.open("/");
   while (true) {
@@ -33,11 +35,11 @@ void SDCard::ls(const char*) {
   Router::println(result.c_str());
 }
 
-void SDCard::rm(const char* filename) {
+void SDCard::rm(const char *filename) {
   if (filename == nullptr || strlen(filename) == 0) {
     Router::print("Enter filename: ");
     String fname = Router::read(50);
-    filename = (char*)fname.c_str();
+    filename = (char *)fname.c_str();
   }
   if (SD.remove(filename)) {
     Router::println("File removed.");
@@ -46,7 +48,7 @@ void SDCard::rm(const char* filename) {
   }
 }
 
-void SDCard::cat(const char* filename) { // okay technically this can only print one file at a time, so its not a real `cat`
+void SDCard::cat(const char *filename) { // okay technically this can only print one file at a time, so its not a real `cat`
   if (filename == nullptr || strlen(filename) == 0) {
     Router::print("Enter filename: ");
     filename = Router::read(50).c_str();
