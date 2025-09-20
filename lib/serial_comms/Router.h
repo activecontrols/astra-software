@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <functional>
 #include <Arduino.h>
+#include <functional>
+#include <string>
+#include <vector>
 // #include <SD.h>
 
 using namespace std;
@@ -21,10 +21,18 @@ void begin();
 // info sends a string & newline over serial
 void println(const char *msg);
 void print(const char *msg);
-inline void info(const String &msg) { println(msg.c_str()); }
-inline void print(const String &msg) { print(msg.c_str()); }
-inline void info(const std::string &msg) { println(msg.c_str()); }
-inline void print(const std::string &msg) { print(msg.c_str()); }
+inline void println(const String &msg) {
+  println(msg.c_str());
+}
+inline void print(const String &msg) {
+  print(msg.c_str());
+}
+inline void println(const std::string &msg) {
+  println(msg.c_str());
+}
+inline void print(const std::string &msg) {
+  print(msg.c_str());
+}
 
 // send sends raw bytes over the serial port. the caller is responsible for
 // freeing the memory of the message
@@ -50,12 +58,7 @@ void print_all_cmds();
 
 }; // namespace Router
 
-// struct func {
-//   std::function<void()> f;
-//   const char *name;
-// };
-
 struct func {
-  std::function<void(const char*)> f;
+  std::function<void(const char *)> f;
   const char *name;
 };

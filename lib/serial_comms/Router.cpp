@@ -11,16 +11,16 @@ namespace Router {
 File comms_log_file;
 
 CString<COMMAND_BUFFER_SIZE> commandBuffer; // TODO: IG think about if this should be a raw char array? we don't use append or anything fancy
-char* argStart = nullptr; // points to the start of the arguments in commandBuffer, or is null if no args
+char *argStart = nullptr;                   // points to the start of the arguments in commandBuffer, or is null if no args
 
 namespace { // private namespace
 vector<func> funcs;
 
 void readCommand() {
   // read until newline char or 200 characters (hopefully none of our funcs have names that long lol)
-  COMMS_SERIAL.readBytesUntil('\n', commandBuffer.str, COMMAND_BUFFER_SIZE - 1);
-  commandBuffer.str[COMMAND_BUFFER_SIZE - 1] = '\0'; // null terminate
-  commandBuffer.trim();                              // remove leading/trailing whitespace or newline
+  size_t cmd_length = COMMS_SERIAL.readBytesUntil('\n', commandBuffer.str, COMMAND_BUFFER_SIZE - 1);
+  commandBuffer.str[cmd_length] = '\0'; // null terminate
+  commandBuffer.trim();                 // remove leading/trailing whitespace or newline
 
   // find first space to separate command from args
   argStart = strchr(commandBuffer.str, ' ');
