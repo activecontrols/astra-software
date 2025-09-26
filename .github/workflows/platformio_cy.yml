@@ -3,7 +3,7 @@ name: PlatformIO CI
 on: [push, pull_request]
 
 jobs:
-  build: # this is a build job
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,9 +21,9 @@ jobs:
         run: pip install --upgrade platformio
 
       - name: Build PlatformIO Project
-        run: pio run
+        run: pio run -e portenta_h7_m7
 
-  test: # this is a test job
+  unit-tests:
     runs-on: ubuntu-latest
     # runs-on: ${{ matrix.os }} use this if you want it to run test on all 3 platforms
     # strategy:
