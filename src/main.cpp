@@ -3,6 +3,7 @@
 #include "IMU.h"
 #include <SPI.h>
 #include <Arduino.h>
+#include "Invn/EmbUtils/ErrorHelper.h"
 
 
 #define IMU_CS D6
@@ -77,15 +78,24 @@ void setup() {
   SPI.begin();
   
   int error{0};
-  error |= imu.begin();
-  error |= imu.enable_accel();
-  error |= imu.enable_gyro();
+  error = imu.begin();
+
   if (error){
-    Router::info("Error while initializing IMU and enabling accel/gyro.");
+    printf(inv_error_str(error));
+    return;
   }
-  else{
-    Router::info("IMU Initialized. Accel and gyro enabled.");
+
+  error = imu.enable_accel();
+  if (error){
+    printf(inv_error_str(error));
+    return;
   }
+  error = imu.enable_gyro();
+  if (error){
+    printf(inv_error_str(error));
+    return;
+  }
+  
 }
 
 void loop() {
