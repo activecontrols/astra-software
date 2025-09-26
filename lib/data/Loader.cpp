@@ -36,7 +36,7 @@
 //   receive((char *)&header, sizeof(header));
 
 //   if (header.version != CURRENT_CURVEH_VERSION) {
-//     Router::info("ERROR! Attempted to load a curve from an older version. Aborting.");
+//     Router::println("ERROR! Attempted to load a curve from an older version. Aborting.");
 //     return;
 //   }
 
@@ -48,24 +48,24 @@
 //     lerp_angle_curve = (lerp_point_angle *)(extmem_calloc(header.num_points, sizeof(lerp_point_angle)));
 //     receive((char *)lerp_angle_curve, sizeof(lerp_point_angle) * header.num_points);
 //   }
-//   Router::info_no_newline("Loaded curve with: ");
-//   Router::info_no_newline(header.num_points);
-//   Router::info(" points");
+//   Router::print("Loaded curve with: ");
+//   Router::print(header.num_points);
+//   Router::println(" points");
 
 //   for (int i = 0; i < header.num_points; i++) {
-//     Router::info_no_newline("Point: ");
+//     Router::print("Point: ");
 //     if (header.is_thrust) {
-//       Router::info_no_newline(lerp_thrust_curve[i].time);
-//       Router::info_no_newline(" sec | ");
-//       Router::info_no_newline(lerp_thrust_curve[i].thrust);
-//       Router::info(" lbf.");
+//       Router::print(lerp_thrust_curve[i].time);
+//       Router::print(" sec | ");
+//       Router::print(lerp_thrust_curve[i].thrust);
+//       Router::println(" lbf.");
 //     } else {
-//       Router::info_no_newline(lerp_angle_curve[i].time);
-//       Router::info_no_newline(" sec | IPA ");
-//       Router::info_no_newline(lerp_angle_curve[i].ipa_angle);
-//       Router::info_no_newline(" deg | OX ");
-//       Router::info_no_newline(lerp_angle_curve[i].lox_angle);
-//       Router::info(" deg.");
+//       Router::print(lerp_angle_curve[i].time);
+//       Router::print(" sec | IPA ");
+//       Router::print(lerp_angle_curve[i].ipa_angle);
+//       Router::print(" deg | OX ");
+//       Router::print(lerp_angle_curve[i].lox_angle);
+//       Router::println(" deg.");
 //     }
 //   }
 
@@ -73,24 +73,24 @@
 // }
 
 // void Loader::load_curve_serial() {
-//   Router::info("Preparing to load curve!");
+//   Router::println("Preparing to load curve!");
 //   load_curve_generic(true, nullptr);
-//   Router::info("Loaded curve!");
+//   Router::println("Loaded curve!");
 // }
 
 // void Loader::load_curve_sd_cmd() {
 //   // filenames use DOS 8.3 standard
-//   Router::info_no_newline("Enter filename: ");
+//   Router::print("Enter filename: ");
 //   String filename = Router::read(50);
 //   File f = SDCard::open(filename.c_str(), FILE_READ);
 //   if (f) {
 //     load_curve_generic(false, &f);
 //     f.close();
 //   } else {
-//     Router::info("File not found.");
+//     Router::println("File not found.");
 //     return;
 //   }
-//   Router::info("Loaded curve!");
+//   Router::println("Loaded curve!");
 // }
 
 // bool Loader::load_curve_sd(const char *filename) {
@@ -99,7 +99,7 @@
 //     load_curve_generic(false, &f);
 //     f.close();
 //   } else {
-//     Router::info("File not found.");
+//     Router::println("File not found.");
 //     return false;
 //   }
 //   return loaded_curve;
@@ -107,11 +107,11 @@
 
 // void Loader::write_curve_sd() {
 //   // filenames use DOS 8.3 standard
-//   Router::info_no_newline("Enter filename: ");
+//   Router::print("Enter filename: ");
 //   String filename = Router::read(50);
 //   File f = SDCard::open(filename.c_str(), FILE_WRITE);
 //   if (!f) {
-//     Router::info("File not found.");
+//     Router::println("File not found.");
 //     return;
 //   }
 //   f.write((char *)&header, sizeof(header));
@@ -122,7 +122,7 @@
 //   }
 
 //   f.close();
-//   Router::info("Wrote curve!");
+//   Router::println("Wrote curve!");
 // }
 
 // int pt_zero_version = 2; // change this if the struct format changes
@@ -155,7 +155,7 @@
 //   f.write((char *)&pt_zero_version, sizeof(int));
 //   f.write((char *)&ptz, sizeof(PT_zero));
 //   f.close();
-//   Router::info("Saved pt zero.");
+//   Router::println("Saved pt zero.");
 // }
 
 // void Loader::restore_pt_zero() {
@@ -164,12 +164,12 @@
 //   int local_version;
 //   File f = SDCard::open("ptzero", FILE_READ);
 //   if (!f) {
-//     Router::info("Zero file not found.");
+//     Router::println("Zero file not found.");
 //     return;
 //   }
 //   f.read((char *)&local_version, sizeof(int));
 //   if (local_version != pt_zero_version) {
-//     Router::info("Tried to load zero from incorrect version.");
+//     Router::println("Tried to load zero from incorrect version.");
 //     f.close();
 //     return;
 //   }
@@ -187,5 +187,5 @@
 //   PT::chamber.offset = ptz.chamber;
 //   PT::zeroed_since_boot = true;
 
-//   Router::info("Restored pt zero.");
+//   Router::println("Restored pt zero.");
 // }

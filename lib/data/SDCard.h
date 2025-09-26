@@ -1,17 +1,12 @@
-// #pragma once
+#pragma once
 
-// #include <SD.h>
+#include <SD.h>
 
-// class SDCard {
-// public:
-//   static boolean begin();
-//   static File open(const char *filename, char mode);
-//   static String get_next_safe_name(const char *filename);
+namespace SDCard {
+bool begin();
+File open(const char *filename, char mode);
 
-// private:
-//   // used by comms
-//   static void ls();
-//   static void rm();
-//   static void cat();
-//   static void auto_cat();
-// };
+void ls(const char*);
+void rm(const char*);
+void cat(const char*);
+}; // namespace SDCard
