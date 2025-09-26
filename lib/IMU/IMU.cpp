@@ -39,9 +39,6 @@ int IMU::begin(){
     Wire.begin();
     Wire.setClock(500000);
     inv_icm406xx_serif serif;
-
-    digitalWrite(this->spi_interface.cs, HIGH); // write before setting mode to output
-    pinMode(this->spi_interface.cs, OUTPUT);
     
     // configure the serial interface (serif) structure that is used by TDK's driver
     serif.context       = 0;
