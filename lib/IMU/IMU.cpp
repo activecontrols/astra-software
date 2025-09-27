@@ -3,15 +3,12 @@
 
 #include "IMU.h"
 
+#include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
+
 #define WRITE_MASK (0)
 #define READ_MASK  (1 << 7)
 
 #define SPI_SETTINGS SPISettings(1000000, MSBFIRST, SPI_MODE0)
-
-
-#include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
-
-
 
 int read_reg  (void* context, uint8_t reg, uint8_t* buf, uint32_t len);
 int write_reg (void *context, uint8_t reg, const uint8_t *buf, uint32_t len);

@@ -15,7 +15,7 @@ IMU imu(IMU_CS, &SPI, &fifo_callback);
 Sensor_Event last_event;
 int packets_read = 0;
 
-void fixedpoint_to_float(int16_t *, float *, const uint8_t, const uint8_t, float);
+void fixedpoint_to_float(int16_t *, float *, double, const uint8_t);
 
 
 void read_sensor_packet(const char* _){
@@ -35,10 +35,8 @@ void read_sensor_packet(const char* _){
   }
 
 
-  // gyro defaults to fsr of 2000dps
-  // accel defaults to fsr of 4g
-  fixedpoint_to_float(last_event.accel, accel, 16, 3, 4.0);
-  fixedpoint_to_float(last_event.gyro, gyro, 16, 3, 2000.0);
+  fixedpoint_to_float(last_event.accel, accel, 8192, 3);
+  fixedpoint_to_float(last_event.gyro, gyro, 2097.2, 3);
 
   temperature_c = last_event.temperature / 2.07 + 25; // conversion formula from datasheet to convert to celsius
   
@@ -108,11 +106,10 @@ void fifo_callback(Sensor_Event *event){
 }
 
 
-void fixedpoint_to_float(int16_t *in, float *out, const uint8_t fxp_shift, const uint8_t dim, float sf)
+void fixedpoint_to_float(int16_t *in, float *out, double sensitivity, const uint8_t dim)
 {
-	int i;
-	float scale = 1.f / (1 << fxp_shift) * sf;
+	double scale = 1 / sensitivity;
 
-	for (i = 0; i < dim; i++)
+	for (int i = 0; i < dim; ++i)
 		out[i] = scale * in[i];
 }
