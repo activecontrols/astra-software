@@ -30,23 +30,13 @@ view(45, 30);
 %% Li & Griffiths Ellipsoid-Specific Fitting
 fprintf('\nApplying Li & Griffiths ellipsoid-specific fitting...\n');
 
-% Calculate simple hard iron offsets (center of data range)
-offset_x = (max(X_raw) + min(X_raw)) / 2;
-offset_y = (max(Y_raw) + min(Y_raw)) / 2;
-offset_z = (max(Z_raw) + min(Z_raw)) / 2;
-
-% Remove hard iron offsets for ellipsoid fitting
-X_centered = X_raw - offset_x;
-Y_centered = Y_raw - offset_y;
-Z_centered = Z_raw - offset_z;
-
 % Arbitrary norm of magnetic field vectors (same as Python implementation)
 % F_norm = 1000;
 
 F_norm = mean(sqrt(X_raw.^2 + Y_raw.^2 + Z_raw.^2));
 
 % Prepare data matrix (samples as columns, like Python)
-s = [X_centered'; Y_centered'; Z_centered'];  % 3 x N matrix
+s = [X_raw'; Y_raw'; Z_raw'];  % 3 x N matrix
 n = length(X_raw);
 
 % D matrix (design matrix with quadratic terms)
@@ -110,9 +100,9 @@ Z_cal = zeros(n, 1);
 
 for i = 1:n
     % Subtract hard iron offset (from original centered data)
-    xm_off = X_centered(i) - b(1);
-    ym_off = Y_centered(i) - b(2);
-    zm_off = Z_centered(i) - b(3);
+    xm_off = X_raw(i) - b(1);
+    ym_off = Y_raw(i) - b(2);
+    zm_off = Z_raw(i) - b(3);
     
     % Apply soft iron correction
     X_cal(i) = xm_off * A_inv(1,1) + ym_off * A_inv(1,2) + zm_off * A_inv(1,3);
@@ -121,9 +111,9 @@ for i = 1:n
 end
 
 % Final offsets (add back to original offset)
-final_offset_x = offset_x + b(1);
-final_offset_y = offset_y + b(2);
-final_offset_z = offset_z + b(3);
+final_offset_x = b(1);
+final_offset_y = b(2);
+final_offset_z = b(3);
 
 %% Validation and Results
 fprintf('\n=== CALIBRATION RESULTS ===\n');

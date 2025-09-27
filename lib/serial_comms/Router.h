@@ -9,7 +9,7 @@
 using namespace std;
 
 #define COMMS_SERIAL Serial
-#define COMMS_RATE 9600
+#define COMMS_RATE 115200
 
 struct func;
 
