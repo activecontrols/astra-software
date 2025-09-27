@@ -29,7 +29,7 @@ void read_sensor_packet(){
   imu.read_fifo();
 
   // sensor mask has (lower 4) bits set to convey whether or not gyro, accel, temperature, and/or time data are valid
-  // convert sensor mask to binary
+  // convert sensor mask to string in binary representationo
   for (int i = 0; i < 8; ++i){
     sens_mask_str[i] = ((last_event.sensor_mask >> (7 - i)) & 1) + '0';
   }
