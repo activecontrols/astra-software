@@ -18,7 +18,7 @@ int packets_read = 0;
 void fixedpoint_to_float(int16_t *, float *, const uint8_t, const uint8_t, float);
 
 
-void read_sensor_packet(){
+void read_sensor_packet(const char* _){
   static char output_s[500];
   static char sens_mask_str[9];
   float accel[3];
@@ -57,7 +57,7 @@ void read_sensor_packet(){
     packets_read
   );
 
-  Router::info(output_s);
+  Router::println(output_s);
 }
 
 void ping(const char *args) {
@@ -90,10 +90,10 @@ void setup() {
   error |= imu.enable_accel();
   error |= imu.enable_gyro();
   if (error){
-    Router::info("Error while initializing IMU and enabling accel/gyro.");
+    Router::println("Error while initializing IMU and enabling accel/gyro.");
   }
   else{
-    Router::info("IMU Initialized. Accel and gyro enabled.");
+    Router::println("IMU Initialized. Accel and gyro enabled.");
   }
 }
 
