@@ -1,4 +1,5 @@
 // #include <Arduino.h>
+#include "GPS.h"
 #include "Router.h"
 #include <Mag.h>
 
@@ -21,6 +22,12 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
+
+  GPS::begin();
+
+  while (true) {
+    GPS::pump_events();
+  }
 }
 
 void loop() {
