@@ -2,6 +2,7 @@
 #include "Router.h"
 
 namespace GPS {
+TinyGPSPlus gps;
 GPS_Coord origin;
 
 void begin() {
@@ -18,4 +19,21 @@ void pump_events() {
     Router::print(msg);
   }
 }
+
+bool has_valid_recent_pos() {
+  return gps.location.isValid() && gps.altitude.isValid();
+}
+
+GPS_Coord get_lat_lon_alt() {
+  return GPS_Coord{static_cast<float>(gps.location.lat()), static_cast<float>(gps.location.lng()), static_cast<float>(gps.altitude.meters())};
+}
+
+void set_current_position_as_origin() {
+  origin = get_lat_lon_alt();
+}
+
+Point get_rel_xyz_pos() {
+  return Point{static_cast<float>(gps.location.lat()) - origin.lat, static_cast<float>(gps.location.lng()) - origin.lon, static_cast<float>(gps.altitude.meters()) - origin.alt};
+}
+
 } // namespace GPS
