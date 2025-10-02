@@ -4,16 +4,22 @@
 
 #define GPS_UART Serial1
 
+#define EARTH_RADIUS_M 6371000.0
+
 struct GPS_Coord {
-  float lat; // deg lat
-  float lon; // deg lon
-  float alt; // meters
+  double lat; // deg lat
+  double lon; // deg lon
+  double alt; // meters
 };
 
 struct Point {
-  float north; // meters
-  float west;  // meters
-  float up;    // meters
+  double north; // meters
+  double west;  // meters
+  double up;    // meters
+
+  Point operator-(const Point &p) {
+    return Point{north - p.north, west - p.west, up - p.up};
+  }
 };
 
 namespace GPS {
