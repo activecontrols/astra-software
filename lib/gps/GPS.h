@@ -1,4 +1,5 @@
 #pragma once
+#include "TinyGPS++.h"
 #include <Arduino.h>
 
 #define GPS_UART Serial1
@@ -18,6 +19,7 @@ struct Point {
 namespace GPS {
 
 extern GPS_Coord origin;
+extern TinyGPSPlus gps;
 
 // setup communication to GPS hardware
 void begin();
