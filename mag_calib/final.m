@@ -4,7 +4,8 @@ clear; clc; close all;
 
 %% Load Data
 fprintf('Loading magnetometer data...\n');
-data = readmatrix("data2.csv");
+% data = readmatrix("data2.csv");
+data = readmatrix("one.csv");
 
 % Extract X, Y, Z columns
 X_raw = data(:, 1);
