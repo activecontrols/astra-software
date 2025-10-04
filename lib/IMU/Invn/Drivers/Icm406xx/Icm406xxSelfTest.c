@@ -51,7 +51,7 @@
 #define DEFAULT_ST_ACCEL_UI_FILT_ORD_3     2 << 3
 #define DEFAULT_ST_ACCEL_UI_FILT_BW_ODR_10 4 << 4
 #define DEFAULT_ST_ACCEL_ODR_1_KHZ         6
-#if ICM40609D
+#ifdef ICM40609D
 	#define DEFAULT_ST_ACCEL_FSR_2_G           4 << 5
 #else
 	#define DEFAULT_ST_ACCEL_FSR_2_G           3 << 5
