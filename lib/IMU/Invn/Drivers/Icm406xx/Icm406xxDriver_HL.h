@@ -74,6 +74,7 @@ struct inv_icm406xx {
 										  struct icm406xx */
 
 	void (*sensor_event_cb)(
+		void* ctx,
 	    inv_icm406xx_sensor_event_t
 	        *event); /**> callback executed by inv_icm406xx_get_data_from_fifo function
 																	   for each data packet extracted from fifo.
@@ -136,7 +137,7 @@ struct inv_icm406xx {
  *  @return 0 on success, negative value on error.
  */
 int inv_icm406xx_init(struct inv_icm406xx *s, struct inv_icm406xx_serif *serif,
-                      void (*sensor_event_cb)(inv_icm406xx_sensor_event_t *event));
+                      void (*sensor_event_cb)(void* ctx, inv_icm406xx_sensor_event_t *event));
 
 /** @brief Perform a soft reset of the device
  *  @return 0 on success, negative value on error.
@@ -254,7 +255,7 @@ int inv_icm406xx_disable_wom(struct inv_icm406xx *s);
  *  packet.
  *  @return 0 on success, negative value on error.
  */
-int inv_icm406xx_get_data_from_fifo(struct inv_icm406xx *s);
+int inv_icm406xx_get_data_from_fifo(void* ctx, struct inv_icm406xx *s);
 
 /** @brief Configure accel Output Data Rate
  *  @param[in] frequency The requested frequency. See @sa ICM406XX_ACCEL_CONFIG0_ODR_t

@@ -29,7 +29,7 @@ static int inv_icm406xx_configure_serial_interface(struct inv_icm406xx *s);
 static int inv_icm406xx_init_hardware_from_ui(struct inv_icm406xx *s);
 
 int inv_icm406xx_init(struct inv_icm406xx *s, struct inv_icm406xx_serif *serif,
-                      void (*sensor_event_cb)(inv_icm406xx_sensor_event_t *event))
+                      void (*sensor_event_cb)(void* ctx, inv_icm406xx_sensor_event_t *event))
 {
 	int rc;
 
@@ -388,7 +388,7 @@ int inv_icm406xx_disable_wom(struct inv_icm406xx *s)
 	return status;
 }
 
-int inv_icm406xx_get_data_from_fifo(struct inv_icm406xx *s)
+int inv_icm406xx_get_data_from_fifo(void* ctx, struct inv_icm406xx *s)
 {
 	int      rc;
 	uint8_t  int_status;
@@ -534,7 +534,7 @@ int inv_icm406xx_get_data_from_fifo(struct inv_icm406xx *s)
 
 				/* call sensor event callback */
 				if (s->sensor_event_cb)
-					s->sensor_event_cb(&event);
+					s->sensor_event_cb(ctx, &event);
 			} /* end of FIFO read for loop */
 		}
 		/*else: packet_count was 0*/
@@ -729,12 +729,15 @@ static int inv_icm406xx_init_hardware_from_ui(struct inv_icm406xx *s)
 	  - Timestamp is logged in FIFO
 	  - Little Endian fifo_count and fifo_data
 	*/
+
+	/*
+	
 	status |=
 	    inv_icm406xx_wr_intf_config0_fifo_count_rec(s, ICM406XX_INTF_CONFIG0_FIFO_COUNT_REC_RECORD);
 	status |= inv_icm406xx_wr_intf_config0_fifo_count_endian(
 	    s, ICM406XX_INTF_CONFIG0_FIFO_COUNT_LITTLE_ENDIAN);
 	status |= inv_icm406xx_wr_intf_config0_data_endian(s, ICM406XX_INTF_CONFIG0_DATA_LITTLE_ENDIAN);
-	status |= inv_icm406xx_wr_fifo_config_mode(s, ICM406XX_FIFO_CONFIG_MODE_SNAPSHOT);
+	status |= inv_icm406xx_wr_fifo_config_mode(s, ICM406XX_FIFO_CONFIG_MODE_STREAM); // we want stream to fifo mode so fifo is up-to-date with latest packets
 	status |= inv_icm406xx_wr_tmst_config_en(s, ICM406XX_TMST_CONFIG_TMST_EN);
 
 	// Enable Interrupts.
@@ -755,6 +758,7 @@ static int inv_icm406xx_init_hardware_from_ui(struct inv_icm406xx *s)
 	// which are both safe and robust enough, in Havana A1
 	status |= inv_icm406xx_wr_int_config1_asy_rst_dis(s, ICM406XX_INT_CONFIG1_ASY_RST_DISABLED);
 
+	*/
 	// Desactivate FSYNC by default
 	status |= inv_icm406xx_wr_tmst_config_fsync_en(s, ICM406XX_TMST_CONFIG_TMST_FSYNC_DIS);
 
@@ -762,10 +766,12 @@ static int inv_icm406xx_init_hardware_from_ui(struct inv_icm406xx *s)
 	status |= inv_icm406xx_wr_tmst_config_resolution(s, ICM406XX_TMST_CONFIG_RESOL_16us);
 
 	/* restart and reset FIFO configuration */
+	/*
 	status |= inv_icm406xx_wr_fifo_config1_temp_en(s, ICM406XX_FIFO_CONFIG1_TEMP_EN);
 	status |= inv_icm406xx_wr_fifo_config1_gyro_en(s, ICM406XX_FIFO_CONFIG1_GYRO_DIS);
 	status |= inv_icm406xx_wr_fifo_config1_accel_en(s, ICM406XX_FIFO_CONFIG1_ACCEL_DIS);
 	status |= inv_icm406xx_wr_fifo_config1_tmst_fsync(s, ICM406XX_FIFO_CONFIG1_TMST_FSYNC_EN);
+	*/
 
 	/* reset wom enable status */
 	s->is_wom_enabled = 0;

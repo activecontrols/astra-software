@@ -1,10 +1,10 @@
-#pragma once
+// #pragma once
 
-#include <SD.h>
+// #include <SD.h>
 
-namespace SDCard {
-bool begin();
-File open(const char *filename, char mode);
+// namespace SDCard {
+// bool begin();
+// File open(const char *filename, char mode);
 
 void ls(const char *);
 void rm(const char *);
