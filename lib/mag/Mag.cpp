@@ -6,7 +6,7 @@
 
 #include <SparkFun_MMC5983MA_Arduino_Library.h>
 
-const char *Mag::main_calib_name = "mag_calib.bin";
+const char *Mag::main_calib_name = "MCALIB.BIN";
 
 SFE_MMC5983MA mag;
 
@@ -104,7 +104,7 @@ double calc_sphere_fit_goodness(const double *xs, const double *ys, const double
 double read_x[1000], read_y[1000], read_z[1000];
 
 // populates read_x, read_y, read_z with 1000 samples
-void collect_calib_data() {
+void collect_samples() {
   Router::println("Collecting calibration data...");
   Router::println("Move the sensor around in all orientations until done. Waiting 5 seconds to start...");
   delay(5000);
@@ -145,12 +145,12 @@ void mag_heading(const char *) {
   }
 }
 
-void write_calib_data(const char *filename) {
+void write_samples(const char *filename) {
   if (filename == nullptr) {
-    Router::print("Call with filename: mag_calib <filename>\n");
+    Router::print("Call with filename to save to.\n");
     return;
   }
-  collect_calib_data();
+  collect_samples();
   // write raw data to file
   File f = SDCard::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
   if (!f) {
@@ -220,7 +220,7 @@ void do_simple_calib(const char *) {
 
   Router::println("Starting simple calibration.");
 
-  collect_calib_data();
+  collect_samples();
   // compute hard iron offsets as average of min and max
   auto min_max = [](const double *data, int n, double &minv, double &maxv) {
     minv = data[0];
@@ -319,15 +319,32 @@ void show_centered_reading(const char *) {
   }
 }
 
-// todo: change to load from file.
-void reset_calib(const char *) {
-  // calib = matlab_calib;
-  Router::println("Calibration reset to matlab calibration.");
+// // todo: change to load from file.
+// void reset_calib(const char *) {
+//   // calib = matlab_calib;
+//   Router::println("Calibration reset to matlab calibration.");
+//   print_calibration(nullptr);
+// }
+
+void save_calib(const char *filename) {
+  if (filename == nullptr) {
+    filename = main_calib_name;
+  }
+  Router::println("Saving calibration to " + String(filename));
+  SDCard::write_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
+}
+
+void load_calib(const char *filename) {
+  if (filename == nullptr) {
+    filename = main_calib_name;
+  }
+  Router::println("Loading calibration from " + String(filename));
+  SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
   print_calibration(nullptr);
 }
 
 void no_calib(const char *) {
-  calib = {0.0, 0.0, 0.0, {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}}; // identity
+  calib = identity_calib;
   Router::println("Calibration set to identity (no calibration).");
   print_calibration(nullptr);
 }
@@ -345,15 +362,17 @@ void init() {
 
   // Router::add({mag_rawprint, "mag_raw"});
   Router::add({mag_heading, "mag_heading"});
-  Router::add({write_calib_data, "mag_write_calib_data"});
-  Router::add({do_simple_calib, "mag_do_simple_calib"});
-  Router::add({do_instant_calib, "mag_do_instant_calib"});
+
   Router::add({print_calibration, "mag_print_calib"});
+  Router::add({write_samples, "mag_write_samples"});
+  Router::add({do_simple_calib, "mag_do_simple_calib"}); // todo: add a way to save samples to a file when doing simple calib
+  Router::add({do_instant_calib, "mag_do_instant_calib"});
   Router::add({custom_calib, "mag_custom_calib"});
-  Router::add({reset_calib, "mag_reset_calib"});
   Router::add({hard_reset, "mag_hard_reset"});
   Router::add({show_centered_reading, "mag_show_centered"});
   Router::add({no_calib, "mag_no_calib"});
+  Router::add({save_calib, "mag_save_calib"});
+  Router::add({load_calib, "mag_load_calib"});
 
   do_instant_calib(nullptr);
 
