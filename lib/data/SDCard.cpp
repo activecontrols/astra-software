@@ -63,3 +63,28 @@ void SDCard::cat(const char *filename) { // okay technically this can only print
     Router::println("File not found.");
   }
 }
+
+void SDCard::write_bytes(const char *filename, const uint8_t *data, unsigned int len) {
+  File f = SD.open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
+  if (!f) {
+    Router::println("Error opening file for writing. Try shorter filename.");
+    return;
+  }
+  f.write(data, len);
+  f.close();
+}
+
+void SDCard::load_bytes(const char *filename, uint8_t *data, unsigned int len) {
+  File f = SD.open(filename, FILE_READ);
+  if (!f) {
+    Router::println("File not found.");
+    return;
+  }
+  if (f.size() != len) {
+    Router::println("File size does not match expected length.");
+    f.close();
+    return;
+  }
+  f.read(data, len);
+  f.close();
+}
