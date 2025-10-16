@@ -152,16 +152,14 @@ void write_samples(const char *filename) {
   }
   collect_samples();
   // write raw data to file
-  File f = SDCard::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);      //can remove O_TRUNC to make it append and not overwrite the file...
+  File f = SDCard::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
   if (!f) {
     Router::println("Error opening file for writing. Try shorter filename.");
     return;
   }
-  f.println("####Samples####")
   for (int i = 0; i < 1000; i++) {
     f.println(String(read_x[i]) + "," + String(read_y[i]) + "," + String(read_z[i]));
   }
-  f.println("####END####\n")
   f.close();
   Router::println("Done writing calibration data to " + String(filename));
   Router::println("Use final.m in mag_calib/ to compute calibration parameters");
