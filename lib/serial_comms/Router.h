@@ -20,11 +20,11 @@ extern File comms_log_file;
 // initializes the serial port and configures logs
 void begin();
 
-// void println() {
-//   COMMS_SERIAL.println();
-//   comms_log_file.println();
-//   comms_log_file.flush();
-// }
+inline void println() {
+  COMMS_SERIAL.println();
+  comms_log_file.println();
+  comms_log_file.flush();
+}
 
 template <typename T> void println(T value) {
   COMMS_SERIAL.println(value);
@@ -68,7 +68,7 @@ template <typename T, typename... Args> void mprint(const T &t, const Args &...a
 
 template <typename... Args> void mprintln(const Args &...args) {
   mprint(args...);
-  println("");
+  println();
 }
 
 // could define a mprint with separator but honestly printf / just manually including sep is fine.
