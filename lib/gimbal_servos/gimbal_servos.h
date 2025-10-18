@@ -4,6 +4,7 @@
 namespace gimbal_servos{
     void centerServos();
     void setServoAngle(float phi, float theta);
+    void init();
 
 }
 #endif

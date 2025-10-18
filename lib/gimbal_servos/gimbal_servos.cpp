@@ -40,7 +40,6 @@ void gimbal_servos::init()
     servoPitch = Portenta_H7_ISR_Servos.setupServo(SERVO_PIN_1, MIN_MICROS, MAX_MICROS);
     servoRoll = Portenta_H7_ISR_Servos.setupServo(SERVO_PIN_2, MIN_MICROS, MAX_MICROS);
 
-    centerServos();
 }
 
 /*
