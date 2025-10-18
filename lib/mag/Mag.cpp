@@ -154,7 +154,6 @@ void write_samples(const char *filename) {
   // write raw data to file
   File f = SDCard::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
   if (!f) {
-    Router::println("Error opening file for writing. Try shorter filename.");
     return;
   }
   for (int i = 0; i < 1000; i++) {
@@ -354,9 +353,10 @@ void init() {
   Wire.begin();
   // Initialize the magnetometer
   if (!mag.begin()) {
-    Serial.println("Magnetometer not found");
-    while (true)
-      ;
+    while (true) {
+      Router::println("Magnetometer not found, reboot once magnetometer connected...");
+      delay(1000);
+    }
   }
   mag.softReset();
 

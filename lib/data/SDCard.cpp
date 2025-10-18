@@ -16,7 +16,19 @@ bool SDCard::begin() {
 }
 
 File SDCard::open(const char *filename, char mode) {
-  return SD.open(filename, mode);
+  if (strlen(filename) > 12) {
+    // https://www.if.ufrj.br/~pef/producao_academica/artigos/audiotermometro/audiotermometro-I/bibliotecas/SdFat/Doc/html/
+    Router::print("Error opening file <");
+    Router::print(filename);
+    Router::println(">, file names must be 12 characters or less.");
+    return File(); // null file
+  }
+  File f = SD.open(filename, mode);
+
+  if (!f) {
+    Router::println("Error opening file - returning null file.");
+  }
+  return f;
 }
 
 void SDCard::ls(const char *) {
