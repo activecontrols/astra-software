@@ -77,6 +77,7 @@ void test_integrator(const char*_)
     }
 
     last_time = new_time;
+    last_data = new_data;
     delay(1);
   }
 
