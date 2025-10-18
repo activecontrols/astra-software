@@ -6,11 +6,18 @@
 #include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
 #include "./Invn/Drivers/Icm406xx/Icm406xxTransport.h"
 
-#define WRITE_MASK (0)
-#define READ_MASK (1 << 7)
+#define WRITE_FLAG (0)
+#define READ_FLAG (1 << 7)
+
+// LSB / g
+#define ACCEL_RESOLUTION 8192.0
+
+// LSB / (degree/s)
+//#define GYRO_RESOLUTION 16.4
+#define GYRO_RESOLUTION 65.5
 
 // do not exceed 24 MHz
-#define SPI_SETTINGS SPISettings(15 * 1000000, MSBFIRST, SPI_MODE0)
+#define SPI_SETTINGS SPISettings(1 * 1000000, MSBFIRST, SPI_MODE0)
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
@@ -22,27 +29,17 @@ IMU::IMU(int cs, arduino::MbedSPI *spi) {
   this->spi_interface.cs = cs;
   this->spi_interface.spi = spi;
 
-  this->inv_icm = malloc(sizeof(inv_icm406xx));
+  // TODO load these from a file
+  memset(this->gyro_bias, 0, sizeof(gyro_bias));
+  this->accel_correction_scale[0] = 1;
+  this->accel_correction_scale[1] = 1;
+  this->accel_correction_scale[2] = 1;
 
+  this->inv_icm = malloc(sizeof(inv_icm406xx));
 }
 
 IMU::~IMU() {
   free(this->inv_icm);
-}
-
-void sum(int16_t* in, int64_t* in2_out, int dim){
-  
-  for (int i = 0; i < dim; ++i){
-    in2_out[i] += in[i];
-  }
-}
-
-void IMU::fifo_callback(void *ctx, inv_icm406xx_sensor_event_t *event) {
-  IMU::acc* accumulator = (IMU::acc*)ctx;
-
-  sum(event->accel, accumulator->accel, 3);
-  sum(event->gyro, accumulator->gyro, 3);
-  ++accumulator->count;
 }
 
 int IMU::begin() {
@@ -62,46 +59,129 @@ int IMU::begin() {
   serif.max_write = 1024 * 32;
   serif.serif_type = ICM406XX_UI_SPI4;
 
-  status = inv_icm406xx_init((inv_icm406xx *)this->inv_icm, &serif, IMU::fifo_callback);
+  status = inv_icm406xx_init((inv_icm406xx *)this->inv_icm, &serif, nullptr);
 
-  if (status) return status;
+  if (status)
+    return status;
 
-  // tell IMU to report data in little endian
+  // tell IMU to report data in little endian DO NOT REMOVE THIS LINE
   status = inv_icm406xx_wr_intf_config0_data_endian((inv_icm406xx *)this->inv_icm, ICM406XX_INTF_CONFIG0_DATA_LITTLE_ENDIAN);
 
   return status;
 }
 
-int IMU::read_accel_config(uint8_t* value){
+int IMU::read_accel_config(uint8_t *value) {
   return inv_icm406xx_read_reg((inv_icm406xx *)this->inv_icm, MPUREG_ACCEL_CONFIG0, 1, value);
 }
 
-// sensor events are passed to the fifo callback
-int IMU::read_fifo(IMU::sensor_data* output) {
-  memset(&this->accumulator, 0, sizeof(this->accumulator));
+void IMU::calibrate_gyro() {
+  int64_t sums[3];
+  int16_t raw[3];
+  memset(sums, 0, sizeof(sums));
+  int count = 0;
 
-  int status = inv_icm406xx_get_data_from_fifo(&this->accumulator, (inv_icm406xx *)this->inv_icm);
+  unsigned long start_time = millis();
 
-  for (int i = 0; i < 3; ++i){
-    output->acc[i] = ((this->accumulator.accel[i] + this->accumulator.count/2) / this->accumulator.count) / 8192.0;  //TODO get rid of these magic numbers once corrected - these are the sensitivities from the datasheet
-    output->gyro[i] = ((this->accumulator.gyro[i] + this->accumulator.count / 2) / this->accumulator.count) / 2097.2;
+  while (millis() - start_time < 2000) {
+    this->read_latest_gyro_raw(raw);
+    for (int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
+      sums[i] += raw[i];
+    }
+
+    ++count;
+    delay(1);
   }
+
+  for (int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
+    this->gyro_bias[i] = -sums[i] / count;
+  }
+
+  return;
 }
 
-int IMU::read_latest(IMU::sensor_data* output){
-  int status;
-  int16_t temp[6];
-
-  status = inv_icm406xx_read_reg((inv_icm406xx *)this->inv_icm, MPUREG_ACCEL_DATA_X1_UI, 12, (uint8_t*)temp);
-
-  // convert values (TODO get rid of magic numbers)
-
-  for (int i = 0; i < 3; ++i){
-    output->acc[i] = temp[i] / 8192.0;
-    output->gyro[i] = temp[i+3] / 2097.2;
+void IMU::calibrate_accel_axis(int axis) {
+  if (axis < 0 || axis > 2) {
+    return;
   }
 
-  return status;
+  int64_t sum = 0;
+  int count = 0;
+  uint8_t addr = MPUREG_ACCEL_DATA_X1_UI + 2 * axis;
+
+  unsigned long start_time = millis();
+  sensor_data temp_output;
+
+  while (millis() - start_time < 2000) {
+    begin_transaction(&this->spi_interface);
+
+    this->spi_interface.spi->transfer(READ_FLAG | addr);
+
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+
+    sum += (int16_t)(upper << 8) | lower;
+
+    end_transaction(&this->spi_interface);
+    ++count;
+
+    delay(1);
+  }
+
+  // calculate accel scale factor (assume along this axis accel should be 1g)
+  int16_t average = sum / count;
+  double average_recorded_g = average / ACCEL_RESOLUTION;
+  this->accel_correction_scale[axis] = 1 / average_recorded_g;
+}
+
+void IMU::read_latest_gyro_raw(int16_t *out) {
+  begin_transaction(&this->spi_interface);
+
+  this->spi_interface.spi->transfer(READ_FLAG | MPUREG_GYRO_DATA_X1_UI);
+
+  for (int i = 0; i < 3; ++i) {
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+    out[i] =((int16_t)(upper << 8) | lower);
+  }
+
+  end_transaction(&this->spi_interface);
+}
+
+void IMU::read_latest_accel_raw(int16_t *out) {
+  begin_transaction(&this->spi_interface);
+
+  this->spi_interface.spi->transfer(READ_FLAG | MPUREG_ACCEL_DATA_X1_UI);
+
+  for (int i = 0; i < 3; ++i) {
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+    out[i] = ((int16_t)(upper << 8) | lower);
+  }
+
+  end_transaction(&this->spi_interface);
+}
+
+void IMU::read_latest(IMU::sensor_data *output) {
+  begin_transaction(&this->spi_interface);
+
+  this->spi_interface.spi->transfer(READ_FLAG | MPUREG_ACCEL_DATA_X1_UI);
+  // status = inv_icm406xx_read_reg((inv_icm406xx *)this->inv_icm, MPUREG_ACCEL_DATA_X1_UI, 12, (uint8_t*)temp);
+
+  for (int i = 0; i < 3; ++i) {
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+    output->acc[i] = ((int16_t)(upper << 8) | lower) / ACCEL_RESOLUTION * this->accel_correction_scale[i];
+  }
+
+  for (int i = 0; i < 3; ++i) {
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+    output->gyro[i] = (((int16_t)(upper << 8) | lower) + this->gyro_bias[i]) / GYRO_RESOLUTION;
+  }
+
+  end_transaction(&this->spi_interface);
+
+  return;
 }
 
 int IMU::enable_accel() {
@@ -120,15 +200,13 @@ int IMU::disable_gyro() {
   return inv_icm406xx_disable_gyro((inv_icm406xx *)this->inv_icm);
 }
 
-
-
 // it appears this function is expected to return 1 on error and 0 otherwise (same with write_reg). I don't see any reason here why we should return 1
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len) {
   IMU::SPI_Interface *my_spi = (IMU::SPI_Interface *)context;
 
   begin_transaction(my_spi);
 
-  my_spi->spi->transfer(READ_MASK | reg);
+  my_spi->spi->transfer(READ_FLAG | reg);
 
   // the ICM should auto-increment the target address, except for in certain situations such as when reading from the fifo register
   for (uint32_t i = 0; i < len; ++i) {
@@ -144,7 +222,7 @@ int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len) {
 
   begin_transaction(my_spi);
 
-  my_spi->spi->transfer(WRITE_MASK | reg);
+  my_spi->spi->transfer(WRITE_FLAG | reg);
 
   // the ICM should auto-increment the target address
   for (uint32_t i = 0; i < len; ++i) {

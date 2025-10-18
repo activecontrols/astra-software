@@ -6,14 +6,82 @@
 #include "Router.h"
 #include <Arduino.h>
 #include <SPI.h>
+#include <cmath>
 
 #define IMU_CS D6
 
 IMU imu(IMU_CS, &SPI);
 
-int packets_read = 0;
+void calibrate_gyro(const char* _)
+{
+  imu.calibrate_gyro();
 
-void fixedpoint_to_float(int16_t *, float *, double, const uint8_t);
+  // output gyro biases
+
+  char output[200];
+  snprintf(output, sizeof(output),
+           "Gyro Biases (LSBs):  [%6.2d, %6.2d, %6.2d]\n"
+           "Gyro Biases (deg/s): [%6.2f, %6.2f, %6.2f]",
+           imu.gyro_bias[0], imu.gyro_bias[1], imu.gyro_bias[2], imu.gyro_bias[0] / 65.5, imu.gyro_bias[1] / 65.5, imu.gyro_bias[2] / 65.5);
+
+  Router::println(output);
+  return;
+}
+
+void calibrate_accel(const char* arg)
+{
+  int axis = std::atoi(arg);
+  imu.calibrate_accel_axis(axis);
+}
+
+// simple trapezoidal integrator for the gyro
+void test_integrator(const char*_)
+{
+  double pos[3];
+  char outbuf[100];
+  IMU::sensor_data new_data;
+  IMU::sensor_data last_data;
+  memset(pos, 0, sizeof(pos));
+
+  unsigned long last_time = micros();
+  unsigned long next_output_time = last_time;
+  // js keep doing ts until the user presses enter
+
+  imu.read_latest(&last_data);
+  while (!Serial.available())
+  {
+    // read angular velocity
+    imu.read_latest(&new_data);
+
+    unsigned long new_time = micros();
+    double delta_time = (new_time - last_time) * (1E-6);
+
+    for (int i = 0; i < 3; ++i)
+    {
+      pos[i] = std::fmod(pos[i] + 0.5 * (new_data.gyro[i] + last_data.gyro[i]) * delta_time, 360.0);
+      if (pos[i] < 0)
+      {
+        pos[i] += 360.0;
+      }
+    }
+
+    // output every 50ms
+    if (new_time > next_output_time)
+    {
+      next_output_time += 50000;
+      snprintf(outbuf, sizeof(outbuf),
+        "[%6.2lf, %6.2lf, %6.2lf]",
+        pos[0], pos[1], pos[2]
+      );
+      Router::println(outbuf);
+    }
+
+    last_time = new_time;
+    delay(1);
+  }
+
+  return;
+}
 
 void read_sensor_packet(const char *_) {
   static char output_s[500];
@@ -36,11 +104,13 @@ void read_sensor_packet(const char *_) {
   snprintf(output_s, sizeof(output_s) - 1,
            "Accel (g):.............. [%6.4lf, %6.4lf, %6.4lf]\n"
            "Gyro (dps):............. [%9.2lf, %9.2lf, %9.2lf]\n"
-           "imu.read_fifo time (us): %lu",
+           "Read time (us): %lu",
            accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2], delta);
 
   Router::println(output_s);
 }
+
+
 
 void test_read_time(const char *_){
   static char output_s[100];
@@ -49,10 +119,7 @@ void test_read_time(const char *_){
 
   unsigned long start = micros();
   for (int i = 0; i < count; ++i){
-    if (imu.read_latest(&data)){
-      Router::println("Error occurred...");
-      return;
-    }
+    imu.read_latest(&data);
   }
   unsigned long delta = micros() - start;
 
@@ -89,6 +156,9 @@ void setup() {
   Router::add({help, "help"});
   Router::add({read_sensor_packet, "read_sensor_packet"});
   Router::add({test_read_time, "test_read_time"});
+  Router::add({test_integrator, "test_integrator"});
+  Router::add({calibrate_gyro, "calibrate_gyro"});
+  Router::add({calibrate_accel, "calibrate_accel"});
 
   SPI.begin();
 
@@ -116,12 +186,4 @@ void setup() {
 
 void loop() {
   Router::run(); // loop only runs once, since there is an internal loop in Router::run()
-}
-
-
-void fixedpoint_to_float(int16_t *in, float *out, double sensitivity, const uint8_t dim) {
-  double scale = 1.0 / sensitivity;
-
-  for (int i = 0; i < dim; ++i)
-    out[i] = scale * in[i];
 }
