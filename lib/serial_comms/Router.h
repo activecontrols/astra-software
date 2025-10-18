@@ -20,6 +20,12 @@ extern File comms_log_file;
 // initializes the serial port and configures logs
 void begin();
 
+// void println() {
+//   COMMS_SERIAL.println();
+//   comms_log_file.println();
+//   comms_log_file.flush();
+// }
+
 template <typename T> void println(T value) {
   COMMS_SERIAL.println(value);
   comms_log_file.println(value);
@@ -32,11 +38,40 @@ template <typename T> void print(T value) {
   comms_log_file.flush();
 }
 
+template <typename T> void print(T value, int prec_or_base) {
+  COMMS_SERIAL.print(value, prec_or_base);
+  comms_log_file.print(value, prec_or_base);
+  comms_log_file.flush();
+}
+
 template <typename T> void println(T value, int prec_or_base) {
   COMMS_SERIAL.println(value, prec_or_base);
   comms_log_file.println(value, prec_or_base);
   comms_log_file.flush();
 }
+
+template <typename... Args> void printf(const char *format, Args... args) {
+  char buffer[200];
+  snprintf(buffer, sizeof(buffer), format, args...);
+  print(buffer);
+}
+
+template <typename T> void mprint(const T &t) { // base case
+  print(t);
+}
+
+// "multi-print"
+template <typename T, typename... Args> void mprint(const T &t, const Args &...args) { // recursive case. all of this is done at compile time.
+  print(t);
+  mprint(args...);
+}
+
+template <typename... Args> void mprintln(const Args &...args) {
+  mprint(args...);
+  println("");
+}
+
+// could define a mprint with separator but honestly printf / just manually including sep is fine.
 
 // send sends raw bytes over the serial port. the caller is responsible for
 // freeing the memory of the message

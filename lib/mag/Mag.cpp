@@ -78,7 +78,7 @@ double get_heading() {
   return heading;
 }
 
-// does not modify input arrays
+// does not modify input arrays. returns a percentage goodness.
 double calc_sphere_fit_goodness(const double *xs, const double *ys, const double *zs, int n, const calibration &c) {
   double avg_magnitude = 0.0;
   for (int i = 0; i < n; i++) {
@@ -98,7 +98,7 @@ double calc_sphere_fit_goodness(const double *xs, const double *ys, const double
   }
   stdev /= n;
   stdev = sqrt(stdev);
-  return 1 - stdev / avg_magnitude; // relative standard deviation
+  return 100 * (1 - stdev / avg_magnitude); // relative standard deviation
 }
 
 double read_x[1000], read_y[1000], read_z[1000];
@@ -117,14 +117,14 @@ void collect_samples() {
     read_z[i] = (double)mz;
     delay(100);
     if (i % 10 == 0) { // every second, print progress
-      Router::println(String(i) + " samples recorded " + String((i + 1) / 1000.0 * 100.0, 1) + "%");
+      Router::mprintln(i, " samples recorded ", i / 1000.0 * 100.0, "%");
     }
   }
   Router::println("Done recording calibration data.");
   double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, identity_calib);
-  Router::println("Sphere fit goodness of raw data: " + String(goodness, 4));
+  Router::mprintln("Sphere fit goodness of raw data: ", goodness, "%");
   goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, calib);
-  Router::println("Sphere fit goodness of current calibration: " + String(goodness, 4));
+  Router::mprintln("Sphere fit goodness of current calibration: ", goodness, "%");
 }
 
 // Router commands -------------------------------------------------------------
@@ -135,12 +135,10 @@ void collect_samples() {
 // }
 
 void mag_heading(const char *) {
-  //   double heading = get_heading();
-  //   Router::println(String(heading, 3));
-  int time = 60 * 10;
+  int time = 60 * 10; // one minute
   while (time-- > 0) {
     double heading = get_heading();
-    Router::println(String(heading, 3));
+    Router::println(heading);
     delay(100);
   }
 }
@@ -157,22 +155,26 @@ void write_samples(const char *filename) {
     return;
   }
   for (int i = 0; i < 1000; i++) {
-    f.println(String(read_x[i]) + "," + String(read_y[i]) + "," + String(read_z[i]));
+    f.print(read_x[i]);
+    f.print(",");
+    f.print(read_y[i]);
+    f.print(",");
+    f.println(read_z[i]);
   }
   f.close();
-  Router::println("Done writing calibration data to " + String(filename));
+  Router::mprintln("Done writing calibration data to ", filename);
   Router::println("Use final.m in mag_calib/ to compute calibration parameters");
 }
 
 void print_calibration(const char *) {
   Router::println("Current calibration:");
   Router::println("Hard iron offsets:");
-  Router::println("x: " + String(calib.hard_x, 4));
-  Router::println("y: " + String(calib.hard_y, 4));
-  Router::println("z: " + String(calib.hard_z, 4));
+
+  Router::printf("x: %.4f y: %.4f z: %.4f\n", calib.hard_x, calib.hard_y, calib.hard_z);
+
   Router::println("Soft iron correction matrix:");
   for (int i = 0; i < 3; i++) {
-    Router::println(String(calib.soft[i][0], 4) + " " + String(calib.soft[i][1], 4) + " " + String(calib.soft[i][2], 4));
+    Router::printf("%.4f %.4f %.4f\n", calib.soft[i][0], calib.soft[i][1], calib.soft[i][2]);
   }
 }
 
@@ -189,14 +191,14 @@ void do_instant_calib(const char *) {
   get_centered_reading(sX, sY, sZ);
   get_centered_reading(sX, sY, sZ); // for some reason the demo does it twice apparently to avoid noise (??)
   Router::println("Set operation done. Values:");
-  Router::println(String(sX) + "," + String(sY) + "," + String(sZ));
+  Router::mprintln(sX, ",", sY, ",", sZ);
 
   mag.performResetOperation();
   int rX, rY, rZ;
   get_centered_reading(rX, rY, rZ);
   get_centered_reading(rX, rY, rZ);
   Router::println("Reset operation done. Values:");
-  Router::println(String(rX) + "," + String(rY) + "," + String(rZ));
+  Router::mprintln(rX, ",", rY, ",", rZ);
 
   // hard iron offset is average of set and reset
   calibration cnew;
@@ -248,7 +250,7 @@ void do_simple_calib(const char *) {
   }
 
   double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, cnew);
-  Router::println("Sphere fit goodness after simple calibration: " + String(goodness, 4));
+  Router::mprintln("Sphere fit goodness after simple calibration: ", goodness, "%");
 
   calib = cnew; // set new calibration
   Router::println("Simple calibration done.");
@@ -313,23 +315,16 @@ void show_centered_reading(const char *) {
   for (int i = 0; i < 100; i++) {
     int mx, my, mz;
     get_centered_reading(mx, my, mz);
-    Router::println(String(mx) + "," + String(my) + "," + String(mz));
+    Router::mprintln(mx, ",", my, ",", mz);
     delay(100);
   }
 }
-
-// // todo: change to load from file.
-// void reset_calib(const char *) {
-//   // calib = matlab_calib;
-//   Router::println("Calibration reset to matlab calibration.");
-//   print_calibration(nullptr);
-// }
 
 void save_calib(const char *filename) {
   if (filename == nullptr) {
     filename = main_calib_name;
   }
-  Router::println("Saving calibration to " + String(filename));
+  Router::mprintln("Saving calibration to ", filename);
   SDCard::write_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
 }
 
@@ -337,7 +332,7 @@ void load_calib(const char *filename) {
   if (filename == nullptr) {
     filename = main_calib_name;
   }
-  Router::println("Loading calibration from " + String(filename));
+  Router::mprintln("Loading calibration from ", filename);
   SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
   print_calibration(nullptr);
 }
