@@ -31,8 +31,8 @@ void gimbal_servos::setServoAngle(float phi, float theta){
     Portenta_H7_ISR_Servos.setPosition(servoRoll, (int) theta);
 }
 
-/*
-void setup()
+
+void gimbal_servos::init()
 {
     Serial.begin(115200);
     Serial.println("Starting feature/gimbal_servos");
@@ -43,6 +43,7 @@ void setup()
     centerServos();
 }
 
+/*
 void loop()
 {
     float phi = 0.0;

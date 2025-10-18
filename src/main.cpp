@@ -25,6 +25,7 @@ void setup() {
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
 
+  gimbal_servos::init();
   gimbal_servos::centerServos();
 }
 
