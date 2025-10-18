@@ -8,6 +8,7 @@
 // TODO: IG think about thread safety since args are global
 
 namespace Router {
+
 File comms_log_file;
 
 CString<COMMAND_BUFFER_SIZE> commandBuffer; // TODO: IG think about if this should be a raw char array? we don't use append or anything fancy
@@ -62,18 +63,6 @@ void begin() {
   }
 }
 
-void println(const char *msg) {
-  COMMS_SERIAL.println(msg);
-  comms_log_file.println(msg);
-  comms_log_file.flush();
-}
-
-void print(const char *msg) {
-  COMMS_SERIAL.print(msg);
-  comms_log_file.print(msg);
-  comms_log_file.flush();
-}
-
 void send(char msg[], unsigned int len) {
   COMMS_SERIAL.write(msg, len);
 }
@@ -82,7 +71,7 @@ void receive(char msg[], unsigned int len) {
   COMMS_SERIAL.readBytes(msg, len);
 }
 
-String read(unsigned int len) {
+String read(unsigned int len) { // todo: move away from arduino String.
   // String s = COMMS_SERIAL.readStringUntil('\n', len);
   String s = COMMS_SERIAL.readStringUntil('\n'); // TODO: len no longer supported?
   s.trim();                                      // remove leading/trailing whitespace or newline

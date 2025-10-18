@@ -1,10 +1,10 @@
 #pragma once
 
 #include <Arduino.h>
+#include <SD.h>
 #include <functional>
 #include <string>
 #include <vector>
-// #include <SD.h>
 
 using namespace std;
 
@@ -15,23 +15,27 @@ struct func;
 
 namespace Router {
 
+extern File comms_log_file;
+
 // initializes the serial port and configures logs
 void begin();
 
-// info sends a string & newline over serial
-void println(const char *msg);
-void print(const char *msg);
-inline void println(const String &msg) {
-  println(msg.c_str());
+template <typename T> void println(T value) {
+  COMMS_SERIAL.println(value);
+  comms_log_file.println(value);
+  comms_log_file.flush();
 }
-inline void print(const String &msg) {
-  print(msg.c_str());
+
+template <typename T> void print(T value) {
+  COMMS_SERIAL.print(value);
+  comms_log_file.print(value);
+  comms_log_file.flush();
 }
-inline void println(const std::string &msg) {
-  println(msg.c_str());
-}
-inline void print(const std::string &msg) {
-  print(msg.c_str());
+
+template <typename T> void println(T value, int prec_or_base) {
+  COMMS_SERIAL.println(value, prec_or_base);
+  comms_log_file.println(value, prec_or_base);
+  comms_log_file.flush();
 }
 
 // send sends raw bytes over the serial port. the caller is responsible for
