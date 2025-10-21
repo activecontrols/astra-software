@@ -26,7 +26,6 @@ void setup() {
   Router::add({Router::print_all_cmds, "help"});
 
   gimbal_servos::init();
-  gimbal_servos::centerServos();
 }
 
 void loop() {
