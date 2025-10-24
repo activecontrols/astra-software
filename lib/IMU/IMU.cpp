@@ -13,8 +13,8 @@
 #define ACCEL_RESOLUTION 8192.0
 
 // LSB / (degree/s)
-//#define GYRO_RESOLUTION 16.4
-#define GYRO_RESOLUTION 65.5
+#define GYRO_RESOLUTION 16.4
+// #define GYRO_RESOLUTION 65.5
 
 // do not exceed 24 MHz
 #define SPI_SETTINGS SPISettings(1 * 1000000, MSBFIRST, SPI_MODE0)
@@ -29,11 +29,16 @@ IMU::IMU(int cs, arduino::MbedSPI *spi) {
   this->spi_interface.cs = cs;
   this->spi_interface.spi = spi;
 
-  // TODO load these from a file
   memset(this->gyro_bias, 0, sizeof(gyro_bias));
-  this->accel_correction_scale[0] = 1;
-  this->accel_correction_scale[1] = 1;
-  this->accel_correction_scale[2] = 1;
+
+  // TODO load these from a file
+  this->accel_correction_bias[0] = 0.001285802273694;
+  this->accel_correction_bias[1] = 1.963703053573527e-04;
+  this->accel_correction_bias[2] = 0.024535158578756;
+
+  this->accel_correction_gain[0] = 0.998385741762466;
+  this->accel_correction_gain[1] = 0.999260555553662;
+  this->accel_correction_gain[2] = 0.999260555553662;
 
   this->inv_icm = malloc(sizeof(inv_icm406xx));
 }
@@ -64,7 +69,7 @@ int IMU::begin() {
   if (status)
     return status;
 
-  // tell IMU to report data in little endian DO NOT REMOVE THIS LINE
+  // tell IMU to report data in little endian !!!DO NOT REMOVE THIS LINE!!!
   status = inv_icm406xx_wr_intf_config0_data_endian((inv_icm406xx *)this->inv_icm, ICM406XX_INTF_CONFIG0_DATA_LITTLE_ENDIAN);
 
   return status;
@@ -82,9 +87,9 @@ void IMU::calibrate_gyro() {
 
   unsigned long start_time = millis();
 
-  while (millis() - start_time < 2000) {
+  while (millis() - start_time < 20000) {
     this->read_latest_gyro_raw(raw);
-    for (int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
+    for (unsigned int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
       sums[i] += raw[i];
     }
 
@@ -92,45 +97,13 @@ void IMU::calibrate_gyro() {
     delay(1);
   }
 
-  for (int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
-    this->gyro_bias[i] = -sums[i] / count;
+  for (unsigned int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
+    int16_t div = sums[i] / count;
+    double frac = (double)(sums[i] % count) / count;
+    this->gyro_bias[i] = (div + frac) / GYRO_RESOLUTION;
   }
 
   return;
-}
-
-void IMU::calibrate_accel_axis(int axis) {
-  if (axis < 0 || axis > 2) {
-    return;
-  }
-
-  int64_t sum = 0;
-  int count = 0;
-  uint8_t addr = MPUREG_ACCEL_DATA_X1_UI + 2 * axis;
-
-  unsigned long start_time = millis();
-  sensor_data temp_output;
-
-  while (millis() - start_time < 2000) {
-    begin_transaction(&this->spi_interface);
-
-    this->spi_interface.spi->transfer(READ_FLAG | addr);
-
-    uint8_t lower = this->spi_interface.spi->transfer(0x00);
-    uint8_t upper = this->spi_interface.spi->transfer(0x00);
-
-    sum += (int16_t)(upper << 8) | lower;
-
-    end_transaction(&this->spi_interface);
-    ++count;
-
-    delay(1);
-  }
-
-  // calculate accel scale factor (assume along this axis accel should be 1g)
-  int16_t average = sum / count;
-  double average_recorded_g = average / ACCEL_RESOLUTION;
-  this->accel_correction_scale[axis] = 1 / average_recorded_g;
 }
 
 void IMU::read_latest_gyro_raw(int16_t *out) {
@@ -141,7 +114,7 @@ void IMU::read_latest_gyro_raw(int16_t *out) {
   for (int i = 0; i < 3; ++i) {
     uint8_t lower = this->spi_interface.spi->transfer(0x00);
     uint8_t upper = this->spi_interface.spi->transfer(0x00);
-    out[i] =((int16_t)(upper << 8) | lower);
+    out[i] = ((int16_t)(upper << 8) | lower);
   }
 
   end_transaction(&this->spi_interface);
@@ -161,7 +134,7 @@ void IMU::read_latest_accel_raw(int16_t *out) {
   end_transaction(&this->spi_interface);
 }
 
-void IMU::read_latest(IMU::sensor_data *output) {
+void IMU::read_latest_raw(IMU::sensor_data *output) {
   begin_transaction(&this->spi_interface);
 
   this->spi_interface.spi->transfer(READ_FLAG | MPUREG_ACCEL_DATA_X1_UI);
@@ -170,16 +143,29 @@ void IMU::read_latest(IMU::sensor_data *output) {
   for (int i = 0; i < 3; ++i) {
     uint8_t lower = this->spi_interface.spi->transfer(0x00);
     uint8_t upper = this->spi_interface.spi->transfer(0x00);
-    output->acc[i] = ((int16_t)(upper << 8) | lower) / ACCEL_RESOLUTION * this->accel_correction_scale[i];
+    output->acc[i] = ((int16_t)(upper << 8) | lower) / ACCEL_RESOLUTION;
   }
 
   for (int i = 0; i < 3; ++i) {
     uint8_t lower = this->spi_interface.spi->transfer(0x00);
     uint8_t upper = this->spi_interface.spi->transfer(0x00);
-    output->gyro[i] = (((int16_t)(upper << 8) | lower) + this->gyro_bias[i]) / GYRO_RESOLUTION;
+    output->gyro[i] = ((int16_t)(upper << 8) | lower) / GYRO_RESOLUTION;
   }
 
   end_transaction(&this->spi_interface);
+}
+
+void IMU::read_latest(IMU::sensor_data *output) {
+
+  this->read_latest_raw(output);
+
+  // apply bias to both accelerometer and gyroscope data
+  for (int i = 0; i < 3; ++i) {
+    output->acc[i] = (output->acc[i] - this->accel_correction_bias[i]) / this->accel_correction_gain[i];
+  }
+  for (int i = 0; i < 3; ++i) {
+    output->gyro[i] = output->gyro[i] - this->gyro_bias[i];
+  }
 
   return;
 }

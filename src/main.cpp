@@ -12,31 +12,65 @@
 
 IMU imu(IMU_CS, &SPI);
 
-void calibrate_gyro(const char* _)
-{
+void calibrate_gyro(const char *_) {
   imu.calibrate_gyro();
 
   // output gyro biases
 
   char output[200];
-  snprintf(output, sizeof(output),
-           "Gyro Biases (LSBs):  [%6.2d, %6.2d, %6.2d]\n"
-           "Gyro Biases (deg/s): [%6.2f, %6.2f, %6.2f]",
-           imu.gyro_bias[0], imu.gyro_bias[1], imu.gyro_bias[2], imu.gyro_bias[0] / 65.5, imu.gyro_bias[1] / 65.5, imu.gyro_bias[2] / 65.5);
+  snprintf(output, sizeof(output), "Gyro Biases (degrees/s): [%7.3lf, %7.3lf, %7.3lf]", imu.gyro_bias[0], imu.gyro_bias[1], imu.gyro_bias[2]);
 
   Router::println(output);
   return;
 }
 
-void calibrate_accel(const char* arg)
+void log_accel(const char* _)
 {
-  int axis = std::atoi(arg);
-  imu.calibrate_accel_axis(axis);
+  IMU::sensor_data last_packet;
+  char out[150];
+  char serial_input[10];
+
+  while (1)
+  {
+    while (!Serial.available())
+    {
+      delay(100);
+    }
+    Serial.readBytesUntil('\n', serial_input, sizeof(serial_input));
+    if (!strcmp(serial_input, "stop"))
+    {
+      break;
+    }
+
+    // average acceleration data over 2 seconds
+    unsigned long start_time = millis();
+    unsigned int count = 0;
+
+    double accumulator[3];
+    memset(accumulator, 0, sizeof(accumulator));
+
+    while (millis() - start_time < 2000)
+    {
+      imu.read_latest_raw(&last_packet);
+      
+      for (int i = 0; i < 3; ++i)
+      {
+        accumulator[i] += last_packet.acc[i];
+      }
+      ++count;
+      delay(5);
+    }
+
+    snprintf(out, sizeof(out), "%lf,%lf,%lf\n", accumulator[0] / count, accumulator[1] / count, accumulator[2] / count);
+    Router::print(out);
+
+    delay(30);
+  }
 }
 
+
 // simple trapezoidal integrator for the gyro
-void test_integrator(const char*_)
-{
+void test_integrator(const char *_) {
   double pos[3];
   char outbuf[100];
   IMU::sensor_data new_data;
@@ -48,31 +82,24 @@ void test_integrator(const char*_)
   // js keep doing ts until the user presses enter
 
   imu.read_latest(&last_data);
-  while (!Serial.available())
-  {
+  while (!Serial.available()) {
     // read angular velocity
     imu.read_latest(&new_data);
 
     unsigned long new_time = micros();
     double delta_time = (new_time - last_time) * (1E-6);
 
-    for (int i = 0; i < 3; ++i)
-    {
+    for (int i = 0; i < 3; ++i) {
       pos[i] = std::fmod(pos[i] + 0.5 * (new_data.gyro[i] + last_data.gyro[i]) * delta_time, 360.0);
-      if (pos[i] < 0)
-      {
+      if (pos[i] < 0) {
         pos[i] += 360.0;
       }
     }
 
     // output every 50ms
-    if (new_time > next_output_time)
-    {
+    if (new_time > next_output_time) {
       next_output_time += 50000;
-      snprintf(outbuf, sizeof(outbuf),
-        "[%6.2lf, %6.2lf, %6.2lf]",
-        pos[0], pos[1], pos[2]
-      );
+      snprintf(outbuf, sizeof(outbuf), "[%7.3lf, %7.3lf, %7.3lf]", pos[0], pos[1], pos[2]);
       Router::println(outbuf);
     }
 
@@ -87,8 +114,8 @@ void test_integrator(const char*_)
 void read_sensor_packet(const char *_) {
   static char output_s[500];
   static char sens_mask_str[9];
-  double* accel;
-  double* gyro;
+  double *accel;
+  double *gyro;
   float temperature_c;
   IMU::sensor_data sensor_data;
   sens_mask_str[8] = '\0';
@@ -96,40 +123,37 @@ void read_sensor_packet(const char *_) {
   unsigned long start = micros();
 
   imu.read_latest(&sensor_data);
-  
-  unsigned long delta = micros() - start;
 
+  unsigned long delta = micros() - start;
 
   accel = sensor_data.acc;
   gyro = sensor_data.gyro;
+
+  double accel_magnitude = sqrt(accel[0]*accel[0] + accel[1]*accel[1] + accel[2]*accel[2]);
   snprintf(output_s, sizeof(output_s) - 1,
            "Accel (g):.............. [%6.4lf, %6.4lf, %6.4lf]\n"
+           "Accel Magnitude (g):.... %lf\n"
            "Gyro (dps):............. [%9.2lf, %9.2lf, %9.2lf]\n"
-           "Read time (us): %lu",
-           accel[0], accel[1], accel[2], gyro[0], gyro[1], gyro[2], delta);
+           "Read time (us): %lu\n",
+           accel[0], accel[1], accel[2], accel_magnitude, gyro[0], gyro[1], gyro[2], delta);
 
   Router::println(output_s);
 }
 
-
-
-void test_read_time(const char *_){
+void test_read_time(const char *_) {
   static char output_s[100];
   const int count = 1000;
   IMU::sensor_data data;
 
   unsigned long start = micros();
-  for (int i = 0; i < count; ++i){
+  for (int i = 0; i < count; ++i) {
     imu.read_latest(&data);
   }
   unsigned long delta = micros() - start;
 
   unsigned long average_delta = (delta + count / 2) / count;
 
-  snprintf(output_s, sizeof(output_s) - 1,
-    "Average time (us): %lu",
-    average_delta
-  );
+  snprintf(output_s, sizeof(output_s) - 1, "Average time (us): %lu", average_delta);
 
   Router::println(output_s);
 }
@@ -159,10 +183,9 @@ void setup() {
   Router::add({test_read_time, "test_read_time"});
   Router::add({test_integrator, "test_integrator"});
   Router::add({calibrate_gyro, "calibrate_gyro"});
-  Router::add({calibrate_accel, "calibrate_accel"});
+  Router::add({log_accel, "log_accel"});
 
   SPI.begin();
-
 
   delay(3000);
 
@@ -182,7 +205,6 @@ void setup() {
   error = imu.read_accel_config(&config);
 
   Router::println(std::string("Accel FSR config: ") + std::to_string(config >> 5) + "\n"); // this should output 3 for +-4 g fsr
-
 }
 
 void loop() {

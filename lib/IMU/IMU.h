@@ -14,6 +14,7 @@ public:
   ~IMU();
   int begin();
   void read_latest(sensor_data *output);
+  void read_latest_raw(sensor_data* output);
 
   int enable_accel();
   int enable_gyro();
@@ -24,10 +25,10 @@ public:
   int read_accel_config(uint8_t *value);
 
   void calibrate_gyro();
-  void calibrate_accel_axis(int);
 
-  int16_t gyro_bias[3];
-  double accel_correction_scale[3];
+  double gyro_bias[3];
+  double accel_correction_bias[3];
+  double accel_correction_gain[3];
 
   struct SPI_Interface {
     int cs;
