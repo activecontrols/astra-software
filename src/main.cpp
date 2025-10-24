@@ -5,6 +5,7 @@
 #include "IMU.h"
 #include "Router.h"
 #include <Arduino.h>
+#include <Mag.h>
 #include <SPI.h>
 #include <cmath>
 
@@ -17,28 +18,20 @@ void calibrate_gyro(const char *_) {
 
   // output gyro biases
 
-  char output[200];
-  snprintf(output, sizeof(output), "Gyro Biases (degrees/s): [%7.3lf, %7.3lf, %7.3lf]", imu.gyro_bias[0], imu.gyro_bias[1], imu.gyro_bias[2]);
-
-  Router::println(output);
+  Router::printf("Gyro Biases (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", imu.gyro_bias[0], imu.gyro_bias[1], imu.gyro_bias[2]);
   return;
 }
 
-void log_accel(const char* _)
-{
+void log_accel(const char *_) {
   IMU::sensor_data last_packet;
-  char out[150];
   char serial_input[10];
 
-  while (1)
-  {
-    while (!Serial.available())
-    {
+  while (1) {
+    while (!Serial.available()) {
       delay(100);
     }
     Serial.readBytesUntil('\n', serial_input, sizeof(serial_input));
-    if (!strcmp(serial_input, "stop"))
-    {
+    if (!strcmp(serial_input, "stop")) {
       break;
     }
 
@@ -49,30 +42,25 @@ void log_accel(const char* _)
     double accumulator[3];
     memset(accumulator, 0, sizeof(accumulator));
 
-    while (millis() - start_time < 2000)
-    {
+    while (millis() - start_time < 2000) {
       imu.read_latest_raw(&last_packet);
-      
-      for (int i = 0; i < 3; ++i)
-      {
+
+      for (int i = 0; i < 3; ++i) {
         accumulator[i] += last_packet.acc[i];
       }
       ++count;
       delay(5);
     }
 
-    snprintf(out, sizeof(out), "%lf,%lf,%lf\n", accumulator[0] / count, accumulator[1] / count, accumulator[2] / count);
-    Router::print(out);
+    Router::printf("%lf,%lf,%lf\n", accumulator[0] / count, accumulator[1] / count, accumulator[2] / count);
 
     delay(30);
   }
 }
 
-
 // simple trapezoidal integrator for the gyro
 void test_integrator(const char *_) {
   double pos[3];
-  char outbuf[100];
   IMU::sensor_data new_data;
   IMU::sensor_data last_data;
   memset(pos, 0, sizeof(pos));
@@ -99,8 +87,7 @@ void test_integrator(const char *_) {
     // output every 50ms
     if (new_time > next_output_time) {
       next_output_time += 50000;
-      snprintf(outbuf, sizeof(outbuf), "[%7.3lf, %7.3lf, %7.3lf]", pos[0], pos[1], pos[2]);
-      Router::println(outbuf);
+      Router::printf("[%7.3lf, %7.3lf, %7.3lf]\n", pos[0], pos[1], pos[2]);
     }
 
     last_time = new_time;
@@ -112,13 +99,9 @@ void test_integrator(const char *_) {
 }
 
 void read_sensor_packet(const char *_) {
-  static char output_s[500];
-  static char sens_mask_str[9];
   double *accel;
   double *gyro;
-  float temperature_c;
   IMU::sensor_data sensor_data;
-  sens_mask_str[8] = '\0';
 
   unsigned long start = micros();
 
@@ -129,19 +112,16 @@ void read_sensor_packet(const char *_) {
   accel = sensor_data.acc;
   gyro = sensor_data.gyro;
 
-  double accel_magnitude = sqrt(accel[0]*accel[0] + accel[1]*accel[1] + accel[2]*accel[2]);
-  snprintf(output_s, sizeof(output_s) - 1,
-           "Accel (g):.............. [%6.4lf, %6.4lf, %6.4lf]\n"
-           "Accel Magnitude (g):.... %lf\n"
-           "Gyro (dps):............. [%9.2lf, %9.2lf, %9.2lf]\n"
-           "Read time (us): %lu\n",
-           accel[0], accel[1], accel[2], accel_magnitude, gyro[0], gyro[1], gyro[2], delta);
+  double accel_magnitude = sqrt(accel[0] * accel[0] + accel[1] * accel[1] + accel[2] * accel[2]);
 
-  Router::println(output_s);
+  Router::printf("Accel (g):.............. [%6.4lf, %6.4lf, %6.4lf]\n"
+                 "Accel Magnitude (g):.... %lf\n"
+                 "Gyro (dps):............. [%9.2lf, %9.2lf, %9.2lf]\n"
+                 "Read time (us): %lu\n",
+                 accel[0], accel[1], accel[2], accel_magnitude, gyro[0], gyro[1], gyro[2], delta);
 }
 
 void test_read_time(const char *_) {
-  static char output_s[100];
   const int count = 1000;
   IMU::sensor_data data;
 
@@ -153,9 +133,7 @@ void test_read_time(const char *_) {
 
   unsigned long average_delta = (delta + count / 2) / count;
 
-  snprintf(output_s, sizeof(output_s) - 1, "Average time (us): %lu", average_delta);
-
-  Router::println(output_s);
+  Router::printf("Average time (us): %lu\n", average_delta);
 }
 
 void ping(const char *args) {
@@ -204,7 +182,7 @@ void setup() {
 
   error = imu.read_accel_config(&config);
 
-  Router::println(std::string("Accel FSR config: ") + std::to_string(config >> 5) + "\n"); // this should output 3 for +-4 g fsr
+  Router::printf("Accel FSR config: %d\n", config >> 5); // this should output 3 for +-4 g fsr
 }
 
 void loop() {
