@@ -16,10 +16,6 @@ struct Point {
   double north; // meters
   double west;  // meters
   double up;    // meters
-
-  Point operator-(const Point &p) {
-    return Point{north - p.north, west - p.west, up - p.up};
-  }
 };
 
 namespace GPS {
