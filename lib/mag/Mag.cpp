@@ -344,7 +344,7 @@ void no_calib(const char *) {
 }
 // -----------------------------------------------------------------------------
 
-void init() {
+void begin() {
   Wire.begin();
   // Initialize the magnetometer
   if (!mag.begin()) {

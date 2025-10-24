@@ -1,7 +1,7 @@
-// #include <Arduino.h>
 #include "GPS.h"
+#include "Mag.h"
 #include "Router.h"
-#include <Mag.h>
+#include <Arduino.h>
 
 void ping(const char *args) {
   Router::println("pong");
@@ -18,16 +18,15 @@ void setup() {
   Router::begin();
   Router::println("Controller started.");
 
-  Mag::init();
+  Mag::begin();
+  GPS::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
 
-  GPS::begin();
-
-  while (true) {
-    GPS::pump_events();
-  }
+  // while (true) {
+  //   GPS::pump_events();
+  // }
 }
 
 void loop() {
