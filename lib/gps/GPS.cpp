@@ -1,6 +1,8 @@
 #include "GPS.h"
 #include "Router.h"
 
+// #define DEBUG_GPS_MSG
+
 namespace GPS {
 TinyGPSPlus gps;
 GPS_Coord origin;
@@ -11,18 +13,20 @@ double deg_to_rad(double degrees) {
 
 void begin() {
   GPS_UART.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
+
+#ifdef DEBUG_GPS_MSG
+  Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
+#endif
 }
 
-// TODO GPS - this code was just for testing - please update to pass into tinygps++
 void pump_events() {
-  char msg[2];
-
   while (GPS_UART.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
     char c = GPS_UART.read();
     gps.encode(c);
-    msg[0] = c;
-    msg[1] = '\0';
-    Router::print(msg);
+
+#ifdef DEBUG_GPS_MSG
+    Router::print(c);
+#endif
   }
 }
 
