@@ -17,6 +17,10 @@ void begin() {
 #ifdef DEBUG_GPS_MSG
   Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
 #endif
+
+  Router::add({print_gps_pos, "gps_print_pos"});
+  Router::add({print_rel_pos, "gps_print_rel_pos"});
+  Router::add({set_current_position_as_origin_cmd, "gps_set_origin"});
 }
 
 void pump_events() {
@@ -39,7 +43,11 @@ GPS_Coord get_lat_lon_alt() {
 }
 
 void set_current_position_as_origin() {
-  origin = get_lat_lon_alt();
+  if (!has_valid_recent_pos()) {
+    Router::print("Warning - tried to set current position as origin without valid GPS position.");
+  } else {
+    origin = get_lat_lon_alt();
+  }
 }
 
 Point get_rel_xyz_pos() {
@@ -55,6 +63,28 @@ Point get_rel_xyz_pos() {
   double up_m = pos.alt - origin.alt;
 
   return Point{north : north_m, west : west_m, up : up_m};
+}
+
+void print_gps_pos(const char *) {
+  if (!has_valid_recent_pos()) {
+    Router::printf("GPS does not have valid position.");
+  } else {
+    GPS_Coord c = get_lat_lon_alt();
+    Router::printf("GPS Lat:%.6f Lon:%.6f Alt:%.3f\n", c.lat, c.lon, c.alt);
+  }
+}
+
+void print_rel_pos(const char *) {
+  if (!has_valid_recent_pos()) {
+    Router::printf("GPS does not have valid position.");
+  } else {
+    Point p = get_rel_xyz_pos();
+    Router::printf("GPS relative position north:%.3f west:%.3f up:%.3f\n", p.north, p.west, p.up);
+  }
+}
+
+void set_current_position_as_origin_cmd(const char *) {
+  set_current_position_as_origin();
 }
 
 } // namespace GPS

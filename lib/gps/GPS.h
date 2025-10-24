@@ -44,4 +44,9 @@ void set_current_position_as_origin();
 // uses get_lat_lon_alt() and origin to get the relative north/west/up in meters
 Point get_rel_xyz_pos();
 
+// router functions
+void print_gps_pos(const char *);
+void print_rel_pos(const char *);
+void set_current_position_as_origin_cmd(const char *);
+
 } // namespace GPS
