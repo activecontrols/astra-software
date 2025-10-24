@@ -3,6 +3,8 @@
 #include "Mag.h"
 #include "Prop.h"
 #include "Router.h"
+#include "TrajectoryFollower.h"
+#include "TrajectoryLoader.h"
 #include "gimbal_servos.h"
 #include <Arduino.h>
 
@@ -22,6 +24,8 @@ void setup() {
   GPS::begin();
   IMU::begin();
   GimbalServos::init();
+  TrajectoryLoader::begin();
+  TrajectoryFollower::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
