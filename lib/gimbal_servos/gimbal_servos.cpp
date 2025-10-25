@@ -44,8 +44,8 @@ float phi_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
 // Creates the lookup table for gimble-servo reference values for angle theta
 #define theta_gs_table_len 8
 float theta_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
-    {12.22, 9.06, 5.86, 2.64, -0.58, -6.99, -10.15, -13.28},
-    {-25, -20, -15, -10, -5, 5, 10, 15}};
+    {-13.28, -10.15, -6.99, -0.58, 2.64, 5.86, 9.06, 12.22},
+    {15, 10, 5, -5, -10, -15, -20, -25}};
 
 void gimbal_servos::centerServos() {
   if (servoPitch >= 0)
