@@ -6,6 +6,9 @@
 #include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
 #include "./Invn/Drivers/Icm406xx/Icm406xxTransport.h"
 
+#include "SDCard.h"
+#include "Router.h"
+
 #define WRITE_FLAG (0)
 #define READ_FLAG (1 << 7)
 
@@ -29,16 +32,7 @@ IMU::IMU(int cs, arduino::MbedSPI *spi) {
   this->spi_interface.cs = cs;
   this->spi_interface.spi = spi;
 
-  memset(this->gyro_bias, 0, sizeof(gyro_bias));
-
-  // TODO load these from a file
-  this->accel_correction_bias[0] = 0.001285802273694;
-  this->accel_correction_bias[1] = 1.963703053573527e-04;
-  this->accel_correction_bias[2] = 0.024535158578756;
-
-  this->accel_correction_gain[0] = 0.998385741762466;
-  this->accel_correction_gain[1] = 0.999260555553662;
-  this->accel_correction_gain[2] = 0.999260555553662;
+  this->clear_calib();
 
   this->inv_icm = malloc(sizeof(inv_icm406xx));
 }
@@ -75,6 +69,51 @@ int IMU::begin() {
   return status;
 }
 
+// loads three doubles and stores them in dest
+int load_calibration_helper(double* dest)
+{
+  char buf[3][100];
+  String line = Router::read(100);
+  line.trim();
+  Router::println(line);
+  int read = sscanf(line.c_str(), "%99s %99s %99s", buf[0], buf[1], buf[2]);
+  if (read != 3)
+  {
+    return read;
+  }
+
+  for (int i = 0; i < 3; ++i)
+  {
+    dest[i] = atof(buf[i]);
+  }
+
+
+  return read;
+}
+
+
+void IMU::load_custom_calib()
+{
+  IMU::IMU_Calib new_calib;
+
+  const String prompts[] = {"Gyroscope bias", "Accelerometer bias", "Accelerometer gain"};
+  double* destinations[] = {new_calib.gyro_bias, new_calib.accel_correction_bias, new_calib.accel_correction_gain};
+
+  for (int i = 0; i < 3; ++i)
+  {
+    Router::printf("Enter %s (X Y Z) separated by spaces: ", prompts[i].c_str());
+    int read = load_calibration_helper(destinations[i]);
+    if (read != 3)
+    {
+      Router::printf("Only %d inputs read. Not saving calibration. Quitting.\n", read);
+      return;
+    }
+  }
+  
+  memcpy(&this->calib, &new_calib, sizeof(IMU::calib));
+  Router::printf("Calibration written in memory. Remember to save calibration data to SD Card!!!");
+}
+
 int IMU::read_accel_config(uint8_t *value) {
   return inv_icm406xx_read_reg((inv_icm406xx *)this->inv_icm, MPUREG_ACCEL_CONFIG0, 1, value);
 }
@@ -100,7 +139,7 @@ void IMU::calibrate_gyro() {
   for (unsigned int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
     int16_t div = sums[i] / count;
     double frac = (double)(sums[i] % count) / count;
-    this->gyro_bias[i] = (div + frac) / GYRO_RESOLUTION;
+    this->calib.gyro_bias[i] = (div + frac) / GYRO_RESOLUTION;
   }
 
   return;
@@ -161,10 +200,10 @@ void IMU::read_latest(IMU::sensor_data *output) {
 
   // apply bias to both accelerometer and gyroscope data
   for (int i = 0; i < 3; ++i) {
-    output->acc[i] = (output->acc[i] - this->accel_correction_bias[i]) / this->accel_correction_gain[i];
+    output->acc[i] = (output->acc[i] - this->calib.accel_correction_bias[i]) / this->calib.accel_correction_gain[i];
   }
   for (int i = 0; i < 3; ++i) {
-    output->gyro[i] = output->gyro[i] - this->gyro_bias[i];
+    output->gyro[i] = output->gyro[i] - this->calib.gyro_bias[i];
   }
 
   return;
@@ -217,6 +256,24 @@ int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len) {
 
   end_transaction(my_spi);
   return 0;
+}
+
+void IMU::clear_calib()
+{
+  memset(this->calib.gyro_bias, 0, sizeof(this->calib.gyro_bias));
+  for (int i = 0; i < 3; ++i)
+  {
+    this->calib.accel_correction_bias[i] = 0;
+    this->calib.accel_correction_gain[i] = 1;
+  }
+}
+
+void IMU::load_calib(const char *filename) {
+  SDCard::load_bytes(filename, (uint8_t*)&this->calib, sizeof(this->calib));
+}
+
+void IMU::write_calib(const char *filename) {
+  SDCard::write_bytes(filename, (uint8_t*)&this->calib, sizeof(this->calib));
 }
 
 void begin_transaction(IMU::SPI_Interface *my_spi) {

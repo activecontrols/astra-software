@@ -17,8 +17,7 @@ void calibrate_gyro(const char *_) {
   imu.calibrate_gyro();
 
   // output gyro biases
-
-  Router::printf("Gyro Biases (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", imu.gyro_bias[0], imu.gyro_bias[1], imu.gyro_bias[2]);
+  Router::printf("Gyro Biases (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", imu.calib.gyro_bias[0], imu.calib.gyro_bias[1], imu.calib.gyro_bias[2]);
   return;
 }
 
@@ -147,6 +146,48 @@ void help(const char *args) {
   Router::print_all_cmds();
 }
 
+void imu_log_raw(const char* _)
+{
+  IMU::sensor_data last_packet;
+  Router::print("Time (s), Acceleration X (g), Acceleration Y (g), Acceleration Z (g), Angular Velocity X (deg/s), Angular Velocity Y (deg/s), Angular Velocity Z (deg/s)\n");
+
+  unsigned long start_time = micros();
+  // run until the user presses enter
+  while (!Serial.available())
+  {
+    imu.read_latest(&last_packet);
+
+    double t = (micros() - start_time) * 1e-6;
+
+    Router::printf("%lf, %lf, %lf, %lf, %lf, %lf, %lf\n", t, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1], last_packet.gyro[2]);
+    
+    // target about 500 hz?
+    delayMicroseconds(2000);
+  }
+}
+
+void imu_custom_calibration(const char* _)
+{
+  imu.load_custom_calib();
+}
+
+void imu_load_calibration(const char* filename)
+{
+  imu.load_calib(filename);
+}
+
+void imu_save_calib(const char* filename)
+{
+  imu.write_calib(filename);
+}
+
+void imu_output_calib(const char* _)
+{
+  Router::printf("Gyro Bias (deg/s) (X, Y, Z): %lf, %lf, %lf\n", imu.calib.gyro_bias[0], imu.calib.gyro_bias[1], imu.calib.gyro_bias[2]);
+  Router::printf("Accelerometer Bias (g) (X, Y, Z): %lf, %lf, %lf\n", imu.calib.accel_correction_bias[0], imu.calib.accel_correction_bias[1], imu.calib.accel_correction_bias[2]);
+  Router::printf("Accelerometer Gain (X, Y, Z): %lf, %lf, %lf\n", imu.calib.accel_correction_gain[0], imu.calib.accel_correction_gain[1], imu.calib.accel_correction_gain[2]);
+}
+
 void setup() {
   Router::begin();
   Router::println("Controller started.");
@@ -162,6 +203,13 @@ void setup() {
   Router::add({test_integrator, "test_integrator"});
   Router::add({calibrate_gyro, "calibrate_gyro"});
   Router::add({log_accel, "log_accel"});
+  Router::add({imu_custom_calibration, "imu_enter_calibration"});
+  Router::add({imu_load_calibration, "imu_load_calibration"});
+  Router::add({imu_log_raw, "imu_log_raw"});
+  Router::add({imu_output_calib, "imu_output_calib"});
+  Router::add({imu_save_calib, "imu_save_calib"});
+
+  
 
   SPI.begin();
 

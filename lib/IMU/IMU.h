@@ -14,7 +14,7 @@ public:
   ~IMU();
   int begin();
   void read_latest(sensor_data *output);
-  void read_latest_raw(sensor_data* output);
+  void read_latest_raw(sensor_data *output);
 
   int enable_accel();
   int enable_gyro();
@@ -26,14 +26,25 @@ public:
 
   void calibrate_gyro();
 
-  double gyro_bias[3];
-  double accel_correction_bias[3];
-  double accel_correction_gain[3];
+  void load_calib(const char *);
+  void write_calib(const char *);
+
+  struct IMU_Calib {
+    double gyro_bias[3];
+    double accel_correction_bias[3];
+    double accel_correction_gain[3];
+  };
+
+  void clear_calib();
+
+  void load_custom_calib();
 
   struct SPI_Interface {
     int cs;
     arduino::MbedSPI *spi;
   };
+
+  IMU_Calib calib;
 
 private:
   void read_latest_accel_raw(int16_t *);
