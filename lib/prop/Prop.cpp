@@ -1,5 +1,3 @@
-
-#define ISR_SERVO_DEBUG 0
 #include "Portenta_H7_ISR_Servo.h"
 #include <Prop.h>
 #include <Router.h>
