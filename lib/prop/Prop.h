@@ -3,8 +3,9 @@
 namespace Prop {
 void begin();
 
-// void set_throttle(int motor1_us, int motor2_us);
 void set_throttle(float motor1_pct, float motor2_pct);
+void set_throttle_roll(float overall_pct, float differential);
+
 void stop();
 void arm();
 
