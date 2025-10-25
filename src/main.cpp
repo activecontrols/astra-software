@@ -26,6 +26,9 @@ void setup() {
   Router::add({Router::print_all_cmds, "help"});
 
   gimbal_servos::init();
+  gimbal_servos::setServoAngle(-10, 0);
+  gimbal_servos::setServoAngle(0, 0);
+  gimbal_servos::setServoAngle(-6, -9);
 }
 
 void loop() {
