@@ -1,6 +1,7 @@
 #include "GPS.h"
 #include "Mag.h"
 #include "Router.h"
+#include "Prop.h"
 #include <Arduino.h>
 
 void ping(const char *args) {
@@ -18,6 +19,7 @@ void setup() {
   Router::begin();
   Router::println("Controller started.");
 
+  Prop::begin();
   Mag::begin();
   GPS::begin();
 
