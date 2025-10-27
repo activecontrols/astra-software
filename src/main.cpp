@@ -22,6 +22,7 @@ void help(const char *args) {
 }
 
 void setup() {
+  delay(3000);
   Router::begin();
   Router::println("Controller started.");
 
@@ -33,12 +34,7 @@ void setup() {
   Router::add({help, "help"});
 
   SPI.begin();
-
-  delay(3000);
-
-  SDCard::begin();
   int error = IMU::begin();
-
 
   if (error) {
     Router::println("Error while initializing IMU and enabling accel/gyro.");
