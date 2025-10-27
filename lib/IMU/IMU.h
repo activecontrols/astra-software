@@ -2,20 +2,36 @@
 #include "./Invn/Drivers/Icm406xx/Sensor_Event.h"
 #include <SPI.h>
 
+
 #define IMU_COUNT 1
 
-namespace IMU {
+namespace IMU
+{
+
+struct Calib {
+  double gyro_bias[3];
+  double accel_correction_bias[3];
+  double accel_correction_gain[3];
+};
+
+struct Data {
+  double acc[3];  // units are function dependent
+  double gyro[3]; // units are function dependent
+};
+
+struct SPI_Interface {
+  int cs;
+  arduino::MbedSPI *spi;
+};
+
+int begin();
+void calibrate_gyroscope();
 
 class Sensor {
 public:
-  struct Data {
-    double acc[3];  // units are function dependent
-    double gyro[3]; // units are function dependent
-  };
-
   Sensor(int cs, arduino::MbedSPI *spi);
   ~Sensor();
-  int begin();
+  int init();
   void read_latest(Data *output);
   void read_latest_no_calib(Data *output);
 
@@ -32,22 +48,10 @@ public:
   void load_calib(const char *);
   void write_calib(const char *);
 
-  struct IMU_Calib {
-    double gyro_bias[3];
-    double accel_correction_bias[3];
-    double accel_correction_gain[3];
-  };
-
   void clear_calib();
-
   void load_custom_calib();
 
-  struct SPI_Interface {
-    int cs;
-    arduino::MbedSPI *spi;
-  };
-
-  IMU_Calib calib;
+  Calib calib;
 
 private:
   void read_latest_accel_raw(int16_t *);
@@ -58,16 +62,5 @@ private:
   void *inv_icm;
 };
 
-Sensor IMUs[IMU_COUNT];
-
-int begin();
-void calibrate_gyroscope();
-void cmd_calibrate_gyro(const char *);
-void cmd_imu_log(const char *);
-void cmd_load_custom_calib(const char*);
-void cmd_load_calib(const char*);
-void cmd_write_calib(const char*);
-void cmd_output_calib(const char*);
-
-void cmd_log_accel_for_calibration(const char *_);
+extern Sensor IMUs[IMU_COUNT];
 } // namespace IMU

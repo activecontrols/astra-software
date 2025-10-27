@@ -39,6 +39,7 @@ void setup() {
   SDCard::begin();
   int error = IMU::begin();
 
+
   if (error) {
     Router::println("Error while initializing IMU and enabling accel/gyro.");
   } else {

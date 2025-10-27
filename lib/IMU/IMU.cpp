@@ -12,27 +12,29 @@
 #define WRITE_FLAG (0)
 #define READ_FLAG (1 << 7)
 
-#define DEG_TO_RAD (M_PI / 180.0)
+// Unit: Hz
+// !!! DO NOT EXCEED 24MHz !!!
+#define SPI_RATE (1 * 1000000)
 
 #define G_TO_MS2 9.8
 
-// LSB / g (this is for +-8g fsr)
-#define ACCEL_RESOLUTION 4096.0
+// g / LSB (this is for +-8g fsr)
+constexpr double ACCEL_RESOLUTION = 1.0 / 4096.0;
 
-// LSB / (degree/s) (this is for +- 2000dps fsr)
-#define GYRO_RESOLUTION 16.4
-// #define GYRO_RESOLUTION 65.5
+// dps / LSB (this is for +- 2000dps fsr)
+constexpr double GYRO_RESOLUTION = 1.0 / 16.4;
 
-// do not exceed 24 MHz
-#define SPI_SETTINGS SPISettings(1 * 1000000, MSBFIRST, SPI_MODE0)
+#define SPI_SETTINGS SPISettings(SPI_RATE, MSBFIRST, SPI_MODE0)
 
 using namespace IMU;
+
+Sensor IMU::IMUs[IMU_COUNT] = {Sensor(D6, &SPI)};
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
 
-void begin_transaction(Sensor::SPI_Interface *my_spi);
-void end_transaction(Sensor::SPI_Interface *my_spi);
+void begin_transaction(SPI_Interface *my_spi);
+void end_transaction(SPI_Interface *my_spi);
 
 Sensor::Sensor(int cs, arduino::MbedSPI *spi) {
   this->spi_interface.cs = cs;
@@ -47,7 +49,7 @@ Sensor::~Sensor() {
   free(this->inv_icm);
 }
 
-int Sensor::begin() {
+int Sensor::init() {
 
   int status;
 
@@ -75,7 +77,7 @@ int Sensor::begin() {
   return status;
 }
 
-// loads three doubles and stores them in dest
+// loads three doubles from serial and stores them in dest
 int load_calibration_helper(double *dest) {
   char buf[3][100];
   String line = Router::read(100);
@@ -92,7 +94,7 @@ int load_calibration_helper(double *dest) {
 }
 
 void Sensor::load_custom_calib() {
-  Sensor::IMU_Calib new_calib;
+  Calib new_calib;
 
   const String prompts[] = {"Gyroscope bias", "Accelerometer bias", "Accelerometer gain"};
   double *destinations[] = {new_calib.gyro_bias, new_calib.accel_correction_bias, new_calib.accel_correction_gain};
@@ -135,7 +137,7 @@ void Sensor::calibrate_gyro() {
   for (unsigned int i = 0; i < sizeof(sums) / sizeof(double); ++i) {
     int16_t div = sums[i] / count;
     double frac = (double)(sums[i] % count) / count;
-    this->calib.gyro_bias[i] = (div + frac) / GYRO_RESOLUTION;
+    this->calib.gyro_bias[i] = (div + frac) * GYRO_RESOLUTION;
   }
 
   return;
@@ -172,7 +174,7 @@ void Sensor::read_latest_accel_raw(int16_t *out) {
 }
 
 // output in g's and in deg/s
-void Sensor::read_latest_no_calib(Sensor::Data *output) {
+void Sensor::read_latest_no_calib(Data *output) {
   begin_transaction(&this->spi_interface);
 
   this->spi_interface.spi->transfer(READ_FLAG | MPUREG_ACCEL_DATA_X1_UI);
@@ -181,20 +183,20 @@ void Sensor::read_latest_no_calib(Sensor::Data *output) {
   for (int i = 0; i < 3; ++i) {
     uint8_t lower = this->spi_interface.spi->transfer(0x00);
     uint8_t upper = this->spi_interface.spi->transfer(0x00);
-    output->acc[i] = ((int16_t)(upper << 8) | lower) / ACCEL_RESOLUTION;
+    output->acc[i] = ((int16_t)(upper << 8) | lower) * ACCEL_RESOLUTION;
   }
 
   for (int i = 0; i < 3; ++i) {
     uint8_t lower = this->spi_interface.spi->transfer(0x00);
     uint8_t upper = this->spi_interface.spi->transfer(0x00);
-    output->gyro[i] = ((int16_t)(upper << 8) | lower) / GYRO_RESOLUTION;
+    output->gyro[i] = ((int16_t)(upper << 8) | lower) * GYRO_RESOLUTION;
   }
 
   end_transaction(&this->spi_interface);
 }
 
 // output in m/s^2 and rad/s
-void Sensor::read_latest(Sensor::Data *output) {
+void Sensor::read_latest(Data *output) {
 
   this->read_latest_no_calib(output);
 
@@ -227,7 +229,7 @@ int Sensor::disable_gyro() {
 
 // it appears this function is expected to return 1 on error and 0 otherwise (same with write_reg). I don't see any reason here why we should return 1
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len) {
-  Sensor::SPI_Interface *my_spi = (Sensor::SPI_Interface *)context;
+  SPI_Interface *my_spi = (SPI_Interface *)context;
 
   begin_transaction(my_spi);
 
@@ -243,7 +245,7 @@ int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len) {
 }
 
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len) {
-  Sensor::SPI_Interface *my_spi = (Sensor::SPI_Interface *)context;
+  SPI_Interface *my_spi = (SPI_Interface *)context;
 
   begin_transaction(my_spi);
 
@@ -274,44 +276,26 @@ void Sensor::write_calib(const char *filename) {
   SDCard::write_bytes(filename, (uint8_t *)&this->calib, sizeof(this->calib));
 }
 
-void begin_transaction(Sensor::SPI_Interface *my_spi) {
+void begin_transaction(SPI_Interface *my_spi) {
   my_spi->spi->beginTransaction(SPI_SETTINGS);
   delayMicroseconds(1);
   digitalWrite(my_spi->cs, LOW); // CS is active low
 }
 
-void end_transaction(Sensor::SPI_Interface *my_spi) {
+void end_transaction(SPI_Interface *my_spi) {
   digitalWrite(my_spi->cs, HIGH);
   delayMicroseconds(1);
   my_spi->spi->endTransaction();
 }
 
 // everything below is for namespace IMU, not present in Sensor class
-int IMU::begin() {
-  IMUs[0] = Sensor(D6, &SPI);
-
-  int error = 0;
-  error |= IMUs[0].begin();
-  error |= IMUs[0].enable_accel();
-  error |= IMUs[0].enable_gyro();
-
-
-  Router::add({cmd_calibrate_gyro, "imu_calibrate_gyro"});
-  Router::add({cmd_imu_log, "imu_log"});
-  Router::add({cmd_load_custom_calib, "imu_enter_calib"});
-  Router::add({cmd_write_calib, "imu_write_calib"});
-  Router::add({cmd_output_calib, "imu_print_calib"});
-  Router::add({cmd_log_accel_for_calibration, "imu_log_accel_for_calib"});
-
-  return error;
-}
 
 void IMU::calibrate_gyroscope() {
   // TODO asynchronous calibration of multiple IMUs
   IMUs[0].calibrate_gyro();
 }
 
-void IMU::cmd_calibrate_gyro(const char *_) {
+void cmd_calibrate_gyro(const char *_) {
   IMU::calibrate_gyroscope();
 
   for (int i = 0; i < IMU_COUNT; ++i) {
@@ -319,16 +303,16 @@ void IMU::cmd_calibrate_gyro(const char *_) {
   }
 }
 
-void IMU::cmd_log_accel_for_calibration(const char *param) {
-  int imu_num = atoi(param);
-  if (imu_num < 0 || imu_num >= IMU_COUNT) {
+void cmd_log_accel_for_calibration(const char *param) {
+  int imu_index = atoi(param);
+  if (imu_index < 0 || imu_index >= IMU_COUNT) {
     Router::print("Invalid IMU number entered. Assuming index=0.\n");
-    imu_num = 0;
+    imu_index = 0;
   }
 
-  IMU::Sensor *imu = &IMUs[imu_num];
+  Sensor *imu = &IMUs[imu_index];
 
-  IMU::Sensor::Data last_packet;
+  Data last_packet;
   char serial_input[10];
 
   while (1) {
@@ -340,13 +324,13 @@ void IMU::cmd_log_accel_for_calibration(const char *param) {
       break;
     }
 
-    // average acceleration data over 2 seconds
-    unsigned long start_time = millis();
     unsigned int count = 0;
 
     double accumulator[3];
     memset(accumulator, 0, sizeof(accumulator));
 
+    // average acceleration data over 2 seconds
+    unsigned long start_time = millis();
     while (millis() - start_time < 2000) {
       imu->read_latest_no_calib(&last_packet);
 
@@ -363,13 +347,14 @@ void IMU::cmd_log_accel_for_calibration(const char *param) {
   }
 }
 
-void IMU::cmd_imu_log(const char *_) {
-  IMU::Sensor::Data last_packet;
+void cmd_imu_log(const char *_) {
+  Data last_packet;
   Router::print("Time (s)");
 
-  for (int i = 0; i < IMU_COUNT; ++i)
-  {
-    Router::printf(", (%d) Acceleration X (m/s^2), (%d) Acceleration Y (m/s^2), (%d) Acceleration Z (m/s^2), (%d) Angular Velocity X (rad/s), (%d) Angular Velocity Y (rad/s), (%d) Angular Velocity Z (rad/s)", i, i, i, i, i, i);
+  for (int i = 0; i < IMU_COUNT; ++i) {
+    Router::printf(
+        ", (%d) Acceleration X (m/s^2), (%d) Acceleration Y (m/s^2), (%d) Acceleration Z (m/s^2), (%d) Angular Velocity X (rad/s), (%d) Angular Velocity Y (rad/s), (%d) Angular Velocity Z (rad/s)", i,
+        i, i, i, i, i);
   }
 
   Router::print('\n');
@@ -380,12 +365,10 @@ void IMU::cmd_imu_log(const char *_) {
     double t = (micros() - start_time) * 1e-6;
 
     Router::printf("%lf", t);
-    for (int i = 0; i < IMU_COUNT; ++i)
-    {
+    for (int i = 0; i < IMU_COUNT; ++i) {
       IMUs[i].read_latest(&last_packet);
 
-      Router::printf(", %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf", last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1],
-                     last_packet.gyro[2]);
+      Router::printf(", %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf", last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1], last_packet.gyro[2]);
     }
 
     Router::print('\n');
@@ -395,11 +378,9 @@ void IMU::cmd_imu_log(const char *_) {
   }
 }
 
-void IMU::cmd_load_custom_calib(const char* arg)
-{
+void cmd_load_custom_calib(const char *arg) {
   int index = atoi(arg);
-  if (index < 0 || index >= IMU_COUNT)
-  {
+  if (index < 0 || index >= IMU_COUNT) {
     Router::print("Invalid imu index. Assuming index=0.\n");
     index = 0;
   }
@@ -407,15 +388,13 @@ void IMU::cmd_load_custom_calib(const char* arg)
   IMUs[index].load_custom_calib();
 }
 
-void IMU::cmd_load_calib(const char* arg)
-{
+void cmd_load_calib(const char *arg) {
   char filename[35];
   int imu_index;
 
   sscanf(arg, "%d %34s", &imu_index, filename);
 
-  if (imu_index < 0 || imu_index >= IMU_COUNT)
-  {
+  if (imu_index < 0 || imu_index >= IMU_COUNT) {
     Router::print("Invalid IMU index entered.");
     return;
   }
@@ -423,7 +402,7 @@ void IMU::cmd_load_calib(const char* arg)
   IMUs[imu_index].load_calib(filename);
 }
 
-void IMU::cmd_write_calib(const char *arg) {
+void cmd_write_calib(const char *arg) {
   char filename[35];
   int imu_index;
 
@@ -437,18 +416,33 @@ void IMU::cmd_write_calib(const char *arg) {
   IMUs[imu_index].write_calib(filename);
 }
 
-void IMU::cmd_output_calib(const char* arg)
-{
+void cmd_output_calib(const char *arg) {
   int imu_index = atoi(arg);
-  if (imu_index < 0 || imu_index >= IMU_COUNT)
-  {
+  if (imu_index < 0 || imu_index >= IMU_COUNT) {
     imu_index = 0;
   }
 
-  Sensor* imu = &IMUs[imu_index];
+  Sensor *imu = &IMUs[imu_index];
 
   Router::printf("Calibration for IMU %d:\n", imu_index);
   Router::printf("Gyro Bias (deg/s) (X, Y, Z): %lf, %lf, %lf\n", imu->calib.gyro_bias[0], imu->calib.gyro_bias[1], imu->calib.gyro_bias[2]);
   Router::printf("Accelerometer Bias (g) (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_bias[0], imu->calib.accel_correction_bias[1], imu->calib.accel_correction_bias[2]);
   Router::printf("Accelerometer Gain (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_gain[0], imu->calib.accel_correction_gain[1], imu->calib.accel_correction_gain[2]);
+}
+
+int IMU::begin() {
+
+  int error = 0;
+  error |= IMUs[0].init();
+  error |= IMUs[0].enable_accel();
+  error |= IMUs[0].enable_gyro();
+
+  Router::add({cmd_calibrate_gyro, "imu_calibrate_gyro"});
+  Router::add({cmd_imu_log, "imu_log"});
+  Router::add({cmd_load_custom_calib, "imu_enter_calib"});
+  Router::add({cmd_write_calib, "imu_write_calib"});
+  Router::add({cmd_output_calib, "imu_print_calib"});
+  Router::add({cmd_log_accel_for_calibration, "imu_log_accel_for_calib"});
+
+  return error;
 }
