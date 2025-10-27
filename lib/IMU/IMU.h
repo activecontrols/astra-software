@@ -2,19 +2,22 @@
 #include "./Invn/Drivers/Icm406xx/Sensor_Event.h"
 #include <SPI.h>
 
-// TODO: add function to enable/disable gyro, accel
-class IMU {
+#define IMU_COUNT 1
+
+namespace IMU {
+
+class Sensor {
 public:
-  struct sensor_data {
-    double acc[3];
-    double gyro[3];
+  struct Data {
+    double acc[3];  // units are function dependent
+    double gyro[3]; // units are function dependent
   };
 
-  IMU(int cs, arduino::MbedSPI *spi);
-  ~IMU();
+  Sensor(int cs, arduino::MbedSPI *spi);
+  ~Sensor();
   int begin();
-  void read_latest(sensor_data *output);
-  void read_latest_raw(sensor_data *output);
+  void read_latest(Data *output);
+  void read_latest_no_calib(Data *output);
 
   int enable_accel();
   int enable_gyro();
@@ -54,3 +57,17 @@ private:
 
   void *inv_icm;
 };
+
+Sensor IMUs[IMU_COUNT];
+
+int begin();
+void calibrate_gyroscope();
+void cmd_calibrate_gyro(const char *);
+void cmd_imu_log(const char *);
+void cmd_load_custom_calib(const char*);
+void cmd_load_calib(const char*);
+void cmd_write_calib(const char*);
+void cmd_output_calib(const char*);
+
+void cmd_log_accel_for_calibration(const char *_);
+} // namespace IMU

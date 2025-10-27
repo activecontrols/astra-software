@@ -719,7 +719,7 @@ static int inv_icm406xx_init_hardware_from_ui(struct inv_icm406xx *s)
 	// Setup MEMs properties.
 	status |= inv_icm406xx_wr_gyro_config0_fs_sel(s, ICM406XX_GYRO_CONFIG0_FS_SEL_2000dps);
 	//status |= inv_icm406xx_wr_gyro_config0_fs_sel(s, ICM406XX_GYRO_CONFIG0_FS_SEL_500dps);
-	status |= inv_icm406xx_wr_accel_config0_fs_sel(s, ICM406XX_ACCEL_CONFIG0_FS_SEL_4g);
+	status |= inv_icm406xx_wr_accel_config0_fs_sel(s, ICM406XX_ACCEL_CONFIG0_FS_SEL_8g);
 
 	/* make sure FIFO is disabled */
 	status |= inv_icm406xx_wr_fifo_config_mode(s, ICM406XX_FIFO_CONFIG_MODE_BYPASS);
