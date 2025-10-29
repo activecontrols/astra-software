@@ -26,21 +26,15 @@ void setup() {
   Router::begin();
   Router::println("Controller started.");
 
+  SPI.begin();
+
   Prop::begin();
   Mag::begin();
   GPS::begin();
+  IMU::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
-
-  SPI.begin();
-  int error = IMU::begin();
-
-  if (error) {
-    Router::println("Error while initializing IMU and enabling accel/gyro.");
-  } else {
-    Router::println("IMU Initialized. Accel and gyro enabled.");
-  }
 }
 
 void loop() {
