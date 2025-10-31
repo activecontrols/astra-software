@@ -2,11 +2,9 @@
 #include "./Invn/Drivers/Icm406xx/Sensor_Event.h"
 #include <SPI.h>
 
-
 #define IMU_COUNT 1
 
-namespace IMU
-{
+namespace IMU {
 
 struct Calib {
   double gyro_bias[3];

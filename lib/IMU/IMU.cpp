@@ -5,6 +5,7 @@
 
 #include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
 #include "./Invn/Drivers/Icm406xx/Icm406xxTransport.h"
+#include "./Invn/EmbUtils/ErrorHelper.h"
 
 #include "Router.h"
 #include "SDCard.h"
@@ -69,11 +70,19 @@ int Sensor::init() {
   status = inv_icm406xx_init((inv_icm406xx *)this->inv_icm, &serif, nullptr);
 
   if (status)
+  {
+    const char* error_message = inv_error_str(status);
+    Router::printf("Error occurred while initializing IMU: %s\n", error_message);
     return status;
+  }
 
   // tell IMU to report data in little endian !!!DO NOT REMOVE THIS LINE!!!
   status = inv_icm406xx_wr_intf_config0_data_endian((inv_icm406xx *)this->inv_icm, ICM406XX_INTF_CONFIG0_DATA_LITTLE_ENDIAN);
 
+  if (status) {
+    const char *error_message = inv_error_str(status);
+    Router::printf("Error occurred while enabling little endian on IMU: %s\n", error_message);
+  }
   return status;
 }
 

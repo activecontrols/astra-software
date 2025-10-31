@@ -4,11 +4,6 @@
 #include "Prop.h"
 #include "Router.h"
 #include <Arduino.h>
-#include <Mag.h>
-#include <SPI.h>
-#include <cmath>
-
-#include "SDCard.h"
 
 void ping(const char *args) {
   Router::println("pong");
@@ -26,12 +21,10 @@ void setup() {
   Router::begin();
   Router::println("Controller started.");
 
-  SPI.begin();
-
   Prop::begin();
   Mag::begin();
   GPS::begin();
-  IMU::begin();
+  // IMU::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
