@@ -24,7 +24,7 @@ void setup() {
   Prop::begin();
   Mag::begin();
   GPS::begin();
-  // IMU::begin();
+  IMU::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({help, "help"});
