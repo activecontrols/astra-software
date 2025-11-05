@@ -5,6 +5,7 @@
 #include "SDCard.h"
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
+#include "controller.h"
 #include "elapsedMillis.h"
 
 #define LOG_INTERVAL_US 5000
@@ -49,9 +50,10 @@ void follow_trajectory() {
       float y_pos = lerp(lpt[i].y, lpt[i + 1].y, lpt[i].time, lpt[i + 1].time, seconds);
       float z_pos = lerp(lpt[i].z, lpt[i + 1].z, lpt[i].time, lpt[i + 1].time, seconds);
 
-      // TODO: Code to send lerped positions to Driver (ignore this for now until Driver is added)
-      // Driver::loxODrive.setPos(lox_pos);
-      // Driver::ipaODrive.setPos(ipa_pos);
+      Controller_Input ci;
+      // TODO - fill this with sensor readings
+      Controller_Output co = Controller::get_controller_output(ci);
+      // TODO - call prop and gimbal servos
 
       if (timer - lastlog > LOG_INTERVAL_US) {
         lastlog += LOG_INTERVAL_US;
