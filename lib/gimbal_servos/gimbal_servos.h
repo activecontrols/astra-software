@@ -1,10 +1,8 @@
-#ifndef gimbal_servos_h
-#define gimbal_servos_h
+#pragma once
 
-namespace gimbal_servos{
-    void centerServos();
-    void setServoAngle(float phi, float theta);
-    void init();
+namespace GimbalServos {
+void centerGimbal();
+void setGimbalAngle(float yaw, float pitch);
+void init();
 
-}
-#endif
+} // namespace GimbalServos

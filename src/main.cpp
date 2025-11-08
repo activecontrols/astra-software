@@ -21,6 +21,7 @@ void setup() {
   Mag::begin();
   GPS::begin();
   IMU::begin();
+  GimbalServos::init();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});

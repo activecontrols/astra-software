@@ -1,21 +1,18 @@
-#include <Arduino.h>
-#include <gimbal_servos.h>
-#include "Portenta_H7_ISR_Servo.h"
-#include <Router.h>
+#include "gimbal_servos.h"
+#include "Router.h"
+#include "mbed.h"
+#include "portenta_pins.h"
+
+namespace GimbalServos {
 
 // Min and Max pulse for servo (changes depending on the servo)
-#define MIN_MICROS 800
-#define MAX_MICROS 2450
+#define MIN_SERVO_MICROS 800
+#define MAX_SERVO_MICROS 2450
 
-#define SERVO_PIN_1 D6
-#define SERVO_PIN_2 D7
+mbed::PwmOut yaw_servo(digitalPinToPinName(YAW_SERVO_PIN));
+mbed::PwmOut pitch_servo(digitalPinToPinName(PITCH_SERVO_PIN));
 
 #define INTERPOLATION_TABLE_LENGTH 30 // max length of all tables - set to enable passing tables to functions
-
-namespace {
-int servoPitch = -1;
-int servoRoll = -1;
-} // namespace
 
 // maps v from (min_in, max_in) to (min_out, max_out)
 float linear_interpolation(float v, float min_in, float max_in, float min_out, float max_out) {
@@ -36,52 +33,54 @@ float clamped_table_interplolation(float v, float table[2][INTERPOLATION_TABLE_L
 }
 
 // Creates the lookup table for gimble-servo reference values for angle phi
-#define phi_gs_table_len 10
-float phi_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
-    {-12.34, -9.5, -6.67, -3.86, -1.09, 4.29, 6.88, 9.39, 11.81, 14.13},
-    {-25, -20, -15, -10, -5, 5, 10, 15, 20, 25}};
+// clang-format off
+#define yaw_gs_table_len 10
+float yaw_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
+  {-12.34, -9.5, -6.67, -3.86, -1.09, 4.29, 6.88, 9.39, 11.81, 14.13}, 
+  {-25, -20, -15, -10, -5, 5, 10, 15, 20, 25}};
 
 // Creates the lookup table for gimble-servo reference values for angle theta
-#define theta_gs_table_len 8
-float theta_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
-    {-13.28, -10.15, -6.99, -0.58, 2.64, 5.86, 9.06, 12.22},
-    {15, 10, 5, -5, -10, -15, -20, -25}};
+#define pitch_gs_table_len 8
+float pitch_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
+  {-13.28, -10.15, -6.99, -0.58, 2.64, 5.86, 9.06, 12.22}, 
+  {15, 10, 5, -5, -10, -15, -20, -25}};
+// clang-format on
 
-void gimbal_servos::centerServos() {
-  if (servoPitch >= 0)
-    Portenta_H7_ISR_Servos.setPosition(servoPitch, 90);
-
-  if (servoRoll >= 0)
-    Portenta_H7_ISR_Servos.setPosition(servoRoll, 90);
+int calc_servo_pulsewidth(float angle) {
+  return linear_interpolation(angle, -90, 90, MIN_SERVO_MICROS, MAX_SERVO_MICROS);
 }
 
-void gimbal_servos::setServoAngle(float phi, float theta) {
-  int servo_phi = clamped_table_interplolation(phi, phi_gs_table, phi_gs_table_len);
-  int servo_theta = clamped_table_interplolation(theta, theta_gs_table, theta_gs_table_len);
+void setGimbalAngle(float yaw, float pitch) {
+  float servo_yaw_angle = clamped_table_interplolation(yaw, yaw_gs_table, yaw_gs_table_len);
+  float servo_pitch_angle = clamped_table_interplolation(pitch, pitch_gs_table, pitch_gs_table_len);
 
-  Serial.print("Outputted Phi Angle: ");
-  Serial.println(servo_phi);
-  Serial.print("Outputted Theta Angle: ");
-  Serial.println(servo_theta);
+  Router::printf("Outputted Yaw Angle: %.2f\n", servo_yaw_angle);
+  Router::printf("Outputted Pitch Angle: %.2f\n", servo_pitch_angle);
 
-  Portenta_H7_ISR_Servos.setPosition(servoPitch, servo_phi);
-  Portenta_H7_ISR_Servos.setPosition(servoRoll, servo_theta);
+  yaw_servo.pulsewidth_us(calc_servo_pulsewidth(servo_yaw_angle));
+  pitch_servo.pulsewidth_us(calc_servo_pulsewidth(servo_pitch_angle));
 }
 
-void gimbal_servos::init() {
-  Serial.begin(115200);
-  Serial.println("Starting feature/gimbal_servos");
-  centerServos();
-
-  servoPitch = Portenta_H7_ISR_Servos.setupServo(SERVO_PIN_1, MIN_MICROS, MAX_MICROS);
-  servoRoll = Portenta_H7_ISR_Servos.setupServo(SERVO_PIN_2, MIN_MICROS, MAX_MICROS);
+void centerGimbal() {
+  setGimbalAngle(0, 0);
 }
 
-/*
-void loop()
-{
-    float phi = 0.0;
-    float theta = 0.0;
-    //setServoAngle(phi, theta);
+void setGimbalAngleCmd(const char *args) {
+  float yaw_angle;
+  float pitch_angle;
+  sscanf(args, "%f %f", &yaw_angle, &pitch_angle);
+  setGimbalAngle(yaw_angle, pitch_angle);
 }
-    */
+
+void centerGimbalCmd(const char *) {
+  centerGimbal();
+}
+
+void init() {
+  yaw_servo.period_ms(20);
+  pitch_servo.period_ms(20);
+  centerGimbal();
+  Router::add({setGimbalAngleCmd, "gimbal_set_angle_yp"});
+  Router::add({centerGimbalCmd, "gimbal_center"});
+}
+} // namespace GimbalServos
