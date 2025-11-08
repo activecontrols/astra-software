@@ -1,6 +1,5 @@
 #include <Prop.h>
 #include <Router.h>
-#include <Portenta_H7_ISR_Servo.h>
 
 #include <mbed.h>
 #include <Arduino.h>
@@ -171,8 +170,6 @@ void cmd_contra_test(const char *) {
 // -----------------------------------------------------------------------------
 
 void begin() {
-  Portenta_H7_ISR_Servos.useTimer(TIM1); // todo: check if needed..
-
   esc1.period_ms(20);
   esc2.period_ms(20);
   set_throttle_micros(MIN_PULSE, MIN_PULSE); // this is pretty much arming assuming no commands are run for a couple seconds
