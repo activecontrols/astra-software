@@ -1,6 +1,10 @@
 #include "TrajectoryFollower.h"
 
 #include "Arduino.h"
+#include "GPS.h"
+#include "IMU.h"
+#include "Mag.h"
+#include "Prop.h"
 #include "Router.h"
 #include "SDCard.h"
 #include "TrajectoryLoader.h"
@@ -14,50 +18,57 @@
 namespace TrajectoryFollower {
 
 /**
- * Performs linear interpolation between two values.
- * @param a The starting value.
- * @param b The ending value.
- * @param t0 The starting time.
- * @param t1 The ending time.
- * @param t The current time.
- * @return The interpolated value at the current time.
- */
-float lerp(float a, float b, float t0, float t1, float t) {
-  if (t <= t0)
-    return a;
-  if (t >= t1)
-    return b;
-  if (t0 == t1)
-    return b; // immediately get to b
-  return a + (b - a) * ((t - t0) / (t1 - t0));
-}
-
-/**
  * Follows a trajectory by interpolating between position values.
  */
 void follow_trajectory() {
-  lerp_point_pos *lpt = TrajectoryLoader::lerp_pos_trajectory;
   elapsedMicros timer = elapsedMicros();
   unsigned long lastlog = timer;
   unsigned long lastloop = timer;
 
   long counter = 0;
 
-  for (int i = 0; i < TrajectoryLoader::header.num_points - 1; i++) {
-    while (timer / 1000000.0 < lpt[i + 1].time) {
-      float seconds = timer / 1000000.0;
-      float x_pos = lerp(lpt[i].x, lpt[i + 1].x, lpt[i].time, lpt[i + 1].time, seconds);
-      float y_pos = lerp(lpt[i].y, lpt[i + 1].y, lpt[i].time, lpt[i + 1].time, seconds);
-      float z_pos = lerp(lpt[i].z, lpt[i + 1].z, lpt[i].time, lpt[i + 1].time, seconds);
+  for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
+    while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time) {
+
+      IMU::Data imu_reading;
+      double mx, my, mz;
+      IMU::IMUs[0].read_latest(&imu_reading);
+      Mag::read_xyz(mx, my, mz);
+      Point gps_rel_pos = GPS::get_rel_xyz_pos();
 
       Controller_Input ci;
-      // TODO - fill this with sensor readings
+      ci.accel_x = imu_reading.acc[0];
+      ci.accel_y = imu_reading.acc[1];
+      ci.accel_z = imu_reading.acc[2];
+      ci.gyro_yaw = imu_reading.gyro[0];
+      ci.gyro_pitch = imu_reading.gyro[1];
+      ci.gyro_roll = imu_reading.gyro[2];
+      ci.mag_x = mx;
+      ci.mag_y = my;
+      ci.mag_z = mz;
+      ci.gps_pos_north = gps_rel_pos.north;
+      ci.gps_pos_west = gps_rel_pos.west;
+      ci.gps_pos_up = gps_rel_pos.up;
+      ci.gps_vel_north = 0.0; // TODO - gps vel
+      ci.gps_vel_west = 0.0;
+      ci.gps_vel_up = 0.0;
+
+      ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
+      ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
+      ci.target_pos_up = TrajectoryLoader::trajectory[i].up;
+
+      ci.new_imu_packet = true;
+      ci.new_gps_packet = false; // TODO - set new gps packet
+      ci.GND_val = 0.0;          // TODO - set GND val
+
       Controller_Output co = Controller::get_controller_output(ci);
-      // TODO - call prop and gimbal servos
+
+      Prop::set_throttle_roll(co.thrust_N, co.roll_N); // TODO - need to check/fix set units
+      // GimbalServos // TODO - set gimbal servos
 
       if (timer - lastlog > LOG_INTERVAL_US) {
         lastlog += LOG_INTERVAL_US;
-        TrajectoryLogger::log_trajectory_csv(seconds, i, x_pos, y_pos, z_pos);
+        TrajectoryLogger::log_trajectory_csv(timer / 1000000.0, i, ci, co);
       }
       counter++;
 

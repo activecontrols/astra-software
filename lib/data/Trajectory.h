@@ -1,11 +1,11 @@
 #define CURRENT_TRAJECTORYH_VERSION 1 // UPDATE THIS BIT IF THE STRUCT IS CHANGED - it will invalidate files created in older version
 
 typedef struct {
-  float time; // seconds since start
-  float x;    // X coordinate
-  float y;    // Y coordinate
-  float z;    // z coordinate
-} lerp_point_pos;
+  float time;  // seconds since start
+  float north; // north from origin (m)
+  float west;  // west from origin (m)
+  float up;    // up from origin (m)
+} traj_point_pos;
 
 typedef struct {
   int version = CURRENT_TRAJECTORYH_VERSION;
