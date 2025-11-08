@@ -74,7 +74,37 @@ Vector15 StateAUG(Vector13 XKF, Vector3 G) {
   return X;
 }
 
-Vector12 ref_generator3() {
-  Vector12 ref;
-  return ref; // TODO - ref_generator3()
+Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos) {
+  Vector12 x = full_x.segment<12>(0);
+  Vector3 PosError = TargetPos - x.segment<3>(3);
+  Vector3 PosGain;
+  PosGain << 0.55, 0.55, 0.75;
+  Vector3 TargetVel = PosGain.cwiseProduct(PosError);
+
+  float MaxAscentSpeed = 4;   // m/s
+  float MaxDescentSpeed = -4; // m/s
+  float MaxLatSpeed = 1;      // m/s
+
+  Vector3 MaxVel;
+  MaxVel << MaxLatSpeed, MaxLatSpeed, MaxAscentSpeed;
+  Vector3 MinVel;
+  MinVel << -MaxLatSpeed, -MaxLatSpeed, MaxDescentSpeed;
+
+  TargetVel = TargetVel.cwiseMin(MaxVel).cwiseMax(MinVel);
+
+  Vector12 TargetVec;
+  TargetVec << Vector3::Zero(), TargetPos, TargetVel, Vector3::Zero();
+  Vector12 ref = x - TargetVec;
+  return ref;
+}
+
+Vector4 output_clamp(Vector4 U) {
+  float thrust_max = 1.5 * 9.8; // N
+  Vector4 maxU;
+  maxU << M_PI / 24, M_PI / 24, thrust_max, thrust_max * 10;
+  Vector4 minU;
+  minU << -M_PI / 24, -M_PI / 24, thrust_max * 0.4, -thrust_max * 10;
+
+  U = U.cwiseMin(maxU).cwiseMax(minU);
+  return U;
 }

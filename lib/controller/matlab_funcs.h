@@ -32,4 +32,5 @@ Matrix12_12 matrixExpPade6(Matrix12_12 A);
 Vector13 EstimateStateFCN(Vector13 x_est, t_constantsASTRA constantsASTRA, Vector15 z, float dT, float GND, Matrix12_12 &P, bool new_imu_packet, bool new_gps_packet);
 Vector3 EMA_Gyros(Vector15 Y, Vector3 &lastEMA);
 Vector15 StateAUG(Vector13 XKF, Vector3 G);
-Vector12 ref_generator3();
+Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos);
+Vector4 output_clamp(Vector4 U);
