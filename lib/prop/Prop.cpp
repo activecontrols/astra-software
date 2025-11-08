@@ -110,18 +110,18 @@ void cmd_set(const char *args) {
   Router::mprintln("Throttle set to: ", vals[0], "% ", " differential ", vals[1], "%");
 }
 
-void cmd_stop(const char *) {
+void cmd_stop() {
   stop();
   Router::println("Stopped.");
 }
 
-void cmd_arm(const char *) {
+void cmd_arm() {
   Router::println("Arming...");
   arm();
   Router::println("Armed.");
 }
 
-void cmd_status(const char *) {
+void cmd_status() {
   Router::mprintln("Manually armed: ", armed ? "Yes" : "No");
   float p1 = (current_throttle_1 - MIN_PULSE) * 100.0 / (MAX_PULSE - MIN_PULSE);
   float p2 = (current_throttle_2 - MIN_PULSE) * 100.0 / (MAX_PULSE - MIN_PULSE);
@@ -155,7 +155,7 @@ void cmd_ramp_test(const char *args) {
   Router::println("Ramp test complete.");
 }
 
-void cmd_contra_test(const char *) {
+void cmd_contra_test() {
   Router::println("Testing contra...");
   float base = 30.0;
   float maxdiff = 20.0;

@@ -31,7 +31,7 @@ File SDCard::open(const char *filename, char mode) {
   return f;
 }
 
-void SDCard::ls(const char *) {
+void SDCard::ls() {
   String result = "";
   File root = SD.open("/");
   while (true) {

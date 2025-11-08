@@ -88,6 +88,12 @@ void add(func f) {
   funcs.push_back(f);
 }
 
+void add(func_no_args fna) {
+  func wrapped{[f = fna.f](const char *) { f(); }, // ignore the argument
+               fna.name};
+  funcs.push_back(wrapped);
+}
+
 [[noreturn]] void run() { // attribute here enables dead-code warning & compiler optimization
 
   while (true) {

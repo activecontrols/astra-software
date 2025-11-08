@@ -11,11 +11,6 @@ void ping(const char *args) {
   Router::println(args == nullptr ? "null" : args);
 }
 
-void help(const char *args) {
-  // ignore args
-  Router::print_all_cmds();
-}
-
 void setup() {
   delay(3000);
   Router::begin();
@@ -27,7 +22,7 @@ void setup() {
   IMU::begin();
 
   Router::add({ping, "ping"}); // example registration
-  Router::add({help, "help"});
+  Router::add({Router::print_all_cmds, "help"});
 }
 
 void loop() {

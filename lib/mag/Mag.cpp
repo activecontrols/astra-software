@@ -134,7 +134,7 @@ void collect_samples() {
 //   Router::println(String(mx, 6) + "," + String(my, 6) + "," + String(mz, 6));
 // }
 
-void mag_heading(const char *) {
+void mag_heading() {
   int time = 60 * 10; // one minute
   while (time-- > 0) {
     double heading = get_heading();
@@ -166,7 +166,7 @@ void write_samples(const char *filename) {
   Router::println("Use final.m in mag_calib/ to compute calibration parameters");
 }
 
-void print_calibration(const char *) {
+void print_calibration() {
   Router::println("Current calibration:");
   Router::println("Hard iron offsets:");
 
@@ -178,14 +178,14 @@ void print_calibration(const char *) {
   }
 }
 
-void hard_reset(const char *) {
+void hard_reset() {
   mag.performResetOperation();
   delay(100);
   Router::println("Magnetometer hard reset performed.");
 }
 
-void do_instant_calib(const char *) {
-  hard_reset(nullptr);
+void do_instant_calib() {
+  hard_reset();
   mag.performSetOperation();
   int sX, sY, sZ;
   get_centered_reading(sX, sY, sZ);
@@ -213,11 +213,11 @@ void do_instant_calib(const char *) {
   }
   calib = cnew; // set new calibration
   Router::println("Instant calibration done.");
-  print_calibration(nullptr);
+  print_calibration();
 }
 
-void do_simple_calib(const char *) {
-  hard_reset(nullptr);
+void do_simple_calib() {
+  hard_reset();
 
   Router::println("Starting simple calibration.");
 
@@ -254,10 +254,10 @@ void do_simple_calib(const char *) {
 
   calib = cnew; // set new calibration
   Router::println("Simple calibration done.");
-  print_calibration(nullptr);
+  print_calibration();
 }
 
-void custom_calib(const char *) {
+void custom_calib() {
   auto parse_doubles = [](const String &str, double *vals, int count) { // sscanf doesnt handle doubles. 5 minutes of debugging resulted in that conclusion.
     size_t pos = 0;
     for (int i = 0; i < count; i++) {
@@ -308,7 +308,7 @@ void custom_calib(const char *) {
     Router::println("Set soft iron correction matrix to input values.");
   }
 
-  print_calibration(nullptr);
+  print_calibration();
 }
 
 void show_centered_reading(const char *) {
@@ -334,13 +334,13 @@ void load_calib(const char *filename) {
   }
   Router::mprintln("Loading calibration from ", filename);
   SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
-  print_calibration(nullptr);
+  print_calibration();
 }
 
-void no_calib(const char *) {
+void no_calib() {
   calib = identity_calib;
   Router::println("Calibration set to identity (no calibration).");
-  print_calibration(nullptr);
+  print_calibration();
 }
 // -----------------------------------------------------------------------------
 
@@ -369,7 +369,7 @@ void begin() {
   Router::add({save_calib, "mag_save_calib"});
   Router::add({load_calib, "mag_load_calib"});
 
-  do_instant_calib(nullptr);
+  do_instant_calib();
 
   Router::println("Magnetometer initialized.");
 }

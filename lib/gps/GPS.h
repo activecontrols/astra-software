@@ -45,8 +45,7 @@ void set_current_position_as_origin();
 Point get_rel_xyz_pos();
 
 // router functions
-void print_gps_pos(const char *);
-void print_rel_pos(const char *);
-void set_current_position_as_origin_cmd(const char *);
+void print_gps_pos();
+void print_rel_pos();
 
 } // namespace GPS

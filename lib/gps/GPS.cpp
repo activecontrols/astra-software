@@ -20,7 +20,7 @@ void begin() {
 
   Router::add({print_gps_pos, "gps_print_pos"});
   Router::add({print_rel_pos, "gps_print_rel_pos"});
-  Router::add({set_current_position_as_origin_cmd, "gps_set_origin"});
+  Router::add({set_current_position_as_origin, "gps_set_origin"});
 }
 
 void pump_events() {
@@ -65,7 +65,7 @@ Point get_rel_xyz_pos() {
   return Point{north : north_m, west : west_m, up : up_m};
 }
 
-void print_gps_pos(const char *) {
+void print_gps_pos() {
   if (!has_valid_recent_pos()) {
     Router::printf("GPS does not have valid position.");
   } else {
@@ -74,17 +74,13 @@ void print_gps_pos(const char *) {
   }
 }
 
-void print_rel_pos(const char *) {
+void print_rel_pos() {
   if (!has_valid_recent_pos()) {
     Router::printf("GPS does not have valid position.");
   } else {
     Point p = get_rel_xyz_pos();
     Router::printf("GPS relative position north:%.3f west:%.3f up:%.3f\n", p.north, p.west, p.up);
   }
-}
-
-void set_current_position_as_origin_cmd(const char *) {
-  set_current_position_as_origin();
 }
 
 } // namespace GPS

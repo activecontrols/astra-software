@@ -12,6 +12,7 @@ using namespace std;
 #define COMMS_RATE 115200
 
 struct func;
+struct func_no_args;
 
 namespace Router {
 
@@ -86,6 +87,7 @@ String read(unsigned int len);
 
 // add registers a new function to the router
 void add(func f);
+void add(func_no_args fna);
 
 // run starts monitoring the serial port for messages and calls the
 // appropriate function when a message is received. this function never
@@ -99,5 +101,10 @@ void print_all_cmds();
 
 struct func {
   std::function<void(const char *)> f;
+  const char *name;
+};
+
+struct func_no_args {
+  std::function<void()> f;
   const char *name;
 };
