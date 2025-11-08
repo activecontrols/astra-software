@@ -1,6 +1,6 @@
 #include <ArduinoEigenDense.h>
 
-// Note - using matlab funcs based off of ASTRA simulation: 468f351a577af897fefe2a40b1d33fc6fb2f606d
+// Note - using matlab funcs based off of ASTRA simulation: 721790f222f0aa126112198a3952f0630c46a0e7
 // TODO - update matlab func commit
 
 using Vector3 = Eigen::Matrix<float, 3, 1>;
