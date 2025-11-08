@@ -2,12 +2,10 @@
 #define CONTROLLER_H
 
 struct Controller_Output {
-  // TODO - what are these?
-
   float thrust_N;
   float roll_N;
-  float gimbal_pitch_rad;
-  float gimbal_yaw_rad;
+  float gimbal_pitch_deg;
+  float gimbal_yaw_deg;
 };
 
 struct Controller_Input {
@@ -36,8 +34,6 @@ struct Controller_Input {
   float target_pos_north;
   float target_pos_west;
   float target_pos_up;
-
-  // TODO - what are these?
 };
 
 namespace Controller {

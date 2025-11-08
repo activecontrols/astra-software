@@ -62,7 +62,10 @@ Controller_Output get_controller_output(Controller_Input ci) {
   raw_co = output_clamp(raw_co);
 
   Controller_Output co;
-  // TODO - fill this
+  co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;
+  co.gimbal_pitch_deg = raw_co(1) * 180 / M_PI;
+  co.thrust_N = raw_co(2);
+  co.roll_N = raw_co(3);
   return co;
 }
 } // namespace Controller

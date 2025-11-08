@@ -9,13 +9,13 @@ namespace TrajectoryLogger {
 File positionLogFile;
 CString<400> telemCSV;
 
-#define LOG_HEADER ("time,phase,x,y,z")
+#define LOG_HEADER ("time,phase,north,west,up")
 
 // logs time, phase, and position data in .csv format
 int print_counter = 0;
-void log_trajectory_csv(float time, int phase, float x, float y, float z) {
+void log_trajectory_csv(float time, int phase, Controller_Input ci, Controller_Output co) {
   telemCSV.clear();
-  telemCSV << time << "," << phase << "," << x << "," << y << "," << z;
+  telemCSV << time << "," << phase << "," << ci.target_pos_north << "," << ci.target_pos_west << "," << ci.target_pos_up;
 
   positionLogFile.println(telemCSV.str);
   positionLogFile.flush();
@@ -23,7 +23,7 @@ void log_trajectory_csv(float time, int phase, float x, float y, float z) {
   print_counter++;
   if (print_counter % 10 == 0) {
     telemCSV.clear();
-    telemCSV << time << "  " << x << "  " << y << "  " << z;
+    telemCSV << time << "  " << ci.target_pos_north << "  " << ci.target_pos_west << "  " << ci.target_pos_up;
     telemCSV.print();
   }
 }

@@ -9,7 +9,7 @@
 namespace TrajectoryLoader {
 
 trajectory_header header;
-lerp_point_pos *lerp_pos_trajectory;
+traj_point_pos *trajectory;
 bool loaded_trajectory;
 
 void begin() {
@@ -21,8 +21,8 @@ void begin() {
 void load_trajectory_generic(bool serial, File *f) {
 
   if (loaded_trajectory) {
-    free(lerp_pos_trajectory);
-    lerp_pos_trajectory = NULL;
+    free(trajectory);
+    trajectory = NULL;
   }
 
   auto receive = [=](char *buf, unsigned int len) {
@@ -40,21 +40,21 @@ void load_trajectory_generic(bool serial, File *f) {
   }
 
   // load lerp points in from serial
-  lerp_pos_trajectory = (lerp_point_pos *)(calloc(header.num_points, sizeof(lerp_point_pos)));
-  receive((char *)lerp_pos_trajectory, sizeof(lerp_point_pos) * header.num_points);
+  trajectory = (traj_point_pos *)(calloc(header.num_points, sizeof(traj_point_pos)));
+  receive((char *)trajectory, sizeof(traj_point_pos) * header.num_points);
   Router::print("Loaded trajectory with: ");
   Router::print(header.num_points);
   Router::println(" points");
 
   for (int i = 0; i < header.num_points; i++) {
     Router::print("Point: ");
-    Router::print(lerp_pos_trajectory[i].time);
-    Router::print(" sec | X ");
-    Router::print(lerp_pos_trajectory[i].x);
-    Router::print(" meters | Y ");
-    Router::print(lerp_pos_trajectory[i].y);
-    Router::print(" meters | Z ");
-    Router::print(lerp_pos_trajectory[i].z);
+    Router::print(trajectory[i].time);
+    Router::print(" sec | NORTH ");
+    Router::print(trajectory[i].north);
+    Router::print(" meters | WEST ");
+    Router::print(trajectory[i].west);
+    Router::print(" meters | UP ");
+    Router::print(trajectory[i].up);
     Router::println(" meters.");
   }
 
@@ -104,7 +104,7 @@ void write_trajectory_sd(const char *) {
     return;
   }
   f.write((char *)&header, sizeof(header));
-  f.write((char *)lerp_pos_trajectory, sizeof(lerp_point_pos) * header.num_points);
+  f.write((char *)trajectory, sizeof(traj_point_pos) * header.num_points);
 
   f.close();
   Router::println("Wrote trajectory!");

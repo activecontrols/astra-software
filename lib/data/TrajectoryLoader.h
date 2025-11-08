@@ -15,7 +15,7 @@
 namespace TrajectoryLoader {
 
 extern trajectory_header header;
-extern lerp_point_pos *lerp_pos_trajectory;
+extern traj_point_pos *trajectory;
 extern bool loaded_trajectory;
 
 void begin(); // registers loader functions with the router
