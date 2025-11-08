@@ -4,10 +4,10 @@
 struct Controller_Output {
   // TODO - what are these?
 
-  float thrust;
-  float roll;
-  float gimbal_pitch;
-  float gimbal_yaw;
+  float thrust_N;
+  float roll_N;
+  float gimbal_pitch_rad;
+  float gimbal_yaw_rad;
 };
 
 struct Controller_Input {
@@ -17,21 +17,25 @@ struct Controller_Input {
   bool new_gps_packet;
 
   // Sensor Inputs
-  float accel_north;
-  float accel_west;
-  float accel_up;
-  float gyro_pitch;
+  float accel_x;
+  float accel_y;
+  float accel_z;
   float gyro_yaw;
+  float gyro_pitch;
   float gyro_roll;
-  float mag_north;
-  float mag_west;
-  float mag_up;
+  float mag_x;
+  float mag_y;
+  float mag_z;
   float gps_pos_north;
   float gps_pos_west;
   float gps_pos_up;
   float gps_vel_north;
   float gps_vel_west;
   float gps_vel_up;
+
+  float target_pos_north;
+  float target_pos_west;
+  float target_pos_up;
 
   // TODO - what are these?
 };

@@ -45,9 +45,9 @@ Controller_Output get_controller_output(Controller_Input ci) {
 
   Vector15 z;
   // clang-format off
-  z << ci.accel_north, ci.accel_west, ci.accel_up, 
-       ci.gyro_pitch, ci.gyro_yaw, ci.gyro_roll,
-       ci.mag_north, ci.mag_west, ci.mag_up,
+  z << ci.accel_x, ci.accel_y, ci.accel_z, 
+       ci.gyro_yaw, ci.gyro_pitch, ci.gyro_roll,
+       ci.mag_x, ci.mag_y, ci.mag_z,
        ci.gps_pos_north, ci.gps_pos_west, ci.gps_pos_up, 
        ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
   // clang-format on
@@ -55,9 +55,11 @@ Controller_Output get_controller_output(Controller_Input ci) {
   x_est = EstimateStateFCN(x_est, constantsASTRA, z, dT, ci.GND_val, P, ci.new_imu_packet, ci.new_gps_packet);
   Vector3 EMA_G = EMA_Gyros(z, lastEMA);
   Vector15 X = StateAUG(x_est, EMA_G);
-  Vector12 error = ref_generator3();
+  Vector3 TargetPos;
+  TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
+  Vector12 error = ref_generator3(X, TargetPos);
   Vector4 raw_co = -K * error;
-  // TODO - clamp
+  raw_co = output_clamp(raw_co);
 
   Controller_Output co;
   // TODO - fill this
