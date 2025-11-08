@@ -1,17 +1,20 @@
-#include "Portenta_H7_ISR_Servo.h"
 #include <Prop.h>
 #include <Router.h>
+#include <Portenta_H7_ISR_Servo.h>
+
+#include <mbed.h>
+#include <Arduino.h>
 
 #define PROP1_PIN D4
-#define PROP2_PIN D3
+#define PROP2_PIN D2
 #define MIN_PULSE 1000
 #define MAX_PULSE 2000
 #define ARM_TIME 5000
 
 namespace Prop {
 
-int prop1_si; // servo index
-int prop2_si;
+mbed::PwmOut esc1(digitalPinToPinName(PROP1_PIN));
+mbed::PwmOut esc2(digitalPinToPinName(PROP2_PIN));
 
 int current_throttle_1 = MIN_PULSE;
 int current_throttle_2 = MIN_PULSE;
@@ -38,8 +41,8 @@ void set_throttle_micros(int prop1_us, int prop2_us) {
   current_throttle_1 = prop1_us;
   current_throttle_2 = prop2_us;
 
-  Portenta_H7_ISR_Servos.setPulseWidth(prop1_si, prop1_us);
-  Portenta_H7_ISR_Servos.setPulseWidth(prop2_si, prop2_us);
+  esc1.pulsewidth_us(prop1_us);
+  esc2.pulsewidth_us(prop2_us);
 }
 
 void set_throttle_roll(float overall_pct, float differential) {
@@ -61,8 +64,8 @@ void stop() {
 }
 
 void arm() {
-  Portenta_H7_ISR_Servos.setPulseWidth(prop1_si, MIN_PULSE);
-  Portenta_H7_ISR_Servos.setPulseWidth(prop2_si, MIN_PULSE);
+  esc1.pulsewidth_us(MIN_PULSE);
+  esc2.pulsewidth_us(MIN_PULSE);
   delay(ARM_TIME);
   armed = true;
 }
@@ -170,8 +173,8 @@ void cmd_contra_test(const char *) {
 void begin() {
   Portenta_H7_ISR_Servos.useTimer(TIM1); // todo: check if needed..
 
-  prop1_si = Portenta_H7_ISR_Servos.setupServo(PROP1_PIN, MIN_PULSE, MAX_PULSE);
-  prop2_si = Portenta_H7_ISR_Servos.setupServo(PROP2_PIN, MIN_PULSE, MAX_PULSE);
+  esc1.period_ms(20);
+  esc2.period_ms(20);
   set_throttle_micros(MIN_PULSE, MIN_PULSE); // this is pretty much arming assuming no commands are run for a couple seconds
 
   Router::add({cmd_arm, "prop_arm"});
