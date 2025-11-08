@@ -308,7 +308,7 @@ void cmd_calibrate_gyro(const char *_) {
   IMU::calibrate_gyroscope();
 
   for (int i = 0; i < IMU_COUNT; ++i) {
-    Router::printf(" [%d] Gyro Biases (X, Y, Z) (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", IMUs[i].calib.gyro_bias[0], IMUs[i].calib.gyro_bias[1], IMUs[i].calib.gyro_bias[2]);
+    Router::printf(" [%d] Gyro Biases (X, Y, Z) (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", i, IMUs[i].calib.gyro_bias[0], IMUs[i].calib.gyro_bias[1], IMUs[i].calib.gyro_bias[2]);
   }
 }
 
