@@ -72,15 +72,11 @@ void setGimbalAngleCmd(const char *args) {
   setGimbalAngle(yaw_angle, pitch_angle);
 }
 
-void centerGimbalCmd(const char *) {
-  centerGimbal();
-}
-
 void init() {
   yaw_servo.period_ms(20);
   pitch_servo.period_ms(20);
   centerGimbal();
   Router::add({setGimbalAngleCmd, "gimbal_set_angle_yp"});
-  Router::add({centerGimbalCmd, "gimbal_center"});
+  Router::add({centerGimbal, "gimbal_center"});
 }
 } // namespace GimbalServos
