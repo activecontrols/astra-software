@@ -128,7 +128,7 @@ void collect_samples() {
 }
 
 // Router commands -------------------------------------------------------------
-// void mag_rawprint(const char *) {
+// void mag_rawprint() {
 //   double mx, my, mz;
 //   read_xyz(mx, my, mz);
 //   Router::println(String(mx, 6) + "," + String(my, 6) + "," + String(mz, 6));
@@ -311,7 +311,7 @@ void custom_calib() {
   print_calibration();
 }
 
-void show_centered_reading(const char *) {
+void show_centered_reading() {
   for (int i = 0; i < 100; i++) {
     int mx, my, mz;
     get_centered_reading(mx, my, mz);

@@ -69,9 +69,8 @@ int Sensor::init() {
 
   status = inv_icm406xx_init((inv_icm406xx *)this->inv_icm, &serif, nullptr);
 
-  if (status)
-  {
-    const char* error_message = inv_error_str(status);
+  if (status) {
+    const char *error_message = inv_error_str(status);
     Router::printf("Error occurred while initializing IMU: %s\n", error_message);
     return status;
   }
@@ -304,7 +303,7 @@ void IMU::calibrate_gyroscope() {
   IMUs[0].calibrate_gyro();
 }
 
-void cmd_calibrate_gyro(const char *_) {
+void cmd_calibrate_gyro() {
   IMU::calibrate_gyroscope();
 
   for (int i = 0; i < IMU_COUNT; ++i) {
@@ -356,7 +355,7 @@ void cmd_log_accel_for_calibration(const char *param) {
   }
 }
 
-void cmd_imu_log(const char *_) {
+void cmd_imu_log() {
   Data last_packet;
   Router::print("Time (s)");
 
