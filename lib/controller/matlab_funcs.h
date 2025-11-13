@@ -1,6 +1,6 @@
 #include <ArduinoEigenDense.h>
 
-// Note - using matlab funcs based off of ASTRA simulation: 721790f222f0aa126112198a3952f0630c46a0e7
+// Note - using matlab funcs based off of ASTRA simulation: f8cb7fa0f5e8ee347ce072c0007488427cedc874
 // TODO - update matlab func commit
 
 using Vector3 = Eigen::Matrix<float, 3, 1>;
@@ -19,6 +19,7 @@ using Matrix12_12 = Eigen::Matrix<float, 12, 12>;
 
 typedef struct {
   float g;
+  float m;
   Vector3 mag;
   Matrix12_12 Q;
   Matrix6_6 R;
