@@ -24,11 +24,17 @@ void follow_trajectory() {
   elapsedMicros timer = elapsedMicros();
   unsigned long lastlog = timer;
   unsigned long lastloop = timer;
+  bool has_left_ground = false;
 
   long counter = 0;
 
+  GPS::set_current_position_as_origin();
+  Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
+
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time) {
+
+      has_left_ground = has_left_ground | (TrajectoryLoader::trajectory[i].up > 0);
 
       IMU::Data imu_reading;
       double mx, my, mz;
@@ -58,8 +64,19 @@ void follow_trajectory() {
       ci.target_pos_up = TrajectoryLoader::trajectory[i].up;
 
       ci.new_imu_packet = true;
-      ci.new_gps_packet = false; // TODO - set new gps packet
-      ci.GND_val = 0.0;          // TODO - set GND val
+
+      if (gps_rel_pos.north != last_gps_pos.north || gps_rel_pos.west != last_gps_pos.west || gps_rel_pos.up != last_gps_pos.up) {
+        ci.new_gps_packet = true;
+        last_gps_pos = gps_rel_pos;
+      } else {
+        ci.new_gps_packet = false;
+      }
+
+      if (has_left_ground) {
+        ci.GND_val = 0.0;
+      } else {
+        ci.GND_val = 1.0;
+      }
 
       Controller_Output co = Controller::get_controller_output(ci);
 
@@ -77,6 +94,9 @@ void follow_trajectory() {
       lastloop += COMMAND_INTERVAL_US;
     }
   }
+
+  Prop::stop();
+
   Router::print("Finished ");
   Router::print(counter);
   Router::println(" loop iterations.");
