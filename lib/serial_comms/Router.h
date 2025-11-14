@@ -96,6 +96,8 @@ void add(func_no_args fna);
 
 // for help function
 void print_all_cmds();
+// replacement for scanf
+bool parse_doubles(const String &str, double *vals, int count);
 
 }; // namespace Router
 

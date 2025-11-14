@@ -258,26 +258,12 @@ void do_simple_calib() {
 }
 
 void custom_calib() {
-  auto parse_doubles = [](const String &str, double *vals, int count) { // sscanf doesnt handle doubles. 5 minutes of debugging resulted in that conclusion.
-    size_t pos = 0;
-    for (int i = 0; i < count; i++) {
-      int next = str.indexOf(' ', pos);
-      if (next == -1)
-        next = str.length();
-      if (pos >= str.length())
-        return false;
-      vals[i] = str.substring(pos, next).toDouble();
-      pos = next + 1;
-    }
-    return true;
-  };
-
   Router::println("Enter hard iron offsets separated by spaces (x y z): ");
   String line = Router::read(100);
   line.trim();
 
   double vals[3];
-  if (!parse_doubles(line, vals, 3)) {
+  if (!Router::parse_doubles(line, vals, 3)) {
     Router::println("Error parsing input. Expected 3 numbers.");
     return;
   }
@@ -298,7 +284,7 @@ void custom_calib() {
     Router::println("Set soft iron correction matrix to identity.");
   } else {
     double m[9];
-    if (!parse_doubles(matline, m, 9)) {
+    if (!Router::parse_doubles(matline, m, 9)) {
       Router::println("Error parsing input. Expected 9 numbers.");
       return;
     }

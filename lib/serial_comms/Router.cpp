@@ -122,4 +122,19 @@ void print_all_cmds() {
     println(f.name);
   }
 }
+
+bool parse_doubles(const String &str, double *vals, int count) { // sscanf doesnt handle doubles. 5 minutes of debugging resulted in that conclusion.
+  size_t pos = 0;
+  for (int i = 0; i < count; i++) {
+    int next = str.indexOf(' ', pos);
+    if (next == -1)
+      next = str.length();
+    if (pos >= str.length())
+      return false;
+    vals[i] = str.substring(pos, next).toDouble();
+    pos = next + 1;
+  }
+  return true;
+};
+
 } // namespace Router

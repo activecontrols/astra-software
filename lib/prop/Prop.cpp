@@ -1,8 +1,8 @@
 #include <Prop.h>
 #include <Router.h>
 
-#include <mbed.h>
 #include <Arduino.h>
+#include <mbed.h>
 
 #define PROP1_PIN D4
 #define PROP2_PIN D2
@@ -18,20 +18,6 @@ mbed::PwmOut esc2(digitalPinToPinName(PROP2_PIN));
 int current_throttle_1 = MIN_PULSE;
 int current_throttle_2 = MIN_PULSE;
 bool armed = false;
-
-auto parse_doubles = [](const String &str, double *vals, int count) { // sscanf doesnt handle doubles. 5 minutes of debugging resulted in that conclusion.
-  size_t pos = 0;
-  for (int i = 0; i < count; i++) {
-    int next = str.indexOf(' ', pos);
-    if (next == -1)
-      next = str.length();
-    if (pos >= str.length())
-      return false;
-    vals[i] = str.substring(pos, next).toDouble();
-    pos = next + 1;
-  }
-  return true;
-};
 
 void set_throttle_micros(int prop1_us, int prop2_us) {
   prop1_us = constrain(prop1_us, MIN_PULSE, MAX_PULSE);
@@ -86,7 +72,7 @@ bool is_armed() {
 void cmd_set_both(const char *args) {
   double vals[2];
   String argstr = String(args);
-  if (!parse_doubles(argstr, vals, 2)) {
+  if (!Router::parse_doubles(argstr, vals, 2)) {
     Router::println("Usage: prop_set_both <prop1 %> <prop2 %>");
     return;
   }
@@ -98,8 +84,8 @@ void cmd_set_both(const char *args) {
 void cmd_set(const char *args) {
   double vals[2];
   String argstr = String(args);
-  if (!parse_doubles(argstr, vals, 2)) {
-    if (!parse_doubles(argstr, vals, 1)) {
+  if (!Router::parse_doubles(argstr, vals, 2)) {
+    if (!Router::parse_doubles(argstr, vals, 1)) {
       Router::println("Usage: prop_set <throttle %> [<roll %>]");
       return;
     }

@@ -55,8 +55,8 @@ void setGimbalAngle(float yaw, float pitch) {
   float servo_yaw_angle = clamped_table_interplolation(yaw, yaw_gs_table, yaw_gs_table_len);
   float servo_pitch_angle = clamped_table_interplolation(pitch, pitch_gs_table, pitch_gs_table_len);
 
-  Router::printf("Outputted Yaw Angle: %.2f\n", servo_yaw_angle);
-  Router::printf("Outputted Pitch Angle: %.2f\n", servo_pitch_angle);
+  // Router::printf("Outputted Yaw Angle: %.2f\n", servo_yaw_angle);
+  // Router::printf("Outputted Pitch Angle: %.2f\n", servo_pitch_angle);
 
   yaw_servo.pulsewidth_us(calc_servo_pulsewidth(servo_yaw_angle));
   pitch_servo.pulsewidth_us(calc_servo_pulsewidth(servo_pitch_angle));
@@ -67,12 +67,12 @@ void centerGimbal() {
 }
 
 void setGimbalAngleCmd(const char *args) {
-  int yaw_angle;
-  int pitch_angle;
-  sscanf(args, "%d %d", &yaw_angle, &pitch_angle);
-  Router::printf("Scanned Yaw Angle: %d\n", yaw_angle);
-  Router::printf("Scanned Pitch Angle: %d\n", pitch_angle);
-  setGimbalAngle(yaw_angle, pitch_angle);
+  double yaw_pitch_angle[2];
+  if (!Router::parse_doubles(args, yaw_pitch_angle, 2)) {
+    Router::printf("Usage: gimbal_set_angle_yp 0.00 0.00\n");
+    return;
+  }
+  setGimbalAngle(yaw_pitch_angle[0], yaw_pitch_angle[1]);
 }
 
 void init() {
