@@ -11,6 +11,7 @@
 #include "TrajectoryLogger.h"
 #include "controller.h"
 #include "elapsedMillis.h"
+#include "gimbal_servos.h"
 
 #define LOG_INTERVAL_US 5000
 #define COMMAND_INTERVAL_US 1000
@@ -29,6 +30,7 @@ void follow_trajectory() {
   long counter = 0;
 
   GPS::set_current_position_as_origin();
+  GimbalServos::centerGimbal();
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
@@ -81,7 +83,7 @@ void follow_trajectory() {
       Controller_Output co = Controller::get_controller_output(ci);
 
       Prop::set_throttle_roll(co.thrust_N, co.roll_N); // TODO - need to check/fix set units
-      // GimbalServos // TODO - set gimbal servos
+      GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       if (timer - lastlog > LOG_INTERVAL_US) {
         lastlog += LOG_INTERVAL_US;
