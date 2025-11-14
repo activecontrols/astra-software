@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "implot.h"
+#include "implot3d.h"
 #include "math.h"
 #include <string>
 
@@ -89,18 +90,6 @@ void control_panel() {
   }
 
   ImGui::Dummy(ImVec2(0, 100)); // Add vertical spacing
-
-  static char inputBuffer[128] = ""; // buffer for text input
-  ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
-  ImGui::SameLine();
-  if (daq_button("Send", ImVec2(-1, 0), IM_COL32(33, 112, 69, 255))) {
-    // Do something with inputBuffer
-    printf("You entered: %s\n", inputBuffer);
-    inputBuffer[0] = '\0';
-  }
-
-  static char outputBuffer[128] = ">help\nping\npong"; // buffer for text input
-  ImGui::InputTextMultiline("##serial_output", outputBuffer, IM_ARRAYSIZE(outputBuffer));
 }
 
 void plot_panel() {
@@ -119,6 +108,159 @@ void plot_panel() {
   }
 }
 
+void live_sensor_panel() {
+  ImGui::Text("Live Sensor Data");
+
+  if (ImPlot::BeginPlot("IMU Accel", ImVec2(-1, 200))) { // width = fill, height auto
+    // Example: simple sine wave
+    static float xs[1000], ys[1000];
+    for (int j = 0; j < 1000; ++j) {
+      xs[j] = j * 0.01f;
+      ys[j] = sin(xs[j]); // different phase for each plot
+    }
+    ImPlot::PlotLine("x", xs, ys, 1000);
+    ImPlot::PlotLine("y", xs, ys, 1000);
+    ImPlot::PlotLine("z", xs, ys, 1000);
+    ImPlot::EndPlot();
+  }
+
+  if (ImPlot::BeginPlot("IMU Gyro", ImVec2(-1, 200))) { // width = fill, height auto
+    // Example: simple sine wave
+    static float xs[1000], ys[1000];
+    for (int j = 0; j < 1000; ++j) {
+      xs[j] = j * 0.01f;
+      ys[j] = sin(xs[j]); // different phase for each plot
+    }
+    ImPlot::PlotLine("x", xs, ys, 1000);
+    ImPlot::PlotLine("y", xs, ys, 1000);
+    ImPlot::PlotLine("z", xs, ys, 1000);
+    ImPlot::EndPlot();
+  }
+
+  if (ImGui::BeginTable("live_sensor_table", 3, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextRow();
+
+    ImGui::TableSetColumnIndex(0);
+
+    if (ImPlot3D::BeginPlot("MAG Vec")) {
+      float x = 10;
+      float y = 11;
+      float z = 12;
+      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      ImPlot3D::EndPlot();
+    }
+
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImPlot3D::BeginPlot("GPS Pos")) {
+      float x = 10;
+      float y = 11;
+      float z = 12;
+      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      ImPlot3D::EndPlot();
+    }
+
+    ImGui::TableSetColumnIndex(2);
+
+    if (ImPlot3D::BeginPlot("GPS Vel")) {
+      float x = 10;
+      float y = 11;
+      float z = 12;
+      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      ImPlot3D::EndPlot();
+    }
+
+    ImGui::EndTable();
+  }
+}
+
+void serial_control_panel() {
+  ImGui::Text("Serial Control");
+
+  static char inputBuffer[128] = ""; // buffer for text input
+  ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
+  ImGui::SameLine();
+  if (daq_button("Send", ImVec2(-1, 0), IM_COL32(33, 112, 69, 255))) {
+    // Do something with inputBuffer
+    printf("You entered: %s\n", inputBuffer);
+    inputBuffer[0] = '\0';
+  }
+
+  static char outputBuffer[128] = ">help\nping\npong"; // buffer for text input
+  ImGui::InputTextMultiline("##serial_output", outputBuffer, IM_ARRAYSIZE(outputBuffer));
+}
+
+void controller_state_panel() {
+  ImGui::Text("Controller State");
+
+  if (ImGui::BeginTable("control_state_table", 3, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextRow();
+
+    ImGui::TableSetColumnIndex(0);
+
+    if (ImPlot3D::BeginPlot("CS 1")) {
+      float x = 10;
+      float y = 11;
+      float z = 12;
+      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      ImPlot3D::EndPlot();
+    }
+
+    ImGui::TableSetColumnIndex(1);
+
+    if (ImPlot3D::BeginPlot("CS 2")) {
+      float x = 10;
+      float y = 11;
+      float z = 12;
+      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      ImPlot3D::EndPlot();
+    }
+
+    ImGui::TableSetColumnIndex(2);
+
+    if (ImPlot3D::BeginPlot("CS 3")) {
+      float x = 10;
+      float y = 11;
+      float z = 12;
+      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      ImPlot3D::EndPlot();
+    }
+
+    ImGui::EndTable();
+  }
+}
+
+void controls_output_panel() {
+  ImGui::Text("Controller Output");
+
+  if (ImGui::BeginTable("controls_table", 2, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextRow();
+
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Text("Target Thrust: 0.00 lbf");
+    ImGui::Text("Target Roll: 0.00 deg/s^2");
+
+    ImGui::TableSetColumnIndex(1);
+
+    float gx = -5; // e.g., -15 to +15
+    float gy = 5;  // e.g., -15 to +15
+
+    if (ImPlot::BeginPlot("Gimbal State", ImVec2(-1, 300), ImPlotFlags_NoLegend)) {
+      ImPlot::SetupAxes("Yaw (deg)", "Pitch (deg)"); //, ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
+      ImPlot::SetupAxesLimits(-15, 15, -15, 15, ImPlotCond_Always);
+
+      // Draw single point
+      float xs[1] = {gx};
+      float ys[1] = {gy};
+      ImPlot::PlotScatter("Gimbal", xs, ys, 1);
+
+      ImPlot::EndPlot();
+    }
+
+    ImGui::EndTable();
+  }
+}
+
 void render_loop() {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -132,11 +274,17 @@ void render_loop() {
                    ImGuiWindowFlags_NoBringToFrontOnFocus |
                    ImGuiWindowFlags_NoNavFocus);
 
-  // Split into 2 sections: left (buttons) and right (plots)
-  ImGui::Columns(2, nullptr, true); // true = resizable
-  control_panel();
-  ImGui::NextColumn(); // move to right column
-  plot_panel();
+  if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn(); // LEFT
+    live_sensor_panel();
+    serial_control_panel();
+
+    ImGui::TableNextColumn(); // RIGHT
+    controller_state_panel();
+    controls_output_panel();
+
+    ImGui::EndTable();
+  }
 
   ImGui::End();
 }
