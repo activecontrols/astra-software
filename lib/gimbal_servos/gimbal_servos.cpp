@@ -32,18 +32,18 @@ float clamped_table_interplolation(float v, float table[2][INTERPOLATION_TABLE_L
   return table[1][table_length - 1]; // if starting value is above max, return max
 }
 
-// Creates the lookup table for gimble-servo reference values for angle phi
+// Creates the lookup table for gimble-servo reference values for angle yaw
 // clang-format off
-#define yaw_gs_table_len 10
+#define yaw_gs_table_len 31
 float yaw_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
-  {-44.666, -41.166, -37.83, -34.62, -31.508, -28.472, -25.499, -22.575, -19.689, -16.835, -14.003, -11.189, -8.387, -5.591, -2.797, 0, 2.802, 5.614, 8.439, 11.281, 14.143, 17.029, 19.94, 22.882, 25.855, 28.865, 31.912, 35.001, 38.134, 41.314, 44.542}, 
-  {-15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}};
+  {-15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+  {-44.666, -41.166, -37.83, -34.62, -31.508, -28.472, -25.499, -22.575, -19.689, -16.835, -14.003, -11.189, -8.387, -5.591, -2.797, 0, 2.802, 5.614, 8.439, 11.281, 14.143, 17.029, 19.94, 22.882, 25.855, 28.865, 31.912, 35.001, 38.134, 41.314, 44.542}};
 
-// Creates the lookup table for gimble-servo reference values for angle theta
-#define pitch_gs_table_len 8
+// Creates the lookup table for gimble-servo reference values for angle pitch
+#define pitch_gs_table_len 31
 float pitch_gs_table[2][INTERPOLATION_TABLE_LENGTH] = {
-  {-58.465, -53.028, -48.186, -43.725, -39.528, -35.524, -31.663, -27.912, -24.247, -20.65, -17.108, -13.612, -10.156, -6.735, -3.35, 0, 3.311, 6.578, 9.795, 12.953, 16.042, 19.051, 21.967, 24.776, 27.466, 30.023, 32.432, 34.682, 36.762, 38.66, 40.37},
-  {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -13, -14, -15}};
+  {-15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+  {40.37, 38.66, 36.762, 34.682, 32.432, 30.023, 27.466, 24.776, 21.967, 19.051, 16.042, 12.953, 9.795, 6.578, 3.311, 0, -3.35, -6.735, -10.156, -13.612, -17.108, -20.65, -24.247, -27.912, -31.663, -35.524, -39.528, -43.725, -48.186, -53.028, -58.465}};
 
 // clang-format on
 
@@ -67,9 +67,11 @@ void centerGimbal() {
 }
 
 void setGimbalAngleCmd(const char *args) {
-  float yaw_angle;
-  float pitch_angle;
-  sscanf(args, "%f %f", &yaw_angle, &pitch_angle);
+  int yaw_angle;
+  int pitch_angle;
+  sscanf(args, "%d %d", &yaw_angle, &pitch_angle);
+  Router::printf("Scanned Yaw Angle: %d\n", yaw_angle);
+  Router::printf("Scanned Pitch Angle: %d\n", pitch_angle);
   setGimbalAngle(yaw_angle, pitch_angle);
 }
 
