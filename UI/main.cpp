@@ -10,6 +10,7 @@
 
 #include "imgui.h"
 #include "implot.h"
+#include "implot3d.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
 #include <d3d11.h>
@@ -42,7 +43,7 @@ int main(int, char **) {
   // Create application window
   WNDCLASSEXW wc = {sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ImGui Example", nullptr};
   ::RegisterClassExW(&wc);
-  HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"PSP Active Controls DAQ v0.1", WS_OVERLAPPEDWINDOW, 100, 100, (int)(1280 * main_scale), (int)(800 * main_scale), nullptr, nullptr, wc.hInstance, nullptr);
+  HWND hwnd = ::CreateWindowW(wc.lpszClassName, L"ASTRA Control Panel v0.1", WS_OVERLAPPEDWINDOW, 100, 100, (int)(1280 * main_scale), (int)(800 * main_scale), nullptr, nullptr, wc.hInstance, nullptr);
 
   // Initialize Direct3D
   if (!CreateDeviceD3D(hwnd)) {
@@ -59,6 +60,7 @@ int main(int, char **) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImPlot::CreateContext();
+  ImPlot3D::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
@@ -77,11 +79,15 @@ int main(int, char **) {
   plotStyle.Colors[ImPlotCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);                        // Plot background
   plotStyle.Colors[ImPlotCol_PlotBorder] = ImVec4(205 / 255.0, 159 / 255.0, 38 / 255.0, 1.0f); // Plot border
 
+  ImPlot3DStyle &plot3DStyle = ImPlot3D::GetStyle();
+  plot3DStyle.Colors[ImPlot3DCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f); // Plot background
+  // plot3DStyle.Colors[ImPlotCol_PlotBorder] = ImVec4(205 / 255.0, 159 / 255.0, 38 / 255.0, 1.0f); // Plot border
+
   // Setup Platform/Renderer backends
   ImGui_ImplWin32_Init(hwnd);
   ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
-  style.FontSizeBase = 20.0f;
+  style.FontSizeBase = 10.0f;
   io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf");
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -140,6 +146,7 @@ int main(int, char **) {
   // Cleanup
   ImGui_ImplDX11_Shutdown();
   ImGui_ImplWin32_Shutdown();
+  ImPlot3D::DestroyContext();
   ImPlot::DestroyContext();
   ImGui::DestroyContext();
 
