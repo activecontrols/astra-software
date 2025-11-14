@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+ImFont *panel_header_font;
+ImFont *large_font;
+
 #define DO_COUNT
 
 bool ui_do_state[DO_COUNT] = {false, false, false, false, false};
@@ -20,8 +23,7 @@ ImU32 AdjustBrightness(ImU32 color, float factor) {
   return ImGui::ColorConvertFloat4ToU32(c);
 }
 
-bool daq_button(const char *label, const ImVec2 &size,
-                ImU32 color, float rounding = 10.0f) {
+bool daq_button(const char *label, const ImVec2 &size, ImU32 color, float rounding = 10.0f) {
   ImGui::PushStyleColor(ImGuiCol_Button, color);
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, AdjustBrightness(color, 1.2));
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, AdjustBrightness(color, 0.7));
@@ -62,56 +64,23 @@ void toggle_button(const char *label, const ImVec2 &size, ImU32 active_color, Im
   }
 }
 
-void control_panel() {
-  ImGui::Text("Control Panel");
+void centered_text(const char *text) {
+  ImGuiStyle &style = ImGui::GetStyle();
 
-  if (ImGui::BeginTable("start_abort", 2)) {
-    ImGui::TableNextColumn();
-    if (daq_button("START", ImVec2(-1, 50), IM_COL32(33, 112, 69, 255))) {
-      std::cout << "START" << std::endl;
-    };
-    ImGui::TableNextColumn();
-    if (daq_button("ABORT", ImVec2(-1, 50), IM_COL32(204, 0, 0, 255))) {
-      std::cout << "END" << std::endl;
-    };
-    ImGui::EndTable();
-  }
+  float size = ImGui::CalcTextSize(text).x + style.FramePadding.x * 2.0f;
+  float avail = ImGui::GetContentRegionAvail().x;
 
-  if (ImGui::BeginTable("do_control", 5)) {
-    ImGui::TableNextRow();
-    for (int i = 0; i < 5; i++) {
-      ImGui::TableSetColumnIndex(i);
-      ImGui::PushID(i);
-      std::string do_name = "DO " + std::to_string(i + 1);
-      toggle_button(do_name.c_str(), ImVec2(-1, 50), IM_COL32(33, 112, 69, 255), IM_COL32(50, 50, 50, 255), &ui_do_state[i]);
-      ImGui::PopID();
-    }
-    ImGui::EndTable();
-  }
-
-  ImGui::Dummy(ImVec2(0, 100)); // Add vertical spacing
-}
-
-void plot_panel() {
-  for (int i = 0; i < 3; i++) {
-    std::string plot_name = "Plot " + std::to_string(i + 1);
-    if (ImPlot::BeginPlot(plot_name.c_str(), ImVec2(-1, 0))) { // width = fill, height auto
-      // Example: simple sine wave
-      static float xs[1000], ys[1000];
-      for (int j = 0; j < 1000; ++j) {
-        xs[j] = j * 0.01f;
-        ys[j] = sin(xs[j] + i); // different phase for each plot
-      }
-      ImPlot::PlotLine("Sine", xs, ys, 1000);
-      ImPlot::EndPlot();
-    }
-  }
+  float off = (avail - size) * 0.5;
+  if (off > 0.0f)
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
+  ImGui::PushFont(large_font);
+  ImGui::Text(text);
+  ImGui::PopFont();
 }
 
 void live_sensor_panel() {
-  ImGui::Text("Live Sensor Data");
-
-  if (ImPlot::BeginPlot("IMU Accel", ImVec2(-1, 200))) { // width = fill, height auto
+  centered_text("IMU Accel");
+  if (ImPlot::BeginPlot("##IMU Accel", ImVec2(-1, 200))) { // width = fill, height auto
     // Example: simple sine wave
     static float xs[1000], ys[1000];
     for (int j = 0; j < 1000; ++j) {
@@ -124,7 +93,8 @@ void live_sensor_panel() {
     ImPlot::EndPlot();
   }
 
-  if (ImPlot::BeginPlot("IMU Gyro", ImVec2(-1, 200))) { // width = fill, height auto
+  centered_text("IMU Gyro");
+  if (ImPlot::BeginPlot("##IMU Gyro", ImVec2(-1, 200))) { // width = fill, height auto
     // Example: simple sine wave
     static float xs[1000], ys[1000];
     for (int j = 0; j < 1000; ++j) {
@@ -142,7 +112,8 @@ void live_sensor_panel() {
 
     ImGui::TableSetColumnIndex(0);
 
-    if (ImPlot3D::BeginPlot("MAG Vec")) {
+    centered_text("Mag Vec");
+    if (ImPlot3D::BeginPlot("##MAG Vec")) {
       float x = 10;
       float y = 11;
       float z = 12;
@@ -152,7 +123,8 @@ void live_sensor_panel() {
 
     ImGui::TableSetColumnIndex(1);
 
-    if (ImPlot3D::BeginPlot("GPS Pos")) {
+    centered_text("GPS Pos");
+    if (ImPlot3D::BeginPlot("##GPS Pos")) {
       float x = 10;
       float y = 11;
       float z = 12;
@@ -162,7 +134,8 @@ void live_sensor_panel() {
 
     ImGui::TableSetColumnIndex(2);
 
-    if (ImPlot3D::BeginPlot("GPS Vel")) {
+    centered_text("GPS Vel");
+    if (ImPlot3D::BeginPlot("##GPS Vel")) {
       float x = 10;
       float y = 11;
       float z = 12;
@@ -175,8 +148,6 @@ void live_sensor_panel() {
 }
 
 void serial_control_panel() {
-  ImGui::Text("Serial Control");
-
   static char inputBuffer[128] = ""; // buffer for text input
   ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
   ImGui::SameLine();
@@ -191,37 +162,41 @@ void serial_control_panel() {
 }
 
 void controller_state_panel() {
-  ImGui::Text("Controller State");
-
   if (ImGui::BeginTable("control_state_table", 3, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
 
     ImGui::TableSetColumnIndex(0);
 
-    if (ImPlot3D::BeginPlot("CS 1")) {
+    centered_text("CS 1");
+    if (ImPlot3D::BeginPlot("##CS1")) {
       float x = 10;
       float y = 11;
       float z = 12;
+
       ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
       ImPlot3D::EndPlot();
     }
 
     ImGui::TableSetColumnIndex(1);
 
-    if (ImPlot3D::BeginPlot("CS 2")) {
+    centered_text("CS 2");
+    if (ImPlot3D::BeginPlot("##CS2")) {
       float x = 10;
       float y = 11;
       float z = 12;
+
       ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
       ImPlot3D::EndPlot();
     }
 
     ImGui::TableSetColumnIndex(2);
 
-    if (ImPlot3D::BeginPlot("CS 3")) {
+    centered_text("CS 3");
+    if (ImPlot3D::BeginPlot("##CS3")) {
       float x = 10;
       float y = 11;
       float z = 12;
+
       ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
       ImPlot3D::EndPlot();
     }
@@ -231,8 +206,6 @@ void controller_state_panel() {
 }
 
 void controls_output_panel() {
-  ImGui::Text("Controller Output");
-
   if (ImGui::BeginTable("controls_table", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
 
@@ -245,7 +218,8 @@ void controls_output_panel() {
     float gx = -5; // e.g., -15 to +15
     float gy = 5;  // e.g., -15 to +15
 
-    if (ImPlot::BeginPlot("Gimbal State", ImVec2(-1, 300), ImPlotFlags_NoLegend)) {
+    centered_text("Gimbal Position");
+    if (ImPlot::BeginPlot("##Gimbal State", ImVec2(-1, 300), ImPlotFlags_NoLegend)) {
       ImPlot::SetupAxes("Yaw (deg)", "Pitch (deg)"); //, ImPlotAxisFlags_NoGridLines, ImPlotAxisFlags_NoGridLines);
       ImPlot::SetupAxesLimits(-15, 15, -15, 15, ImPlotCond_Always);
 
@@ -267,21 +241,40 @@ void render_loop() {
   ImGui::SetNextWindowSize(io.DisplaySize);
 
   ImGui::Begin("MainWindow", nullptr,
-               ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoResize |
-                   ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoBringToFrontOnFocus |
-                   ImGuiWindowFlags_NoNavFocus);
+               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
 
   if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextColumn(); // LEFT
+
+    ImGui::BeginChild("live_sensor_subpanel", ImVec2(0, 800), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Live Sensor Data");
+    ImGui::PopFont();
     live_sensor_panel();
+    ImGui::EndChild();
+
+    ImGui::BeginChild("serial_control_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Serial Monitor");
+    ImGui::PopFont();
     serial_control_panel();
+    ImGui::EndChild();
 
     ImGui::TableNextColumn(); // RIGHT
+
+    ImGui::BeginChild("controller_state_subpanel", ImVec2(0, 500), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Controller State");
+    ImGui::PopFont();
     controller_state_panel();
+    ImGui::EndChild();
+
+    ImGui::BeginChild("controller_output_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Controller Output");
+    ImGui::PopFont();
     controls_output_panel();
+    ImGui::EndChild();
 
     ImGui::EndTable();
   }

@@ -16,6 +16,8 @@
 #include <d3d11.h>
 #include <tchar.h>
 
+#include "ui.h"
+
 // Data
 static ID3D11Device *g_pd3dDevice = nullptr;
 static ID3D11DeviceContext *g_pd3dDeviceContext = nullptr;
@@ -30,9 +32,6 @@ void CleanupDeviceD3D();
 void CreateRenderTarget();
 void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-// Forward declaration of render loop (in ui.cpp)
-void render_loop();
 
 // Main code
 int main(int, char **) {
@@ -81,14 +80,22 @@ int main(int, char **) {
 
   ImPlot3DStyle &plot3DStyle = ImPlot3D::GetStyle();
   plot3DStyle.Colors[ImPlot3DCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f); // Plot background
-  // plot3DStyle.Colors[ImPlotCol_PlotBorder] = ImVec4(205 / 255.0, 159 / 255.0, 38 / 255.0, 1.0f); // Plot border
+  plot3DStyle.PlotPadding.y = 0;
 
   // Setup Platform/Renderer backends
   ImGui_ImplWin32_Init(hwnd);
   ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dDeviceContext);
 
-  style.FontSizeBase = 10.0f;
+  style.FontSizeBase = 16.0f;
   io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf");
+  panel_header_font = io.Fonts->AddFontFromFileTTF(
+      "imgui/misc/fonts/Cousine-Regular.ttf",
+      24.0f // larger size
+  );
+  large_font = io.Fonts->AddFontFromFileTTF(
+      "imgui/misc/fonts/Cousine-Regular.ttf",
+      20.0f // larger size
+  );
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
