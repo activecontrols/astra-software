@@ -15,11 +15,6 @@ double deg_to_rad(double degrees) {
 
 void begin() {
 
-  /*
-  UBX-CFG-RATE - configure output rate
-  UBX-NAV-PVT - position velocity time solution
-  */
-
   GPS_UART.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
 
 
@@ -79,7 +74,7 @@ GPS_Coord get_lat_lon_alt() {
 }
 
 GPS_Velocity get_velocity() {
-  return GPS_Velocity{ubx.pvt_solution.velN / 1000.0, ubx.pvt_solution.velE / 1000.0, ubx.pvt_solution.velD / 1000.0};
+  return GPS_Velocity{ubx.pvt_solution.velN / 1000.0, -ubx.pvt_solution.velE / 1000.0, -ubx.pvt_solution.velD / 1000.0};
 }
 
 void set_current_position_as_origin() {

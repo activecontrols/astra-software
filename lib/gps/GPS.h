@@ -13,9 +13,9 @@ struct GPS_Coord {
 
 struct GPS_Velocity
 {
-  double velN; // m/s velocity north
-  double velE; // m/s velocity east
-  double velD; // m/s velocity down
+  double north; // m/s velocity north
+  double west; // m/s velocity west
+  double up; // m/s velocity up
 };
 
 struct Point {
