@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#include "serial.h"
+
 ImFont *panel_header_font;
 ImFont *large_font;
 
@@ -78,34 +80,56 @@ void centered_text(const char *text) {
   ImGui::PopFont();
 }
 
-void live_sensor_panel() {
-  centered_text("IMU Accel");
-  if (ImPlot::BeginPlot("##IMU Accel", ImVec2(-1, 200))) { // width = fill, height auto
-    // Example: simple sine wave
-    static float xs[1000], ys[1000];
-    for (int j = 0; j < 1000; ++j) {
-      xs[j] = j * 0.01f;
-      ys[j] = sin(xs[j]); // different phase for each plot
-    }
-    ImPlot::PlotLine("x", xs, ys, 1000);
-    ImPlot::PlotLine("y", xs, ys, 1000);
-    ImPlot::PlotLine("z", xs, ys, 1000);
-    ImPlot::EndPlot();
-  }
+typedef struct {
+  const char *render_title;
+  const char *plot_title;
+  const char *y1_label;
+  const char *y2_label;
+  const char *y3_label;
+} scrolling_line_chart_arg_t;
 
-  centered_text("IMU Gyro");
-  if (ImPlot::BeginPlot("##IMU Gyro", ImVec2(-1, 200))) { // width = fill, height auto
-    // Example: simple sine wave
-    static float xs[1000], ys[1000];
-    for (int j = 0; j < 1000; ++j) {
-      xs[j] = j * 0.01f;
-      ys[j] = sin(xs[j]); // different phase for each plot
-    }
-    ImPlot::PlotLine("x", xs, ys, 1000);
-    ImPlot::PlotLine("y", xs, ys, 1000);
-    ImPlot::PlotLine("z", xs, ys, 1000);
+void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int write_idx) {
+  centered_text(arg.plot_title);
+  if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 200))) { // width = fill, height auto
+    ImPlot::PlotLine("x", &history[0][write_idx], 1000);
+    ImPlot::PlotLine("y", &history[1][write_idx], 1000);
+    ImPlot::PlotLine("z", &history[2][write_idx], 1000);
     ImPlot::EndPlot();
   }
+}
+
+float acc_history[3][2000];
+int write_idx = 999;
+int acc_counter = 0;
+
+void live_sensor_panel() {
+  acc_history[0][write_idx] = state_packet.acc_x;
+  acc_history[1][write_idx] = state_packet.acc_y;
+  acc_history[2][write_idx] = state_packet.acc_z;
+  acc_history[0][write_idx + 1000] = state_packet.acc_x;
+  acc_history[1][write_idx + 1000] = state_packet.acc_y;
+  acc_history[2][write_idx + 1000] = state_packet.acc_z;
+  acc_counter++;
+
+  scrolling_line_chart_arg_t imu_acc;
+  imu_acc.plot_title = "IMU Accel";
+  imu_acc.render_title = "##IMU Accel";
+  imu_acc.y1_label = "x";
+  imu_acc.y2_label = "y";
+  imu_acc.y3_label = "z";
+  scrolling_line_chart(imu_acc, acc_history, write_idx);
+
+  write_idx--;
+  write_idx += 1000;
+  write_idx %= 1000;
+
+  scrolling_line_chart_arg_t imu_gyro;
+  imu_gyro.plot_title = "IMU Gyro";
+  imu_gyro.render_title = "##IMU Gyro";
+  imu_gyro.y1_label = "x";
+  imu_gyro.y2_label = "y";
+  imu_gyro.y3_label = "z";
+  scrolling_line_chart(imu_gyro, acc_history, write_idx);
 
   if (ImGui::BeginTable("live_sensor_table", 3, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();

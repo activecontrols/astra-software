@@ -14,7 +14,7 @@ IMGUI_SRC := imgui/imgui.cpp \
              implot3d/implot3d.cpp \
              implot3d/implot3d_items.cpp
 
-APP_SRC   := main.cpp ui.cpp
+APP_SRC   := main.cpp ui.cpp serial.cpp
 SRC       := $(APP_SRC) $(IMGUI_SRC)
 
 # Objects
