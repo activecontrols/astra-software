@@ -8,6 +8,17 @@ state_packet_t state_packet;
 #define BUF_SIZE 4096
 #define T_BUF_SIZE 1024
 
+#define MAX_MSGS 32
+#define MAX_MSG_LEN 1024
+
+char msg_buffer[MAX_MSGS][MAX_MSG_LEN];
+int msg_count = 0;
+#define OUT_BUF_SIZE 32768 // adjust as needed
+char concat_msg_buf[OUT_BUF_SIZE];
+
+void concat_messages(char *out) {
+}
+
 // your message callback
 void handle_message(const char *msg) {
   if (msg[0] == '>') {
@@ -17,7 +28,40 @@ void handle_message(const char *msg) {
            &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N,
            &state_packet.target_pos_north, &state_packet.target_pos_west, &state_packet.target_pos_up,
            &state_packet.elapsed_time, &state_packet.GND_flag);
+  } else {
+    for (int i = MAX_MSGS - 1; i > 0; i--) {
+      strcpy(msg_buffer[i], msg_buffer[i - 1]);
+    }
+
+    // insert new message at front
+    strncpy(msg_buffer[0], msg, MAX_MSG_LEN - 1);
+    msg_buffer[0][MAX_MSG_LEN - 1] = '\0';
+
+    if (msg_count < MAX_MSGS)
+      msg_count++;
+
+    concat_msg_buf[0] = '\0'; // start empty
+    for (int i = 0; i < msg_count; i++) {
+      strncat(concat_msg_buf, msg_buffer[i], OUT_BUF_SIZE - strlen(concat_msg_buf) - 1);
+      strncat(concat_msg_buf, "\n", OUT_BUF_SIZE - strlen(concat_msg_buf) - 1);
+    }
   }
+}
+
+void write_serial(const char *msg) {
+  DWORD bytes_written = 0;
+
+  int len = (int)strlen(msg);
+  if (len == 0)
+    return;
+
+  if (!WriteFile(hSerial, msg, len, &bytes_written, NULL)) {
+    printf("WriteFile error %lu\n", GetLastError());
+    return;
+  }
+
+  // Optionally: ensure newline at the end
+  WriteFile(hSerial, "\n", 1, &bytes_written, NULL);
 }
 
 // reads from serial, splits by '\n', calls your callback

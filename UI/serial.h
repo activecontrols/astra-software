@@ -1,6 +1,9 @@
 #ifndef ASTRA_GS_SERIAL_H
 #define ASTRA_GS_SERIAL_H
 
+#define OUT_BUF_SIZE 32768 // adjust as needed
+extern char concat_msg_buf[OUT_BUF_SIZE];
+
 typedef struct {
   float accel_x;
   float accel_y;
@@ -49,6 +52,7 @@ typedef struct {
 
 extern state_packet_t state_packet;
 void poll_serial();
+void write_serial(const char *msg);
 void init_serial();
 void deinit_serial();
 
