@@ -1,5 +1,4 @@
 #pragma once
-#include "TinyGPS++.h"
 #include <Arduino.h>
 
 #define GPS_UART Serial1
