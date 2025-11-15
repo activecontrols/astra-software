@@ -18,16 +18,16 @@ typedef struct {
   float gps_vel_west;
   float gps_vel_up;
 
-  float state_q_vec_0; // TODO - vis this
+  float state_q_vec_0;
   float state_q_vec_1;
   float state_q_vec_2;
   float state_pos_north;
   float state_pos_west;
-  float state_pos_up; // TODO - vis this
-  float state_vel_north;
+  float state_pos_up;
+  float state_vel_north; // TODO - vis this
   float state_vel_west;
-  float state_vel_up; // TODO - vis this
-  float state_0;      // TODO - vis this
+  float state_vel_up;
+  float state_0; // TODO - vis this
   float state_1;
   float state_2;
   float state_3;
@@ -42,6 +42,9 @@ typedef struct {
   float target_pos_north;
   float target_pos_west;
   float target_pos_up;
+
+  float elapsed_time;
+  float GND_flag;
 } state_packet_t;
 
 extern state_packet_t state_packet;

@@ -11,11 +11,12 @@ state_packet_t state_packet;
 // your message callback
 void handle_message(const char *msg) {
   if (msg[0] == '>') {
-    sscanf(msg, ">%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
+    sscanf(msg, ">%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
            &state_packet.accel_x, &state_packet.accel_y, &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch, &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north, &state_packet.gps_pos_west, &state_packet.gps_pos_up, &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up,
            &state_packet.state_q_vec_0, &state_packet.state_q_vec_1, &state_packet.state_q_vec_2, &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north, &state_packet.state_vel_west, &state_packet.state_vel_up, &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4, &state_packet.state_5,
            &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N,
-           &state_packet.target_pos_north, &state_packet.target_pos_west, &state_packet.target_pos_up);
+           &state_packet.target_pos_north, &state_packet.target_pos_west, &state_packet.target_pos_up,
+           &state_packet.elapsed_time, &state_packet.GND_flag);
   }
 }
 

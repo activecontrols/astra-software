@@ -211,45 +211,102 @@ void serial_control_panel() {
   ImGui::InputTextMultiline("##serial_output", outputBuffer, IM_ARRAYSIZE(outputBuffer));
 }
 
+ImVec4 verts[8] = {
+    {-1, -1, -1, 0}, {1, -1, -1, 0}, {1, 1, -1, 0}, {-1, 1, -1, 0}, // bottom
+    {-1, -1, 1, 0},
+    {1, -1, 1, 0},
+    {1, 1, 1, 0},
+    {-1, 1, 1, 0} // top
+};
+int edges[12][2] = {
+    {0, 1}, {1, 2}, {2, 3}, {3, 0}, // bottom square
+    {4, 5},
+    {5, 6},
+    {6, 7},
+    {7, 4}, // top square
+    {0, 4},
+    {1, 5},
+    {2, 6},
+    {3, 7} // verticals
+};
+
+ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
+  ImVec4 out;
+  out.x = vtx.x * (1 - 2 * (q.y * q.y + q.z * q.z)) + vtx.y * (2 * (q.x * q.y + q.w * q.z)) + vtx.z * (2 * (q.x * q.z - q.w * q.y));
+  out.y = vtx.x * (2 * (q.x * q.y - q.w * q.z)) + vtx.y * (1 - 2 * (q.x * q.x + q.z * q.z)) + vtx.z * (2 * (q.y * q.z + q.w * q.x));
+  out.z = vtx.x * (2 * (q.x * q.z + q.w * q.y)) + vtx.y * (2 * (q.y * q.z - q.w * q.x)) + vtx.z * (1 - 2 * (q.x * q.x + q.y * q.y));
+  return out;
+}
+
+void DrawCube3D(ImVec4 q) {
+  // rotate cube vertices
+  ImVec4 rot[8];
+  for (int i = 0; i < 8; i++) {
+    rot[i] = quatRot(q, verts[i]);
+  }
+
+  if (ImPlot3D::BeginPlot("##Cube3D")) {
+    ImPlot3D::SetupAxesLimits(-2, 2, -2, 2, -2, 2);
+
+    for (int i = 0; i < 12; i++) {
+      ImVec4 a = rot[edges[i][0]];
+      ImVec4 b = rot[edges[i][1]];
+      // Draw line segment
+      double xs[2] = {-a.y, -b.y};
+      double ys[2] = {-a.x, -b.x};
+      double zs[2] = {a.z, b.z};
+      ImPlot3D::PlotLine("##edge", xs, ys, zs, 2);
+    }
+
+    ImPlot3D::EndPlot();
+  }
+}
+
 void controller_state_panel() {
-  if (ImGui::BeginTable("control_state_table", 3, ImGuiTableFlags_Resizable)) {
+  if (ImGui::BeginTable("control_state_table", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
 
     ImGui::TableSetColumnIndex(0);
 
-    centered_text("CS 1");
-    if (ImPlot3D::BeginPlot("##CS1")) {
-      float x = 10;
-      float y = 11;
-      float z = 12;
+    centered_text("Estimated Pos");
+    if (ImPlot3D::BeginPlot("##CS Pos")) {
+      double cs_x[2] = {state_packet.state_pos_west, state_packet.state_pos_west};
+      double cs_y[2] = {state_packet.state_pos_north, state_packet.state_pos_north};
+      double cs_z[2] = {0, state_packet.state_pos_up};
 
-      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
+      double target_x[2] = {state_packet.target_pos_west, state_packet.target_pos_west};
+      double target_y[2] = {state_packet.target_pos_north, state_packet.target_pos_north};
+      double target_z[2] = {0, state_packet.target_pos_up};
+
+      ImPlot3D::SetupAxes("West (m)", "North (m)", "Up (m)");
+      ImPlot3D::SetupAxisLimits(ImAxis3D_Z, 0, 5);
+      ImPlot3D::SetupAxisLimits(ImAxis3D_X, -5, 5);
+      ImPlot3D::SetupAxisLimits(ImAxis3D_Y, -5, 5);
+
+      ImPlot3D::SetNextMarkerStyle(ImPlot3DMarker_Circle, 5, ImPlot3D::GetColormapColor(0, ImPlot3DColormap_Deep));
+      ImPlot3D::PlotScatter("State", cs_x, cs_y, cs_z, 2);
+
+      ImPlot3D::SetNextMarkerStyle(ImPlot3DMarker_Diamond, 5, ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep));
+      ImPlot3D::PlotScatter("Target", target_x, target_y, target_z, 2);
+
+      ImPlot3D::SetNextLineStyle(ImPlot3D::GetColormapColor(0, ImPlot3DColormap_Deep), 2);
+      ImPlot3D::PlotLine("State", cs_x, cs_y, cs_z, 2);
+
+      ImPlot3D::SetNextLineStyle(ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep), 2);
+      ImPlot3D::PlotLine("Target", target_x, target_y, target_z, 2);
+
       ImPlot3D::EndPlot();
     }
 
     ImGui::TableSetColumnIndex(1);
 
-    centered_text("CS 2");
-    if (ImPlot3D::BeginPlot("##CS2")) {
-      float x = 10;
-      float y = 11;
-      float z = 12;
-
-      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
-      ImPlot3D::EndPlot();
-    }
-
-    ImGui::TableSetColumnIndex(2);
-
-    centered_text("CS 3");
-    if (ImPlot3D::BeginPlot("##CS3")) {
-      float x = 10;
-      float y = 11;
-      float z = 12;
-
-      ImPlot3D::PlotScatter("##point", &x, &y, &z, 1);
-      ImPlot3D::EndPlot();
-    }
+    centered_text("Orientation");
+    ImVec4 q;
+    q.x = state_packet.state_q_vec_0;
+    q.y = state_packet.state_q_vec_1;
+    q.z = state_packet.state_q_vec_2;
+    q.w = sqrt(1 - q.x * q.x - q.y * q.y - q.z * q.z);
+    DrawCube3D(q);
 
     ImGui::EndTable();
   }
@@ -260,15 +317,15 @@ void controls_output_panel() {
     ImGui::TableNextRow();
 
     ImGui::TableSetColumnIndex(0);
-    ImGui::Text("Target Thrust: %5.2f N", state_packet.thrust_N);
-    ImGui::Text("Target Roll: %5.2f rad/s^2", state_packet.roll_N);
+    ImGui::Text("  Target Thrust: %5.2f N", state_packet.thrust_N);
+    ImGui::Text("    Target Roll: %5.2f rad/s^2", state_packet.roll_N);
 
     ImGui::TableSetColumnIndex(1);
 
     centered_text("Gimbal Position");
-    if (ImPlot::BeginPlot("##Gimbal State", ImVec2(-1, 300), ImPlotFlags_NoLegend)) {
+    if (ImPlot::BeginPlot("##Gimbal State", ImVec2(-1, 250), ImPlotFlags_NoLegend)) {
       ImPlot::SetupAxes("Yaw (deg)", "Pitch (deg)");
-      ImPlot::SetupAxesLimits(-15, 15, -15, 15);
+      ImPlot::SetupAxesLimits(-15, 15, -15, 15, ImPlotCond_Always);
 
       // Draw single point
       float xs[1] = {state_packet.gimbal_yaw_deg * 180 / 3.1415};
@@ -280,6 +337,30 @@ void controls_output_panel() {
 
     ImGui::EndTable();
   }
+}
+
+void system_state_panel() {
+  ImGui::Text("Elasped Time: %5.2f s", state_packet.elapsed_time);
+
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+  ImVec4 on_gnd = ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f);
+  ImVec4 in_air = ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f);
+  if (state_packet.GND_flag > 0) {
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, on_gnd);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, on_gnd);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, on_gnd);
+  } else {
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, in_air);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, in_air);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, in_air);
+  }
+
+  ImGui::SetNextItemWidth(200.0f); // pixels
+  ImGui::BeginDisabled();          // prevent editing
+  ImGui::InputText("##dummy", (char *)"    GND Flag", ImGuiInputTextFlags_ReadOnly);
+  ImGui::EndDisabled();
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar();
 }
 
 void render_loop() {
@@ -316,11 +397,18 @@ void render_loop() {
     controller_state_panel();
     ImGui::EndChild();
 
-    ImGui::BeginChild("controller_output_subpanel", ImVec2(0, 0), true);
+    ImGui::BeginChild("controller_output_subpanel", ImVec2(0, 350), true);
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Controller Output");
     ImGui::PopFont();
     controls_output_panel();
+    ImGui::EndChild();
+
+    ImGui::BeginChild("system_state_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("System State");
+    ImGui::PopFont();
+    system_state_panel();
     ImGui::EndChild();
 
     ImGui::EndTable();
