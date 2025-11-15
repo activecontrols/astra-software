@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d
+CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude
 LDFLAGS  := -luser32 -lgdi32 -ld3d11 -ldxgi -ld3dcompiler -ldwmapi
 
 # Sources
@@ -38,6 +38,10 @@ $(BUILD_FOLDER):
 	mkdir $(BUILD_FOLDER)\implot3d
 
 # Compile step
+$(BUILD_FOLDER)/%.o: src/%.cpp | $(BUILD_FOLDER)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compile step (imgui)
 $(BUILD_FOLDER)/%.o: %.cpp | $(BUILD_FOLDER)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
