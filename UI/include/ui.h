@@ -4,7 +4,5 @@
 #include "imgui.h"
 
 void render_loop();
-extern ImFont *panel_header_font;
-extern ImFont *large_font;
 
 #endif

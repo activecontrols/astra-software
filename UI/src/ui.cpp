@@ -7,97 +7,9 @@
 
 #include <iostream>
 
+#include "ui_components.h"
+#include "ui_graphs.h"
 #include "serial.h"
-
-ImFont *panel_header_font;
-ImFont *large_font;
-
-// Helper to adjust brightness
-ImU32 AdjustBrightness(ImU32 color, float factor) {
-  ImVec4 c = ImGui::ColorConvertU32ToFloat4(color);
-  c.x = ImClamp(c.x * factor, 0.0f, 1.0f);
-  c.y = ImClamp(c.y * factor, 0.0f, 1.0f);
-  c.z = ImClamp(c.z * factor, 0.0f, 1.0f);
-  return ImGui::ColorConvertFloat4ToU32(c);
-}
-
-bool daq_button(const char *label, const ImVec2 &size, ImU32 color, float rounding = 10.0f) {
-  ImGui::PushStyleColor(ImGuiCol_Button, color);
-  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, AdjustBrightness(color, 1.2));
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, AdjustBrightness(color, 0.7));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, rounding);
-
-  bool clicked = ImGui::Button(label, size);
-
-  ImGui::PopStyleVar();
-  ImGui::PopStyleColor(3);
-
-  return clicked;
-}
-
-void toggle_button(const char *label, const ImVec2 &size, ImU32 active_color, ImU32 deactive_color, bool *control_var, float rounding = 10.0f) {
-  ImU32 color;
-  ImU32 clicked_color;
-  if (*control_var) {
-    color = active_color;
-    clicked_color = deactive_color;
-  } else {
-    color = deactive_color;
-    clicked_color = active_color;
-  }
-
-  ImGui::PushStyleColor(ImGuiCol_Button, color);
-  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, AdjustBrightness(color, 1.2));
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, AdjustBrightness(color, 1.2)); // stops flickering
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, rounding);
-
-  bool clicked = ImGui::Button(label, size);
-
-  ImGui::PopStyleVar();
-  ImGui::PopStyleColor(3);
-
-  if (clicked) {
-    std::cout << "toggle" << std::endl;
-    *control_var = !(*control_var);
-  }
-}
-
-void centered_text(const char *text) {
-  ImGuiStyle &style = ImGui::GetStyle();
-
-  float size = ImGui::CalcTextSize(text).x + style.FramePadding.x * 2.0f;
-  float avail = ImGui::GetContentRegionAvail().x;
-
-  float off = (avail - size) * 0.5;
-  if (off > 0.0f)
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + off);
-  ImGui::PushFont(large_font);
-  ImGui::Text(text);
-  ImGui::PopFont();
-}
-
-typedef struct {
-  const char *render_title;
-  const char *plot_title;
-  const char *y1_label;
-  const char *y2_label;
-  const char *y3_label;
-  double y_max;
-  double y_min;
-} scrolling_line_chart_arg_t;
-
-void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int write_idx) {
-  centered_text(arg.plot_title);
-  if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 175))) { // width = fill, height auto
-    ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000, ImPlotCond_Always);
-    ImPlot::SetupAxisLimits(ImAxis_Y1, arg.y_min, arg.y_max);
-    ImPlot::SetupLegend(ImPlotLocation_NorthEast);
-    ImPlot::PlotLine(arg.y1_label, &history[0][write_idx], 1000);
-    ImPlot::PlotLine(arg.y2_label, &history[1][write_idx], 1000);
-    ImPlot::PlotLine(arg.y3_label, &history[2][write_idx], 1000);
-    ImPlot::EndPlot();
-  }
-}
 
 float acc_history[3][2000];
 float gyro_history[3][2000];
@@ -231,7 +143,7 @@ void serial_control_panel() {
   static char inputBuffer[128] = ""; // buffer for text input
   ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
   ImGui::SameLine();
-  if (daq_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
+  if (rounded_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
     // Do something with inputBuffer
     write_serial(inputBuffer);
     printf("You entered: %s\n", inputBuffer);
@@ -241,92 +153,28 @@ void serial_control_panel() {
   ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100));
 }
 
-ImVec4 verts[8] = {
-    {-1, -1, -1, 0}, {1, -1, -1, 0}, {1, 1, -1, 0}, {-1, 1, -1, 0}, // bottom
-    {-1, -1, 1, 0},
-    {1, -1, 1, 0},
-    {1, 1, 1, 0},
-    {-1, 1, 1, 0} // top
-};
-int edges[12][2] = {
-    {0, 1}, {1, 2}, {2, 3}, {3, 0}, // bottom square
-    {4, 5},
-    {5, 6},
-    {6, 7},
-    {7, 4}, // top square
-    {0, 4},
-    {1, 5},
-    {2, 6},
-    {3, 7} // verticals
-};
-
-ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
-  ImVec4 out;
-  out.x = vtx.x * (1 - 2 * (q.y * q.y + q.z * q.z)) + vtx.y * (2 * (q.x * q.y + q.w * q.z)) + vtx.z * (2 * (q.x * q.z - q.w * q.y));
-  out.y = vtx.x * (2 * (q.x * q.y - q.w * q.z)) + vtx.y * (1 - 2 * (q.x * q.x + q.z * q.z)) + vtx.z * (2 * (q.y * q.z + q.w * q.x));
-  out.z = vtx.x * (2 * (q.x * q.z + q.w * q.y)) + vtx.y * (2 * (q.y * q.z - q.w * q.x)) + vtx.z * (1 - 2 * (q.x * q.x + q.y * q.y));
-  return out;
-}
-
-void DrawCube3D(ImVec4 q) {
-  // rotate cube vertices
-  ImVec4 rot[8];
-  for (int i = 0; i < 8; i++) {
-    rot[i] = quatRot(q, verts[i]);
-  }
-
-  if (ImPlot3D::BeginPlot("##Cube3D")) {
-    ImPlot3D::SetupAxesLimits(-2, 2, -2, 2, -2, 2);
-
-    for (int i = 0; i < 12; i++) {
-      ImVec4 a = rot[edges[i][0]];
-      ImVec4 b = rot[edges[i][1]];
-      // Draw line segment
-      double xs[2] = {-a.y, -b.y};
-      double ys[2] = {-a.x, -b.x};
-      double zs[2] = {a.z, b.z};
-      ImPlot3D::PlotLine("##edge", xs, ys, zs, 2);
-    }
-
-    ImPlot3D::EndPlot();
-  }
-}
-
 void controller_state_panel() {
   if (ImGui::BeginTable("control_state_table", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
 
     ImGui::TableSetColumnIndex(0);
 
-    centered_text("Estimated Pos");
-    if (ImPlot3D::BeginPlot("##CS Pos")) {
-      double cs_x[2] = {state_packet.state_pos_west, state_packet.state_pos_west};
-      double cs_y[2] = {state_packet.state_pos_north, state_packet.state_pos_north};
-      double cs_z[2] = {0, state_packet.state_pos_up};
+    drop_pos_target_arg_t estimated_pos_plot;
+    estimated_pos_plot.plot_title = "Estimated Pos";
+    estimated_pos_plot.render_title = "##Estimated Pos";
+    estimated_pos_plot.alt_max = 5;
+    estimated_pos_plot.hor_min = -5;
+    estimated_pos_plot.hor_max = 5;
 
-      double target_x[2] = {state_packet.target_pos_west, state_packet.target_pos_west};
-      double target_y[2] = {state_packet.target_pos_north, state_packet.target_pos_north};
-      double target_z[2] = {0, state_packet.target_pos_up};
-
-      ImPlot3D::SetupAxes("West (m)", "North (m)", "Up (m)");
-      ImPlot3D::SetupAxisLimits(ImAxis3D_Z, 0, 5);
-      ImPlot3D::SetupAxisLimits(ImAxis3D_X, -5, 5);
-      ImPlot3D::SetupAxisLimits(ImAxis3D_Y, -5, 5);
-
-      ImPlot3D::SetNextMarkerStyle(ImPlot3DMarker_Circle, 5, ImPlot3D::GetColormapColor(0, ImPlot3DColormap_Deep));
-      ImPlot3D::PlotScatter("State", cs_x, cs_y, cs_z, 2);
-
-      ImPlot3D::SetNextMarkerStyle(ImPlot3DMarker_Diamond, 5, ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep));
-      ImPlot3D::PlotScatter("Target", target_x, target_y, target_z, 2);
-
-      ImPlot3D::SetNextLineStyle(ImPlot3D::GetColormapColor(0, ImPlot3DColormap_Deep), 2);
-      ImPlot3D::PlotLine("State", cs_x, cs_y, cs_z, 2);
-
-      ImPlot3D::SetNextLineStyle(ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep), 2);
-      ImPlot3D::PlotLine("Target", target_x, target_y, target_z, 2);
-
-      ImPlot3D::EndPlot();
-    }
+    ImVec4 state;
+    state.x = state_packet.state_pos_west;
+    state.y = state_packet.state_pos_north;
+    state.z = state_packet.state_pos_up;
+    ImVec4 target;
+    target.x = state_packet.target_pos_west;
+    target.y = state_packet.target_pos_north;
+    target.z = state_packet.target_pos_up;
+    drop_position_target_plot(estimated_pos_plot, state, target);
 
     ImGui::TableSetColumnIndex(1);
 
@@ -336,7 +184,7 @@ void controller_state_panel() {
     q.y = state_packet.state_q_vec_1;
     q.z = state_packet.state_q_vec_2;
     q.w = sqrt(1 - q.x * q.x - q.y * q.y - q.z * q.z);
-    DrawCube3D(q);
+    rotatable_cube(q);
 
     ImGui::EndTable();
   }
@@ -352,18 +200,15 @@ void controls_output_panel() {
 
     ImGui::TableSetColumnIndex(1);
 
-    centered_text("Gimbal Position");
-    if (ImPlot::BeginPlot("##Gimbal State", ImVec2(-1, 250), ImPlotFlags_NoLegend)) {
-      ImPlot::SetupAxes("Yaw (deg)", "Pitch (deg)");
-      ImPlot::SetupAxesLimits(-15, 15, -15, 15, ImPlotCond_Always);
-
-      // Draw single point
-      float xs[1] = {state_packet.gimbal_yaw_deg * 180 / 3.1415};
-      float ys[1] = {state_packet.gimbal_pitch_deg * 180 / 3.1415};
-      ImPlot::PlotScatter("Gimbal", xs, ys, 1);
-
-      ImPlot::EndPlot();
-    }
+    top_down_pos_plot_arg_t gimbal_pos_plot;
+    gimbal_pos_plot.plot_title = "Gimbal Position";
+    gimbal_pos_plot.render_title = "##Gimbal Position";
+    gimbal_pos_plot.x_axis_label = "Yaw (deg)";
+    gimbal_pos_plot.y_axis_label = "Pitch (deg)";
+    gimbal_pos_plot.axis_lock = ImPlotCond_Always;
+    gimbal_pos_plot.min = -15;
+    gimbal_pos_plot.max = 15;
+    top_down_position_plot(gimbal_pos_plot, state_packet.gimbal_yaw_deg * 180 / 3.1415, state_packet.gimbal_pitch_deg * 180 / 3.1415);
 
     ImGui::EndTable();
   }
@@ -371,26 +216,7 @@ void controls_output_panel() {
 
 void system_state_panel() {
   ImGui::Text("Elasped Time: %5.2f s", state_packet.elapsed_time);
-
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
-  ImVec4 on_gnd = ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f);
-  ImVec4 in_air = ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f);
-  if (state_packet.GND_flag > 0) {
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, on_gnd);
-    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, on_gnd);
-    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, on_gnd);
-  } else {
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, in_air);
-    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, in_air);
-    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, in_air);
-  }
-
-  ImGui::SetNextItemWidth(200.0f); // pixels
-  ImGui::BeginDisabled();          // prevent editing
-  ImGui::InputText("##dummy", (char *)"    GND Flag", ImGuiInputTextFlags_ReadOnly);
-  ImGui::EndDisabled();
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar();
+  colored_flag("    GND Flag", state_packet.GND_flag, ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
 }
 
 void render_loop() {
@@ -402,45 +228,13 @@ void render_loop() {
                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
 
   if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
-    ImGui::TableNextColumn(); // LEFT
-
-    ImGui::BeginChild("live_sensor_subpanel", ImVec2(0, 750), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Live Sensor Data");
-    ImGui::PopFont();
-    live_sensor_panel();
-    ImGui::EndChild();
-
-    ImGui::BeginChild("serial_control_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Serial Monitor");
-    ImGui::PopFont();
-    serial_control_panel();
-    ImGui::EndChild();
-
-    ImGui::TableNextColumn(); // RIGHT
-
-    ImGui::BeginChild("controller_state_subpanel", ImVec2(0, 500), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Controller State");
-    ImGui::PopFont();
-    controller_state_panel();
-    ImGui::EndChild();
-
-    ImGui::BeginChild("controller_output_subpanel", ImVec2(0, 350), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Controller Output");
-    ImGui::PopFont();
-    controls_output_panel();
-    ImGui::EndChild();
-
-    ImGui::BeginChild("system_state_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("System State");
-    ImGui::PopFont();
-    system_state_panel();
-    ImGui::EndChild();
-
+    ImGui::TableNextColumn();
+    panel("Live Sensor Data", ImVec2(0, 750), live_sensor_panel);
+    panel("Serial Monitor", ImVec2(0, 0), serial_control_panel);
+    ImGui::TableNextColumn();
+    panel("Controller State", ImVec2(0, 500), controller_state_panel);
+    panel("Controller Output", ImVec2(0, 350), controls_output_panel);
+    panel("System State", ImVec2(0, 0), system_state_panel);
     ImGui::EndTable();
   }
 

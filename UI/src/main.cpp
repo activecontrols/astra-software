@@ -17,6 +17,7 @@
 #include <tchar.h>
 
 #include "serial.h"
+#include "ui_components.h"
 #include "ui.h"
 
 // Data
