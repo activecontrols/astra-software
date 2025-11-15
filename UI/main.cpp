@@ -16,6 +16,7 @@
 #include <d3d11.h>
 #include <tchar.h>
 
+#include "serial.h"
 #include "ui.h"
 
 // Data
@@ -99,6 +100,8 @@ int main(int, char **) {
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+  init_serial();
+
   // Main loop
   bool done = false;
   while (!done) {
@@ -131,6 +134,8 @@ int main(int, char **) {
       CreateRenderTarget();
     }
 
+    poll_serial();
+
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -149,6 +154,8 @@ int main(int, char **) {
     // HRESULT hr = g_pSwapChain->Present(0, 0); // Present without vsync
     g_SwapChainOccluded = (hr == DXGI_STATUS_OCCLUDED);
   }
+
+  deinit_serial();
 
   // Cleanup
   ImGui_ImplDX11_Shutdown();
