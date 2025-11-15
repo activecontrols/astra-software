@@ -11,26 +11,58 @@ double deg_to_rad(double degrees) {
   return degrees * (PI / 180.0);
 }
 
+
 void begin() {
+
+  // enable NMEA-PUBX-POSITION output (THIS WILL GIVE US VERTICAL VELOCITY ESTIMATE !!!!)
+  static char base_msg[] = "PUBX,40,00,0,1,0,0,0,0";
+  static char msg[50];
+  uint8_t checksum = 0;
+
+  for (unsigned int i = 0; i < sizeof(base_msg); ++i)
+  {
+    checksum ^= base_msg[i];
+  }
+
+  snprintf(msg, sizeof(msg), "$%s*%02X\r\n", base_msg, checksum);
+
   GPS_UART.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
+  GPS_UART.write(msg);
+
+  // done enabling NMEA-PUBX-POSITION output
+
+  pump_events();
 
 #ifdef DEBUG_GPS_MSG
-  Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
+      Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
 #endif
 
   Router::add({print_gps_pos, "gps_print_pos"});
   Router::add({print_rel_pos, "gps_print_rel_pos"});
   Router::add({set_current_position_as_origin, "gps_set_origin"});
+  Router::add({pump_events, "pump_events"});
 }
 
 void pump_events() {
-  while (GPS_UART.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
-    char c = GPS_UART.read();
-    gps.encode(c);
+  unsigned long last = millis();
+  while (!Serial.available())
+  {
+    while (GPS_UART.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
+      char c = GPS_UART.read();
+      gps.encode(c);
 
-#ifdef DEBUG_GPS_MSG
-    Router::print(c);
-#endif
+    #ifdef DEBUG_GPS_MSG
+          Router::print(c);
+    #endif
+    }
+    if (gps.pubx_position.vVel.isUpdated())
+    {
+      unsigned long now = millis();
+      unsigned long delta = now - last;
+      last = now;
+      Router::printf("Vertical Velocity (m/s): %.3f, Satellite Count: %d, Delta (ms): %lu\n", gps.pubx_position.vVel.value(), gps.pubx_position.numSvs.value(), delta);
+    }
+    delay(20);
   }
 }
 
