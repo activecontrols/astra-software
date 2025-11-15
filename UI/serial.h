@@ -11,7 +11,7 @@ typedef struct {
   float gyro_yaw;
   float gyro_pitch;
   float gyro_roll;
-  float mag_x; // TODO - vis this
+  float mag_x;
   float mag_y;
   float mag_z;
   float gps_pos_north;

@@ -12,10 +12,6 @@
 ImFont *panel_header_font;
 ImFont *large_font;
 
-#define DO_COUNT
-
-bool ui_do_state[DO_COUNT] = {false, false, false, false, false};
-
 // Helper to adjust brightness
 ImU32 AdjustBrightness(ImU32 color, float factor) {
   ImVec4 c = ImGui::ColorConvertU32ToFloat4(color);
@@ -92,7 +88,7 @@ typedef struct {
 
 void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int write_idx) {
   centered_text(arg.plot_title);
-  if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 200))) { // width = fill, height auto
+  if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 175))) { // width = fill, height auto
     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000, ImPlotCond_Always);
     ImPlot::SetupAxisLimits(ImAxis_Y1, arg.y_min, arg.y_max);
     ImPlot::SetupLegend(ImPlotLocation_NorthEast);
@@ -105,6 +101,7 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
 
 float acc_history[3][2000];
 float gyro_history[3][2000];
+float mag_history[3][2000];
 int write_idx = 999;
 
 void live_sensor_panel() {
@@ -122,6 +119,13 @@ void live_sensor_panel() {
   gyro_history[1][write_idx + 1000] = state_packet.gyro_pitch;
   gyro_history[2][write_idx + 1000] = state_packet.gyro_roll;
 
+  mag_history[0][write_idx] = state_packet.mag_x;
+  mag_history[1][write_idx] = state_packet.mag_y;
+  mag_history[2][write_idx] = state_packet.mag_z;
+  mag_history[0][write_idx + 1000] = state_packet.mag_x;
+  mag_history[1][write_idx + 1000] = state_packet.mag_y;
+  mag_history[2][write_idx + 1000] = state_packet.mag_z;
+
   scrolling_line_chart_arg_t imu_acc;
   imu_acc.plot_title = "IMU Accel";
   imu_acc.render_title = "##IMU Accel";
@@ -130,7 +134,6 @@ void live_sensor_panel() {
   imu_acc.y3_label = "z";
   imu_acc.y_max = 15;
   imu_acc.y_min = -5;
-  scrolling_line_chart(imu_acc, acc_history, write_idx);
 
   scrolling_line_chart_arg_t imu_gyro;
   imu_gyro.plot_title = "IMU Gyro";
@@ -140,7 +143,34 @@ void live_sensor_panel() {
   imu_gyro.y3_label = "roll";
   imu_gyro.y_max = 0.5;
   imu_gyro.y_min = -0.5;
-  scrolling_line_chart(imu_gyro, gyro_history, write_idx);
+
+  scrolling_line_chart_arg_t mag;
+  mag.plot_title = "Mag";
+  mag.render_title = "##Mag";
+  mag.y1_label = "x";
+  mag.y2_label = "y";
+  mag.y3_label = "z";
+  mag.y_max = 0.5;
+  mag.y_min = -0.5;
+
+  if (ImGui::BeginTable("live_sensor_table", 2, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextRow();
+
+    ImGui::TableSetColumnIndex(0);
+    scrolling_line_chart(imu_acc, acc_history, write_idx);
+
+    ImGui::TableSetColumnIndex(1);
+    scrolling_line_chart(imu_gyro, gyro_history, write_idx);
+
+    ImGui::TableNextRow();
+
+    ImGui::TableSetColumnIndex(0);
+    scrolling_line_chart(mag, mag_history, write_idx);
+
+    ImGui::TableSetColumnIndex(1);
+
+    ImGui::EndTable();
+  }
 
   if (ImGui::BeginTable("live_sensor_table", 3, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
@@ -201,14 +231,14 @@ void serial_control_panel() {
   static char inputBuffer[128] = ""; // buffer for text input
   ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
   ImGui::SameLine();
-  if (daq_button("Send", ImVec2(-1, 0), IM_COL32(33, 112, 69, 255))) {
+  if (daq_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
     // Do something with inputBuffer
     write_serial(inputBuffer);
     printf("You entered: %s\n", inputBuffer);
     inputBuffer[0] = '\0';
   }
 
-  ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf));
+  ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100));
 }
 
 ImVec4 verts[8] = {
@@ -374,7 +404,7 @@ void render_loop() {
   if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextColumn(); // LEFT
 
-    ImGui::BeginChild("live_sensor_subpanel", ImVec2(0, 800), true);
+    ImGui::BeginChild("live_sensor_subpanel", ImVec2(0, 750), true);
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Live Sensor Data");
     ImGui::PopFont();
