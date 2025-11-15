@@ -81,7 +81,7 @@ int main(int, char **) {
 
   ImPlot3DStyle &plot3DStyle = ImPlot3D::GetStyle();
   plot3DStyle.Colors[ImPlot3DCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f); // Plot background
-  plot3DStyle.PlotPadding.y = 0;
+  // plot3DStyle.PlotPadding.y = 200;
 
   // Setup Platform/Renderer backends
   ImGui_ImplWin32_Init(hwnd);
