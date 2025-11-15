@@ -12,6 +12,13 @@ struct GPS_Coord {
   double alt; // meters
 };
 
+struct GPS_Velocity
+{
+  double velN; // m/s velocity north
+  double velE; // m/s velocity east
+  double velD; // m/s velocity down
+};
+
 struct Point {
   double north; // meters
   double west;  // meters
@@ -21,7 +28,6 @@ struct Point {
 namespace GPS {
 
 extern GPS_Coord origin;
-extern TinyGPSPlus gps;
 
 // setup communication to GPS hardware
 void begin();
