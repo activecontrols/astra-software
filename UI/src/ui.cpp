@@ -150,8 +150,8 @@ void live_sensor_panel() {
   mag.y1_label = "x";
   mag.y2_label = "y";
   mag.y3_label = "z";
-  mag.y_max = 0.5;
-  mag.y_min = -0.5;
+  mag.y_max = 1.5;
+  mag.y_min = -1.5;
 
   if (ImGui::BeginTable("live_sensor_table", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
