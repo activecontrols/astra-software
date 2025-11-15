@@ -13,7 +13,6 @@ state_packet_t state_packet;
 
 char msg_buffer[MAX_MSGS][MAX_MSG_LEN];
 int msg_count = 0;
-#define OUT_BUF_SIZE 32768 // adjust as needed
 char concat_msg_buf[OUT_BUF_SIZE];
 
 void concat_messages(char *out) {
