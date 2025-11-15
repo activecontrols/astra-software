@@ -2,9 +2,46 @@
 #define ASTRA_GS_SERIAL_H
 
 typedef struct {
-  float acc_x;
-  float acc_y;
-  float acc_z;
+  float accel_x;
+  float accel_y;
+  float accel_z;
+  float gyro_yaw;
+  float gyro_pitch;
+  float gyro_roll;
+  float mag_x; // TODO - vis this
+  float mag_y;
+  float mag_z;
+  float gps_pos_north;
+  float gps_pos_west;
+  float gps_pos_up;
+  float gps_vel_north;
+  float gps_vel_west;
+  float gps_vel_up;
+
+  float state_q_vec_0; // TODO - vis this
+  float state_q_vec_1;
+  float state_q_vec_2;
+  float state_pos_north;
+  float state_pos_west;
+  float state_pos_up; // TODO - vis this
+  float state_vel_north;
+  float state_vel_west;
+  float state_vel_up; // TODO - vis this
+  float state_0;      // TODO - vis this
+  float state_1;
+  float state_2;
+  float state_3;
+  float state_4;
+  float state_5;
+
+  float gimbal_yaw_deg;
+  float gimbal_pitch_deg;
+  float thrust_N;
+  float roll_N;
+
+  float target_pos_north;
+  float target_pos_west;
+  float target_pos_up;
 } state_packet_t;
 
 extern state_packet_t state_packet;
