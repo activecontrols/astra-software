@@ -3,7 +3,14 @@
 #include "ui_components.h"
 #include "ui_graphs.h"
 
-void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int write_idx) {
+void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int &write_idx, float y1, float y2, float y3) {
+  history[0][write_idx] = y1;
+  history[1][write_idx] = y2;
+  history[2][write_idx] = y3;
+  history[0][write_idx + 1000] = y1;
+  history[1][write_idx + 1000] = y2;
+  history[2][write_idx + 1000] = y3;
+
   centered_text(arg.plot_title);
   if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 175))) { // width = fill, height auto
     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000, ImPlotCond_Always);
@@ -14,6 +21,10 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
     ImPlot::PlotLine(arg.y3_label, &history[2][write_idx], 1000);
     ImPlot::EndPlot();
   }
+
+  write_idx--;
+  write_idx += 1000;
+  write_idx %= 1000;
 }
 
 ImVec4 cube_verts[8] = {{-1, -1, -1, 0}, {1, -1, -1, 0}, {1, 1, -1, 0}, {-1, 1, -1, 0}, {-1, -1, 1, 0}, {1, -1, 1, 0}, {1, 1, 1, 0}, {-1, 1, 1, 0}};
@@ -57,7 +68,7 @@ void top_down_position_plot(top_down_pos_plot_arg_t arg, float x, float y) {
     ImPlot::SetupAxes(arg.x_axis_label, arg.y_axis_label);
     ImPlot::SetupAxesLimits(arg.min, arg.max, arg.min, arg.max, arg.axis_lock);
 
-    ImPlot::PlotScatter("Gimbal", &x, &y, 1);
+    ImPlot::PlotScatter(arg.point_name, &x, &y, 1);
 
     ImPlot::EndPlot();
   }
@@ -92,5 +103,32 @@ void drop_position_target_plot(drop_pos_target_arg_t arg, ImVec4 state, ImVec4 t
     ImPlot3D::PlotLine("Target", target_x, target_y, target_z, 2);
 
     ImPlot3D::EndPlot();
+  }
+}
+
+void top_down_vector_plot(top_down_vector_arg_t arg, float x, float y) {
+  centered_text(arg.plot_title);
+  if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
+    ImPlot::SetupAxes("West (m/s)", "North (m/s)");
+    ImPlot::SetupAxesLimits(arg.min, arg.max, arg.min, arg.max);
+
+    double gps_x[2] = {0, x};
+    double gps_y[2] = {0, y};
+    ImPlot::PushStyleVar(ImPlotStyleVar_LineWeight, 4.0f);
+    ImPlot::PlotLine(arg.line_name, gps_x, gps_y, 2);
+    ImPlot::PopStyleVar();
+
+    ImPlot::EndPlot();
+  }
+}
+
+void top_down_position_target_plot(top_down_pos_target_arg_t arg, float state_x, float state_y, float target_x, float target_y) {
+  centered_text(arg.plot_title);
+  if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
+    ImPlot::SetupAxes("West (m)", "North (m)");
+    ImPlot::SetupAxesLimits(arg.min, arg.max, arg.min, arg.max);
+    ImPlot::PlotScatter("State", &state_x, &state_y, 1);
+    ImPlot::PlotScatter("Target", &target_x, &target_y, 1);
+    ImPlot::EndPlot();
   }
 }

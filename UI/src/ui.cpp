@@ -14,30 +14,11 @@
 float acc_history[3][2000];
 float gyro_history[3][2000];
 float mag_history[3][2000];
-int write_idx = 999;
+int acc_write_idx = 999;
+int gyro_write_idx = 999;
+int mag_write_idx = 999;
 
 void live_sensor_panel() {
-  acc_history[0][write_idx] = state_packet.accel_x;
-  acc_history[1][write_idx] = state_packet.accel_y;
-  acc_history[2][write_idx] = state_packet.accel_z;
-  acc_history[0][write_idx + 1000] = state_packet.accel_x;
-  acc_history[1][write_idx + 1000] = state_packet.accel_y;
-  acc_history[2][write_idx + 1000] = state_packet.accel_z;
-
-  gyro_history[0][write_idx] = state_packet.gyro_yaw;
-  gyro_history[1][write_idx] = state_packet.gyro_pitch;
-  gyro_history[2][write_idx] = state_packet.gyro_roll;
-  gyro_history[0][write_idx + 1000] = state_packet.gyro_yaw;
-  gyro_history[1][write_idx + 1000] = state_packet.gyro_pitch;
-  gyro_history[2][write_idx + 1000] = state_packet.gyro_roll;
-
-  mag_history[0][write_idx] = state_packet.mag_x;
-  mag_history[1][write_idx] = state_packet.mag_y;
-  mag_history[2][write_idx] = state_packet.mag_z;
-  mag_history[0][write_idx + 1000] = state_packet.mag_x;
-  mag_history[1][write_idx + 1000] = state_packet.mag_y;
-  mag_history[2][write_idx + 1000] = state_packet.mag_z;
-
   scrolling_line_chart_arg_t imu_acc;
   imu_acc.plot_title = "IMU Accel";
   imu_acc.render_title = "##IMU Accel";
@@ -65,20 +46,29 @@ void live_sensor_panel() {
   mag.y_max = 1.5;
   mag.y_min = -1.5;
 
+  top_down_pos_target_arg_t gps_position;
+  gps_position.plot_title = "GPS Position";
+  gps_position.render_title = "##GPS Position";
+  gps_position.min = -5;
+  gps_position.max = 5;
+
+  top_down_vector_arg_t gps_velocity;
+  gps_velocity.plot_title = "GPS Velocity";
+  gps_velocity.render_title = "##GPS Velocity";
+  gps_velocity.line_name = "##GPS Velocity";
+  gps_velocity.min = -5;
+  gps_velocity.max = 5;
+
   if (ImGui::BeginTable("live_sensor_table", 2, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
-
     ImGui::TableSetColumnIndex(0);
-    scrolling_line_chart(imu_acc, acc_history, write_idx);
-
+    scrolling_line_chart(imu_acc, acc_history, acc_write_idx, state_packet.accel_x, state_packet.accel_y, state_packet.accel_z);
     ImGui::TableSetColumnIndex(1);
-    scrolling_line_chart(imu_gyro, gyro_history, write_idx);
+    scrolling_line_chart(imu_gyro, gyro_history, gyro_write_idx, state_packet.gyro_yaw, state_packet.gyro_pitch, state_packet.gyro_roll);
 
     ImGui::TableNextRow();
-
     ImGui::TableSetColumnIndex(0);
-    scrolling_line_chart(mag, mag_history, write_idx);
-
+    scrolling_line_chart(mag, mag_history, mag_write_idx, state_packet.mag_x, state_packet.mag_y, state_packet.mag_z);
     ImGui::TableSetColumnIndex(1);
 
     ImGui::EndTable();
@@ -86,57 +76,22 @@ void live_sensor_panel() {
 
   if (ImGui::BeginTable("live_sensor_table", 3, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
-
     ImGui::TableSetColumnIndex(0);
-
-    centered_text("GPS Position");
-    if (ImPlot::BeginPlot("##GPS Position", ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
-      ImPlot::SetupAxes("West (m)", "North (m)");
-      ImPlot::SetupAxesLimits(-5, 5, -5, 5);
-
-      // Draw single point
-      float gps_x[1] = {state_packet.gps_pos_west};
-      float gps_y[1] = {state_packet.gps_pos_north};
-      float target_x[1] = {state_packet.target_pos_west};
-      float target_y[1] = {state_packet.target_pos_north};
-      ImPlot::PlotScatter("GPS", gps_x, gps_y, 1);
-      ImPlot::PlotScatter("Target", target_x, target_y, 1);
-
-      ImPlot::EndPlot();
-    }
+    top_down_position_target_plot(gps_position, state_packet.gps_pos_west, state_packet.gps_pos_north, state_packet.target_pos_west, state_packet.target_pos_north);
 
     ImGui::TableSetColumnIndex(1);
-
-    centered_text("GPS Velocity");
-    if (ImPlot::BeginPlot("##GPS Velocity", ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
-      ImPlot::SetupAxes("West (m/s)", "North (m/s)");
-      ImPlot::SetupAxesLimits(-5, 5, -5, 5);
-
-      // Draw single point
-      double gps_x[2] = {0, state_packet.gps_vel_west};
-      double gps_y[2] = {0, state_packet.gps_vel_north};
-      ImPlot::PushStyleVar(ImPlotStyleVar_LineWeight, 4.0f);
-      ImPlot::PlotLine("##GPS Velocity", gps_x, gps_y, 2);
-      ImPlot::PopStyleVar();
-
-      ImPlot::EndPlot();
-    }
+    top_down_vector_plot(gps_velocity, state_packet.gps_vel_west, state_packet.gps_vel_north);
 
     ImGui::TableSetColumnIndex(2);
-
     centered_text("Altitude");
     ImGui::Text("     GPS: %5.2f m", state_packet.gps_pos_up);
     ImGui::Text("  Target: %5.2f m", state_packet.target_pos_up);
     ImGui::Dummy(ImVec2(0, 50)); // Add vertical spacing
-
     centered_text("Vert Velocity");
     ImGui::Text("     GPS: %5.2f m/s", state_packet.gps_vel_up);
 
     ImGui::EndTable();
   }
-  write_idx--;
-  write_idx += 1000;
-  write_idx %= 1000;
 }
 
 void serial_control_panel() {
@@ -203,6 +158,7 @@ void controls_output_panel() {
     top_down_pos_plot_arg_t gimbal_pos_plot;
     gimbal_pos_plot.plot_title = "Gimbal Position";
     gimbal_pos_plot.render_title = "##Gimbal Position";
+    gimbal_pos_plot.point_name = "##Gimbal";
     gimbal_pos_plot.x_axis_label = "Yaw (deg)";
     gimbal_pos_plot.y_axis_label = "Pitch (deg)";
     gimbal_pos_plot.axis_lock = ImPlotCond_Always;
