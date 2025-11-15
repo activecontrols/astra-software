@@ -15,14 +15,13 @@
 #ifndef _SPARKFUN_MMC5983MA_
 #define _SPARKFUN_MMC5983MA_
 
-#include <Arduino.h>
-#include <Wire.h>
-#include <SPI.h>
-#include "SparkFun_MMC5983MA_IO.h"
 #include "SparkFun_MMC5983MA_Arduino_Library_Constants.h"
+#include "SparkFun_MMC5983MA_IO.h"
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
 
-class SFE_MMC5983MA
-{
+class SFE_MMC5983MA {
 private:
   // I2C communication object instance.
   SFE_MMC5983MA_IO mmc_io;
@@ -34,8 +33,7 @@ private:
   // are done in shadow memory locations. Default reset values are
   // set to the shadow memory locations upon initialization and after
   // any bit set in the shadow location the register is atomically written.
-  struct MemoryShadow
-  {
+  struct MemoryShadow {
     uint8_t internalControl0 = 0x0;
     uint8_t internalControl1 = 0x0;
     uint8_t internalControl2 = 0x0;
@@ -66,13 +64,13 @@ public:
 
   // Convert errorCode to text
   const char *errorCodeString(SF_MMC5983MA_ERROR errorCode);
-  
+
   // Initializes MMC5983MA using I2C
   bool begin(TwoWire &wirePort = Wire);
 
   // Initializes MMC5983MA using SPI
-  bool begin(uint8_t csPin, SPIClass& spiPort = SPI);
-  bool begin(uint8_t csPin, SPISettings userSettings, SPIClass& spiPort = SPI);
+  bool begin(uint8_t csPin, SPIClass &spiPort = SPI);
+  bool begin(uint8_t csPin, SPISettings userSettings, SPIClass &spiPort = SPI);
 
   // Polls if MMC5983MA is connected and if chip ID matches MMC5983MA chip id.
   bool isConnected();
@@ -144,7 +142,9 @@ public:
 
   // Gets current decimation filter bandwidth. Values are in Hz.
   uint16_t getFilterBandwidth(); // Typo fix - #17
-  uint16_t getFilterBandwith() { return getFilterBandwidth(); } // Retained for backward compatibility
+  uint16_t getFilterBandwith() {
+    return getFilterBandwidth();
+  } // Retained for backward compatibility
 
   // Enables continuous mode. Continuous mode frequency must be greater than 0.
   bool enableContinuousMode();
@@ -168,7 +168,7 @@ public:
   bool disablePeriodicSet();
 
   // Checks if periodic set is enabled
-  bool isPeriodicSetEnabled();  
+  bool isPeriodicSetEnabled();
 
   // Sets how often the chip will perform an automatic set operation. Allowed values are 1, 25, 75, 100, 250, 500, 1000, 2000. Defaults to 1.
   bool setPeriodicSetSamples(uint16_t numberOfSamples);
@@ -206,12 +206,12 @@ public:
   // Get X, Y and Z field strengths in a single measurement
   bool getMeasurementXYZ(uint32_t *x, uint32_t *y, uint32_t *z);
 
-  // Read and return the X, Y and Z field strengths
-  bool readFieldsXYZ(uint32_t *x, uint32_t *y, uint32_t *z);
-
   // Clear the Meas_T_Done and/or Meas_M_Done interrupts
   // By default, clear both
   bool clearMeasDoneInterrupt(uint8_t measMask = MEAS_T_DONE | MEAS_M_DONE);
+
+  // Read and return the X, Y and Z field strengths (!!!may return stale values!!!)
+  bool readFieldsXYZ(uint32_t *x, uint32_t *y, uint32_t *z);
 };
 
 #endif
