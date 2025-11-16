@@ -32,6 +32,7 @@ void follow_trajectory() {
   GPS::set_current_position_as_origin();
   GimbalServos::centerGimbal();
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
+  Controller::reset_controller_state();
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time) {
@@ -43,23 +44,24 @@ void follow_trajectory() {
       IMU::IMUs[0].read_latest(&imu_reading);
       Mag::read_xyz(mx, my, mz);
       Point gps_rel_pos = GPS::get_rel_xyz_pos();
+      GPS_Velocity gps_vel = GPS::get_velocity();
 
       Controller_Input ci;
       ci.accel_x = imu_reading.acc[0];
-      ci.accel_y = imu_reading.acc[1];
-      ci.accel_z = imu_reading.acc[2];
+      ci.accel_y = -imu_reading.acc[2];
+      ci.accel_z = imu_reading.acc[1];
       ci.gyro_yaw = imu_reading.gyro[0];
-      ci.gyro_pitch = imu_reading.gyro[1];
-      ci.gyro_roll = imu_reading.gyro[2];
+      ci.gyro_pitch = -imu_reading.gyro[2];
+      ci.gyro_roll = imu_reading.gyro[1];
       ci.mag_x = mx;
       ci.mag_y = my;
       ci.mag_z = mz;
       ci.gps_pos_north = gps_rel_pos.north;
       ci.gps_pos_west = gps_rel_pos.west;
       ci.gps_pos_up = gps_rel_pos.up;
-      ci.gps_vel_north = 0.0; // TODO - gps vel
-      ci.gps_vel_west = 0.0;
-      ci.gps_vel_up = 0.0;
+      ci.gps_vel_north = gps_vel.north;
+      ci.gps_vel_west = gps_vel.west;
+      ci.gps_vel_up = gps_vel.up;
 
       ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
       ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
