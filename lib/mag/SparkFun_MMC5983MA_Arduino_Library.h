@@ -212,6 +212,12 @@ public:
 
   // Read and return the X, Y and Z field strengths (!!!may return stale values!!!)
   bool readFieldsXYZ(uint32_t *x, uint32_t *y, uint32_t *z);
+
+  // custom definitions
+  bool isMeasurementReady();
+  bool beginMeasurement();
+  bool measure(uint32_t*, uint32_t*, uint32_t*);
+  // end custom definitions
 };
 
 #endif

@@ -18,9 +18,9 @@ void setup() {
   Router::println("Controller started.");
 
   // Prop::begin();
-  // Mag::begin();
-  GPS::begin();
-  IMU::begin();
+  Mag::begin();
+  // GPS::begin();
+  // IMU::begin();
   GimbalServos::init();
 
   Router::add({ping, "ping"}); // example registration

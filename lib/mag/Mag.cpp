@@ -43,19 +43,44 @@ void apply_calibration(double &x, double &y, double &z) {
   apply_calibration(x, y, z, calib);
 }
 
-// values may be stale!!!
-void get_centered_reading(int &mx, int &my, int &mz) {
+bool get_centered_reading(int &mx, int &my, int &mz) {
   uint32_t rawValueX, rawValueY, rawValueZ;
-  mag.readFieldsXYZ(&rawValueX, &rawValueY, &rawValueZ);
+  if (!mag.measure(&rawValueX, &rawValueY, &rawValueZ)) {
+    return false;
+  }
+  // mag.getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
+
   mx = (int)rawValueX - 131072;
   my = (int)rawValueY - 131072;
   mz = (int)rawValueZ - 131072;
+  return true;
+}
+
+bool isMeasurementReady() {
+  return mag.isMeasurementReady();
+}
+
+bool beginMeasurement() {
+  return mag.beginMeasurement();
+}
+
+// do not use this function in time-critical code
+bool get_centered_reading_blocking(int &mx, int &my, int &mz) {
+  mag.beginMeasurement();
+  delay(1);
+  while (!mag.isMeasurementReady()) {
+    delay(1);
+  }
+  return get_centered_reading(mx, my, mz);
 }
 
 // values may be stale!!!
-void read_xyz(double &mx, double &my, double &mz) {
+bool read_xyz(double &mx, double &my, double &mz) {
   int rx, ry, rz;
-  get_centered_reading(rx, ry, rz);
+
+  if (!get_centered_reading(rx, ry, rz)) {
+    return false;
+  }
   mx = (double)rx;
   my = (double)ry;
   mz = (double)rz;
@@ -65,11 +90,26 @@ void read_xyz(double &mx, double &my, double &mz) {
   mx /= half;
   my /= half;
   mz /= half;
+  return true;
+}
+
+bool read_xyz_normalized(double &mx, double &my, double &mz) {
+  if (!read_xyz(mx, my, mz)) {
+    return false;
+  }
+
+  double sqrt_ssq = sqrt(mx * mx + my * my + mz * mz);
+  mx /= sqrt_ssq;
+  my /= sqrt_ssq;
+  mz /= sqrt_ssq;
+  return true;
 }
 
 double get_heading() {
   double mx, my, mz;
-  read_xyz(mx, my, mz);
+  if (!read_xyz(mx, my, mz)) {
+    return 0.0;
+  }
   // Magnetic north is oriented with the Y axis
   double heading = atan2(mx, -my);
   // atan2 returns a value between +PI and -PI
@@ -113,7 +153,10 @@ void collect_samples() {
   // record 1000 centered readings
   for (int i = 0; i < 1000; i++) {
     int mx, my, mz;
-    get_centered_reading(mx, my, mz);
+    if (!get_centered_reading_blocking(mx, my, mz)) {
+      Router::println("Mag read failed. collect_samples failed.");
+      return;
+    }
     read_x[i] = (double)mx;
     read_y[i] = (double)my;
     read_z[i] = (double)mz;
@@ -137,12 +180,41 @@ void collect_samples() {
 // }
 
 void mag_heading() {
-  int time = 60 * 10; // one minute
-  while (time-- > 0) {
+  while (!Serial.available()) {
     double heading = get_heading();
     Router::println(heading);
-    delay(100);
   }
+}
+
+void mag_test_read_time() {
+  unsigned long read_time = 0;
+
+  const int count = 5000;
+  int count_non_stale = 0;
+  mag.beginMeasurement();
+  delay(1); // delay 1 ms to give the magnetometer time to measure before the first loop iteration
+
+  unsigned long start_time = micros();
+  for (int i = 0; i < count; ++i) {
+    unsigned long read_start_micros = micros();
+    if (mag.isMeasurementReady()) {
+      double mx, my, mz;
+      read_xyz(mx, my, mz);
+
+      mag.beginMeasurement();
+
+      ++count_non_stale;
+    }
+
+    unsigned long delta = micros() - read_start_micros;
+    read_time += delta;
+
+    if (delta < 1000) {
+      delayMicroseconds(1000 - delta);
+    }
+  }
+  double average_ms = (double)(micros() - start_time) / count / 1000.0;
+  Router::printf("Test concluded.\nAverage loop time (ms): %lf\nAverage time spend reading per iteration (ms): %lf\nCount Reads: %d\n", average_ms, read_time / 1000.0 / count, count_non_stale);
 }
 
 void write_samples(const char *filename) {
@@ -190,15 +262,25 @@ void do_instant_calib() {
   hard_reset();
   mag.performSetOperation();
   int sX, sY, sZ;
-  get_centered_reading(sX, sY, sZ);
-  get_centered_reading(sX, sY, sZ); // for some reason the demo does it twice apparently to avoid noise (??)
+  bool success = get_centered_reading_blocking(sX, sY, sZ);
+  success = success && get_centered_reading_blocking(sX, sY, sZ); // for some reason the demo does it twice apparently to avoid noise (??)
+  if (!success) {
+    Router::println("Set operation failed.");
+    return;
+  }
   Router::println("Set operation done. Values:");
   Router::mprintln(sX, ",", sY, ",", sZ);
 
   mag.performResetOperation();
   int rX, rY, rZ;
-  get_centered_reading(rX, rY, rZ);
-  get_centered_reading(rX, rY, rZ);
+  success = get_centered_reading_blocking(rX, rY, rZ);
+  success = success && get_centered_reading_blocking(rX, rY, rZ);
+
+  if (!success) {
+    Router::println("Reset operation on mag failed. Instant calibration failed.");
+    return;
+  }
+
   Router::println("Reset operation done. Values:");
   Router::mprintln(rX, ",", rY, ",", rZ);
 
@@ -302,10 +384,31 @@ void custom_calib() {
 void show_centered_reading() {
   for (int i = 0; i < 100; i++) {
     int mx, my, mz;
-    get_centered_reading(mx, my, mz);
+    if (!get_centered_reading_blocking(mx, my, mz)) {
+      Router::println("Get centered reading failed.");
+      return;
+    }
     Router::mprintln(mx, ",", my, ",", mz);
     delay(100);
   }
+}
+
+void show_normalized_reading() {
+  mag.beginMeasurement();
+  delay(1);
+  while (!Serial.available()) {
+    if (mag.isMeasurementReady()) {
+      double mx, my, mz;
+      if (read_xyz_normalized(mx, my, mz)) {
+        Router::printf("%lf, %lf, %lf\n", mx, my, mz);
+      }
+      mag.beginMeasurement();
+    }
+    delay(5);
+  }
+
+  while (Serial.read() != '\n')
+    ;
 }
 
 void save_calib(const char *filename) {
@@ -344,13 +447,18 @@ void begin() {
   }
   mag.softReset();
 
-  mag.setContinuousModeFrequency(1000);
-  mag.enableContinuousMode();
+  mag.setFilterBandwidth(800); // 0.5ms measurement time
+
+  // supposedly this will prevent sensor drift
+  mag.setPeriodicSetSamples(25);
+  mag.enablePeriodicSet();
 
   // Router::add({mag_rawprint, "mag_raw"});
   Router::add({mag_heading, "mag_heading"});
 
   Router::add({print_calibration, "mag_print_calib"});
+  Router::add({show_normalized_reading, "mag_show_normalized_reading"});
+  Router::add({mag_test_read_time, "mag_test_read_time"});
   Router::add({write_samples, "mag_write_samples"});
   Router::add({do_simple_calib, "mag_do_simple_calib"}); // todo: add a way to save samples to a file when doing simple calib
   Router::add({do_instant_calib, "mag_do_instant_calib"});
