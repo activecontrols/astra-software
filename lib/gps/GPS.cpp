@@ -13,6 +13,58 @@ double deg_to_rad(double degrees) {
   return degrees * (PI / 180.0);
 }
 
+void gps_speed_test() {
+  unsigned long start_time = millis();
+
+  while (millis() - start_time < 20000) {
+    unsigned long start_micros = micros();
+    pump_events();
+    unsigned long delta_micros = micros() - start_micros;
+
+    Router::printf("(%d, %d),", ubx.updated, delta_micros);
+    ubx.updated = false;
+    delay(1);
+  }
+  Router::println();
+}
+
+void print_gps_events() {
+  while (!Serial.available()) {
+    pump_events();
+
+    if (ubx.updated) {
+      ubx.updated = false;
+
+      // convert from (degrees * 10^-7) to degrees
+      double real_lat = ubx.pvt_solution.lat / 10000000.0;
+      double real_lon = ubx.pvt_solution.lon / 10000000.0;
+
+      // convert from mm/s to m/s
+      double velocity_north = ubx.pvt_solution.velN * 1e-3;
+      double velocity_east = ubx.pvt_solution.velE * 1e-3;
+      double velocity_down = ubx.pvt_solution.velD * 1e-3;
+
+      double altitude = ubx.pvt_solution.hMSL * 1e-3; // convert mm to meters
+
+      Router::println("================");
+      Router::printf("Satellite Count: %d\n", ubx.pvt_solution.numSV);
+      Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.lat, ubx.pvt_solution.lon);
+      Router::printf("Latitude  (deg):  %lf\n", real_lat);
+      Router::printf("Longitude (deg): %lf\n", real_lon);
+      Router::printf("Velocity North (m/s): %lf\n", velocity_north);
+      Router::printf("Velocity East  (m/s): %lf\n", velocity_east);
+      Router::printf("Velocity Down  (m/s): %lf\n", velocity_down);
+      Router::printf("Altitude (m): %lf\n", altitude);
+      Router::println("================");
+    }
+
+    delay(10);
+  }
+
+  while (Serial.read() != '\n')
+    ;
+}
+
 void begin() {
 
   GPS_UART.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
@@ -25,6 +77,8 @@ void begin() {
   Router::add({print_rel_pos, "gps_print_rel_pos"});
   Router::add({set_current_position_as_origin, "gps_set_origin"});
   Router::add({pump_events, "pump_events"});
+  Router::add({gps_speed_test, "gps_speed_test"});
+  Router::add({print_gps_events, "print_gps_events"});
 }
 
 void pump_events() {
