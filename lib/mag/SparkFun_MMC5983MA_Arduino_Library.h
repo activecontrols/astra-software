@@ -212,6 +212,15 @@ public:
   // Clear the Meas_T_Done and/or Meas_M_Done interrupts
   // By default, clear both
   bool clearMeasDoneInterrupt(uint8_t measMask = MEAS_T_DONE | MEAS_M_DONE);
+
+  // Read and return the X, Y and Z field strengths (!!!may return stale values!!!)
+  bool readFieldsXYZ(uint32_t *x, uint32_t *y, uint32_t *z);
+
+  // custom definitions
+  bool isMeasurementReady();
+  bool beginMeasurement();
+  bool measure(uint32_t*, uint32_t*, uint32_t*);
+  // end custom definitions
 };
 
 #endif

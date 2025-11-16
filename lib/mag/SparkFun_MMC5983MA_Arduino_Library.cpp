@@ -1041,13 +1041,39 @@ uint32_t SFE_MMC5983MA::getMeasurementZ()
     return result;
 }
 
-bool SFE_MMC5983MA::getMeasurementXYZ(uint32_t *x, uint32_t *y, uint32_t *z)
-{
-    // Set the TM_M bit to start the measurement.
-    // Do this using the shadow register. If we do it with setRegisterBit
-    // (read-modify-write) we end up setting the Auto_SR_en bit too as that
-    // always seems to read as 1...? I don't know why.
-    bool success = setShadowBit(INT_CTRL_0_REG, TM_M);
+// custom definitions
+
+bool SFE_MMC5983MA::isMeasurementReady() {
+  return mmc_io.isBitSet(STATUS_REG, MEAS_M_DONE);
+}
+
+bool SFE_MMC5983MA::beginMeasurement() {
+  bool success = setShadowBit(INT_CTRL_0_REG, TM_M);
+
+  if (!success) {
+    clearShadowBit(INT_CTRL_0_REG, TM_M, false); // Clear the bit - in shadow memory only
+    SAFE_CALLBACK(errorCallback, SF_MMC5983MA_ERROR::BUS_ERROR);
+    return false;
+  }
+  return true;
+}
+
+bool SFE_MMC5983MA::measure(uint32_t *x, uint32_t *y, uint32_t *z) {
+  clearShadowBit(INT_CTRL_0_REG, TM_M, false); // Clear the bit - in shadow memory only
+
+  // Read the fields even if a timeout occurred - old data vs no data
+  // Return false if a timeout or a read error occurred
+  return readFieldsXYZ(x, y, z);
+}
+
+// end custom definitions
+
+bool SFE_MMC5983MA::getMeasurementXYZ(uint32_t *x, uint32_t *y, uint32_t *z) {
+  // Set the TM_M bit to start the measurement.
+  // Do this using the shadow register. If we do it with setRegisterBit
+  // (read-modify-write) we end up setting the Auto_SR_en bit too as that
+  // always seems to read as 1...? I don't know why.
+  bool success = setShadowBit(INT_CTRL_0_REG, TM_M);
 
     if (!success)
     {
