@@ -438,6 +438,21 @@ void cmd_output_calib(const char *arg) {
   Router::printf("Accelerometer Gain (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_gain[0], imu->calib.accel_correction_gain[1], imu->calib.accel_correction_gain[2]);
 }
 
+void imu_speed_test()
+{
+  const int transaction_count = 5000;
+  Data last_data;
+  unsigned int begin_time = micros();
+
+  for (int i = 0; i < transaction_count; ++i)
+  {
+    IMUs[0].read_latest(&last_data);
+  }
+
+  double delta_ms = (micros() - begin_time) / 1000.0;
+  Router::printf("IMU Speed Test Finished\nTransactions: %d\nAverage transaction time (ms): %lf\n", transaction_count, delta_ms / transaction_count);
+}
+
 int IMU::begin() {
 
   int error = 0;
@@ -451,6 +466,7 @@ int IMU::begin() {
   Router::add({cmd_write_calib, "imu_write_calib"});
   Router::add({cmd_output_calib, "imu_print_calib"});
   Router::add({cmd_log_accel_for_calibration, "imu_log_accel_for_calib"});
+  Router::add({imu_speed_test, "imu_speed_test"});
 
   return error;
 }
