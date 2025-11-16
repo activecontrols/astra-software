@@ -435,6 +435,57 @@ void no_calib() {
 }
 // -----------------------------------------------------------------------------
 
+void mag_record_test(const char *arg) {
+  int old_filter_bw = mag.getFilterBandwidth();
+  int new_filter_bw = atoi(arg);
+  if (!new_filter_bw) {
+    new_filter_bw = old_filter_bw;
+  }
+
+  mag.setFilterBandwidth(new_filter_bw);
+  Serial.println("<<< CSV BEGIN >>>");
+  Serial.println();
+  Serial.println();
+  Serial.print(new_filter_bw);
+  Serial.print("\nTime (s),X reading,Y reading,Z reading\n");
+
+  unsigned long start_micros = micros();
+
+  while (!Serial.available()) {
+
+    double x, y, z;
+    x = y = z = 0;
+    mag.beginMeasurement();
+    delay(1);
+    while (!mag.isMeasurementReady())
+    {
+      delayMicroseconds(500);
+    }
+
+    double t = (micros() - start_micros) / 1000000.0;
+    read_xyz_normalized(x, y, z);
+
+    Router::print(t, 6);
+    Router::print(',');
+    Router::print(x, 8);
+    Router::print(',');
+    Router::print(y, 8);
+    Router::print(',');
+    Router::print(z, 8);
+    Router::print('\n');
+    delay(1);
+  }
+
+  while (Serial.read() != '\n')
+    ;
+
+  Serial.println();
+  Serial.println();
+  Serial.println("<<< CSV END >>>");
+
+  mag.setFilterBandwidth(old_filter_bw);
+}
+
 void begin() {
   Wire.begin();
   Wire.setClock(400000);
@@ -447,7 +498,8 @@ void begin() {
   }
   mag.softReset();
 
-  mag.setFilterBandwidth(800); // 0.5ms measurement time
+  // mag.setFilterBandwidth(800); // 0.5ms measurement time
+  mag.setFilterBandwidth(400); // 2ms measurement time
 
   // supposedly this will prevent sensor drift
   mag.setPeriodicSetSamples(25);
@@ -468,6 +520,7 @@ void begin() {
   Router::add({no_calib, "mag_no_calib"});
   Router::add({save_calib, "mag_save_calib"});
   Router::add({load_calib, "mag_load_calib"});
+  Router::add({mag_record_test, "mag_record_test"});
 
   do_instant_calib();
 

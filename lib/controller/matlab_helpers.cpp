@@ -6,7 +6,7 @@ Matrix3_3 zetaCross(Vector3 zeta) {
   return zc;
 }
 
-Matrix3_3 quatRot(Vector4 q) {
+Matrix3_3   quatRot(Vector4 q) {
   Matrix3_3 CIB;
   CIB << 1 - 2 * (q[2] * q[2] + q[3] * q[3]), 2 * (q[1] * q[2] + q[0] * q[3]), 2 * (q[1] * q[3] - q[0] * q[2]), 2 * (q[1] * q[2] - q[0] * q[3]), 1 - 2 * (q[1] * q[1] + q[3] * q[3]),
       2 * (q[2] * q[3] + q[0] * q[1]), 2 * (q[1] * q[3] + q[0] * q[2]), 2 * (q[2] * q[3] - q[0] * q[1]), 1 - 2 * (q[1] * q[1] + q[2] * q[2]);
