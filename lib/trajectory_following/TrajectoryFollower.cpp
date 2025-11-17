@@ -29,24 +29,45 @@ void follow_trajectory() {
 
   long counter = 0;
 
-  GPS::set_current_position_as_origin();
   GimbalServos::centerGimbal();
+  Mag::beginMeasurement();
+
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
   Controller::reset_controller_state();
 
+  while (!Mag::isMeasurementReady()) {
+    Router::println("Waiting on mag...");
+    delay(100);
+  }
+  while (!GPS::has_valid_recent_pos()) {
+    GPS::pump_events();
+    Router::println("Waiting on gps...");
+    delay(100);
+  }
+
+  GPS::set_current_position_as_origin();
+
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time) {
+      Controller_Input ci;
 
       has_left_ground = has_left_ground | (TrajectoryLoader::trajectory[i].up > 0);
 
       IMU::Data imu_reading;
       double mx, my, mz;
       IMU::IMUs[0].read_latest(&imu_reading);
-      Mag::read_xyz(mx, my, mz);
+
+      if (Mag::isMeasurementReady()) {
+        ci.new_imu_packet = true;
+        Mag::read_xyz_normalized(mx, my, mz);
+        Mag::beginMeasurement();
+      } else {
+        ci.new_imu_packet = false;
+      }
+
       Point gps_rel_pos = GPS::get_rel_xyz_pos();
       GPS_Velocity gps_vel = GPS::get_velocity();
 
-      Controller_Input ci;
       ci.accel_x = imu_reading.acc[0];
       ci.accel_y = -imu_reading.acc[2];
       ci.accel_z = imu_reading.acc[1];
@@ -66,8 +87,6 @@ void follow_trajectory() {
       ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
       ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
       ci.target_pos_up = TrajectoryLoader::trajectory[i].up;
-
-      ci.new_imu_packet = true;
 
       if (gps_rel_pos.north != last_gps_pos.north || gps_rel_pos.west != last_gps_pos.west || gps_rel_pos.up != last_gps_pos.up) {
         ci.new_gps_packet = true;

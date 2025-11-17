@@ -17,7 +17,7 @@
 // !!! DO NOT EXCEED 24MHz !!!
 #define SPI_RATE (1 * 1000000)
 
-#define G_TO_MS2 9.81
+#define G_TO_MS2 9.80145
 
 // g / LSB (this is for +-8g fsr)
 constexpr double ACCEL_RESOLUTION = 1.0 / 4096.0;

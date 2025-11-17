@@ -15,7 +15,7 @@ void begin() {
 }
 
 void reset_controller_state() {
-  constantsASTRA.g = 9.8100;
+  constantsASTRA.g = 9.80145;
   constantsASTRA.m = 1;
   constantsASTRA.mag << 0.8660, 0, -0.5000;
   constantsASTRA.Q << 1.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10, 0, 0, 0, 1.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10, 0, 0, 0, 1.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10,
