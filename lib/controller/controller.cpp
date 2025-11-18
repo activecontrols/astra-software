@@ -71,6 +71,29 @@ Controller_Output get_controller_output(Controller_Input ci) {
   co.gimbal_pitch_deg = raw_co(1) * 180 / M_PI;
   co.thrust_N = raw_co(2);
   co.roll_N = raw_co(3);
+
+  Serial.print(">");
+  for (int i = 0; i < 15; i++) {
+    Serial.print(z(i), 4);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < 15; i++) {
+    Serial.print(X(i), 4);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < 4; i++) {
+    Serial.print(raw_co(i), 4);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < 3; i++) {
+    Serial.print(TargetPos(i), 4);
+    Serial.print(" ");
+  }
+  Serial.print(millis() / 1000.0);
+  Serial.print(" ");
+  Serial.print(ci.GND_val);
+  Serial.println();
+
   return co;
 }
 } // namespace Controller
