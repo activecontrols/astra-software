@@ -81,6 +81,35 @@ int Sensor::init() {
   if (status) {
     const char *error_message = inv_error_str(status);
     Router::printf("Error occurred while enabling little endian on IMU: %s\n", error_message);
+    return status;
+  }
+
+  /* =========================================================================================
+      ---- enable the anti-alias filter (this must be done while accel/gyro is disabled) ----
+     =========================================================================================*/
+  // switch to user bank 1
+  status = inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 1);
+
+  // enable anti-alias filter on gyro
+  status |= this->write_reg_mask(MPUREG_GYRO_CONFIG_STATIC2_B1, (1 << 1), 0);
+
+  // switch to user bank 2
+  inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 2);
+
+  // enable anti-alias filter on accelerometer
+  status |= this->write_reg_mask(MPU_ACCEL_CONFIG_STATIC2_B2, (1 << 0), 0);
+
+  // switch back to user bank 0 for normal operation
+  inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 0);
+
+  /* =========================================================================================
+      ---- done enabling anti-alias filter ----
+     =========================================================================================*/
+
+  if (status) {
+    const char *error_message = inv_error_str(status);
+    Router::printf("Error occurred while enabling anti-alias filter on IMU: %s\n", error_message);
+    return status;
   }
   return status;
 }
