@@ -65,6 +65,7 @@ void follow_trajectory() {
         ci.new_imu_packet = false;
       }
 
+      GPS::pump_events();
       Point gps_rel_pos = GPS::get_rel_xyz_pos();
       GPS_Velocity gps_vel = GPS::get_velocity();
 
@@ -76,7 +77,7 @@ void follow_trajectory() {
       ci.gyro_roll = imu_reading.gyro[1];
       ci.mag_x = mx;
       ci.mag_y = my;
-      ci.mag_z = mz;
+      ci.mag_z = -mz;
       ci.gps_pos_north = gps_rel_pos.north;
       ci.gps_pos_west = gps_rel_pos.west;
       ci.gps_pos_up = gps_rel_pos.up;
