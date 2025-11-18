@@ -160,7 +160,7 @@ void collect_samples() {
     read_x[i] = (double)mx;
     read_y[i] = (double)my;
     read_z[i] = (double)mz;
-    delay(100);
+    delay(10);
     if (i % 10 == 0) { // every second, print progress
       Router::mprintln(i, " samples recorded ", i / 1000.0 * 100.0, "%");
     }
@@ -457,8 +457,7 @@ void mag_record_test(const char *arg) {
     x = y = z = 0;
     mag.beginMeasurement();
     delay(1);
-    while (!mag.isMeasurementReady())
-    {
+    while (!mag.isMeasurementReady()) {
       delayMicroseconds(500);
     }
 
