@@ -1,4 +1,5 @@
 #pragma once
+#include "matlab_funcs.h"
 #include <Arduino.h>
 
 #define GPS_UART Serial1
@@ -55,5 +56,8 @@ GPS_Velocity get_velocity();
 // router functions
 void print_gps_pos();
 void print_rel_pos();
+
+void get_vel_cov(Matrix3_3 &out);
+void get_pos_cov(Matrix3_3 &out);
 
 } // namespace GPS
