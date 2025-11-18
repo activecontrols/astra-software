@@ -55,6 +55,8 @@ private:
   void read_latest_accel_raw(int16_t *);
   void read_latest_gyro_raw(int16_t *);
 
+  int write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val);
+
   SPI_Interface spi_interface;
 
   void *inv_icm;
