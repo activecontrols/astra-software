@@ -17,7 +17,6 @@ void begin() {
 
   GPS_UART.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
 
-
 #ifdef DEBUG_GPS_MSG
   Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
 #endif
@@ -101,8 +100,9 @@ Point get_rel_xyz_pos() {
 }
 
 void print_gps_pos() {
+  pump_events();
   if (!has_valid_recent_pos()) {
-    Router::printf("GPS does not have valid position.");
+    Router::printf("GPS does not have valid position.\n");
   } else {
     GPS_Coord c = get_lat_lon_alt();
     Router::printf("GPS Lat:%.6f Lon:%.6f Alt:%.3f\n", c.lat, c.lon, c.alt);
@@ -110,8 +110,9 @@ void print_gps_pos() {
 }
 
 void print_rel_pos() {
+  pump_events();
   if (!has_valid_recent_pos()) {
-    Router::printf("GPS does not have valid position.");
+    Router::printf("GPS does not have valid position.\n");
   } else {
     Point p = get_rel_xyz_pos();
     Router::printf("GPS relative position north:%.3f west:%.3f up:%.3f\n", p.north, p.west, p.up);

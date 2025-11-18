@@ -1,7 +1,7 @@
 #include "matlab_funcs.h"
 
 #define FILTER_MODE 1
-#define RTK 1
+#define RTK 0
 
 Vector13 EstimateStateFCN(Vector13 x_est, t_constantsASTRA constantsASTRA, Vector15 z, float dT, float GND, Matrix12_12 &P, bool new_imu_packet, bool new_gps_packet) {
   //// M-EKF Implementation
