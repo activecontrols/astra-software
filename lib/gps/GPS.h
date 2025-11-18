@@ -60,4 +60,7 @@ void print_rel_pos();
 void get_vel_cov(Matrix3_3 &out);
 void get_pos_cov(Matrix3_3 &out);
 
+bool is_vel_cov_valid();
+bool is_pos_cov_valid();
+
 } // namespace GPS
