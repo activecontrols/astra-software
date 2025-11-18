@@ -2,7 +2,7 @@
 
 struct Controller_Output {
   float thrust_N;
-  float roll_accel;
+  float roll_rad_sec_squared;
   float gimbal_pitch_deg;
   float gimbal_yaw_deg;
 };

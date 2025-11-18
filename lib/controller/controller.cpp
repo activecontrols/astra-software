@@ -91,7 +91,7 @@ Controller_Output get_controller_output(Controller_Input ci) {
   co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;
   co.gimbal_pitch_deg = raw_co(1) * 180 / M_PI;
   co.thrust_N = raw_co(2);
-  co.roll_accel = raw_co(3);
+  co.roll_rad_sec_squared = raw_co(3);
   return co;
 }
 } // namespace Controller
