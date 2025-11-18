@@ -1,5 +1,4 @@
-#ifndef TRAJECTORY_LOGGER_H
-#define TRAJECTORY_LOGGER_H
+#pragma once
 
 #include "controller.h"
 
@@ -9,5 +8,3 @@ void log_trajectory_csv(float time, int phase, Controller_Input ci, Controller_O
 void close_trajectory_log();
 
 }; // namespace TrajectoryLogger
-
-#endif

@@ -1,3 +1,4 @@
+#pragma once
 #include <ArduinoEigenDense.h>
 
 // Note - using matlab funcs based off of ASTRA simulation: f8cb7fa0f5e8ee347ce072c0007488427cedc874

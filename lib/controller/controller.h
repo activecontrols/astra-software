@@ -1,5 +1,4 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#pragma once
 
 struct Controller_Output {
   float thrust_N;
@@ -41,5 +40,3 @@ void begin();
 void reset_controller_state();
 Controller_Output get_controller_output(Controller_Input ci);
 }; // namespace Controller
-
-#endif

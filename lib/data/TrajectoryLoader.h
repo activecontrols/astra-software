@@ -6,8 +6,7 @@
  *  and trajectories from either serial communication or an SD card, as well as write trajectories to an SD card.
  */
 
-#ifndef TADPOLE_SOFTWARE_LOADER_H
-#define TADPOLE_SOFTWARE_LOADER_H
+#pragma once
 
 #include "SDCard.h"
 #include "Trajectory.h"
@@ -28,5 +27,3 @@ void write_trajectory_sd(const char *);
 
 void load_trajectory_generic(bool serial, File *f);
 }; // namespace TrajectoryLoader
-
-#endif // TADPOLE_SOFTWARE_LOADER_H
