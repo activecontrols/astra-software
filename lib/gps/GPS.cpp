@@ -101,6 +101,15 @@ void begin() {
   Router::add({print_gps_events, "print_gps_events"});
 }
 
+bool is_vel_cov_valid()
+{
+  return (ubx.cov.data->velCovValid);
+}
+
+bool is_pos_cov_valid() {
+  return (ubx.cov.data->posCovValid);
+}
+
 // get velocity covariance
 void get_vel_cov(Matrix3_3 &out) {
   out(0, 0) = ubx.cov.data->velCovNN;
