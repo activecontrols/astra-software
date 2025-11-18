@@ -87,20 +87,44 @@ int Sensor::init() {
   /* =========================================================================================
       ---- enable the anti-alias filter (this must be done while accel/gyro is disabled) ----
      =========================================================================================*/
+
+  // adjust these as per the datasheet to choose the aaf filter bandwidth
+  // these values have been chosen for a filter bandwidth of 997 Hz
+  const uint8_t accel_aaf_delt = 21;
+  const uint16_t accel_aaf_deltsqr = accel_aaf_delt * accel_aaf_delt;
+  const uint8_t accel_aaf_bitshift = 6;
+
+  const uint8_t gyro_aaf_delt = 21;
+  const uint16_t gyro_aaf_deltsqr = gyro_aaf_delt * gyro_aaf_delt;
+  const uint8_t gyro_aaf_bitshift = 6;
+
   // switch to user bank 1
   status = inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 1);
 
   // enable anti-alias filter on gyro
   status |= this->write_reg_mask(MPUREG_GYRO_CONFIG_STATIC2_B1, (1 << 1), 0);
 
+  // adjust gyro aaf (anti alias filter) bandwidth
+
+  status |= this->write_reg_mask(MPUREG_GYRO_CONFIG_STATIC3_B1, 0b0011'1111, gyro_aaf_delt);
+  status |= this->write_reg_mask(MPUREG_GYRO_CONFIG_STATIC4_B1, 0xFF, gyro_aaf_deltsqr & 0xFF);
+  status |= this->write_reg_mask(MPUREG_GYRO_CONFIG_STATIC5_B1, 0b0000'1111, gyro_aaf_deltsqr >> 8);
+  status |= this->write_reg_mask(MPUREG_GYRO_CONFIG_STATIC5_B1, 0b1111'0000, gyro_aaf_bitshift << 4);
+
   // switch to user bank 2
-  inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 2);
+  status |= inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 2);
 
   // enable anti-alias filter on accelerometer
   status |= this->write_reg_mask(MPU_ACCEL_CONFIG_STATIC2_B2, (1 << 0), 0);
 
+  // adjust accel aaf (anti alias filter) bandwidth
+  status |= this->write_reg_mask(MPU_ACCEL_CONFIG_STATIC2_B2, 0b0111'1110, accel_aaf_delt << 1);
+  status |= this->write_reg_mask(MPU_ACCEL_CONFIG_STATIC3_B2, 0xFF, accel_aaf_deltsqr & 0xFF);
+  status |= this->write_reg_mask(MPU_ACCEL_CONFIG_STATIC4_B2, 0b0000'1111, accel_aaf_deltsqr >> 8);
+  status |= this->write_reg_mask(MPU_ACCEL_CONFIG_STATIC4_B2, 0b1111'0000, accel_aaf_bitshift << 4);
+
   // switch back to user bank 0 for normal operation
-  inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 0);
+  status |= inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 0);
 
   /* =========================================================================================
       ---- done enabling anti-alias filter ----
@@ -111,6 +135,32 @@ int Sensor::init() {
     Router::printf("Error occurred while enabling anti-alias filter on IMU: %s\n", error_message);
     return status;
   }
+
+  // set gyro and accel odr
+  status |= inv_icm406xx_wr_gyro_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_GYRO_CONFIG0_ODR_2_KHZ);
+  status |= inv_icm406xx_wr_accel_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_ACCEL_CONFIG0_ODR_2_KHZ);
+
+  if (status)
+  {
+    const char *error_message = inv_error_str(status);
+    Router::printf("Error occurred while setting odr on IMU: %s\n", error_message);
+    return status;
+  }
+
+  return status;
+}
+
+int Sensor::write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val) {
+  uint8_t og_val;
+  uint8_t new_val;
+  int status = 0;
+
+  status |= read_reg(&this->spi_interface, addr, &og_val, 1);
+
+  new_val = (og_val & ~mask) | (val & mask);
+
+  status |= write_reg(&this->spi_interface, addr, &new_val, 1);
+
   return status;
 }
 
@@ -467,14 +517,12 @@ void cmd_output_calib(const char *arg) {
   Router::printf("Accelerometer Gain (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_gain[0], imu->calib.accel_correction_gain[1], imu->calib.accel_correction_gain[2]);
 }
 
-void imu_speed_test()
-{
+void imu_speed_test() {
   const int transaction_count = 5000;
   Data last_data;
   unsigned int begin_time = micros();
 
-  for (int i = 0; i < transaction_count; ++i)
-  {
+  for (int i = 0; i < transaction_count; ++i) {
     IMUs[0].read_latest(&last_data);
   }
 
