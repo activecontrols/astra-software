@@ -1,5 +1,22 @@
 #pragma once
-#include "matlab_funcs.h"
+#include <ArduinoEigenDense.h>
+
+// Note - using matlab funcs based off of ASTRA simulation: f8cb7fa0f5e8ee347ce072c0007488427cedc874
+// TODO - update matlab func commit
+
+using Vector3 = Eigen::Matrix<float, 3, 1>;
+using Vector4 = Eigen::Matrix<float, 4, 1>;
+using Vector6 = Eigen::Matrix<float, 6, 1>;
+using Vector12 = Eigen::Matrix<float, 12, 1>;
+using Vector13 = Eigen::Matrix<float, 13, 1>;
+using Vector15 = Eigen::Matrix<float, 15, 1>;
+using Matrix3_3 = Eigen::Matrix<float, 3, 3>;
+using Matrix4_4 = Eigen::Matrix<float, 4, 4>;
+using Matrix4_12 = Eigen::Matrix<float, 4, 12>;
+using Matrix6_6 = Eigen::Matrix<float, 6, 6>;
+using Matrix6_12 = Eigen::Matrix<float, 6, 12>;
+using Matrix12_6 = Eigen::Matrix<float, 12, 6>;
+using Matrix12_12 = Eigen::Matrix<float, 12, 12>;
 #include <Arduino.h>
 
 #define GPS_UART Serial1
