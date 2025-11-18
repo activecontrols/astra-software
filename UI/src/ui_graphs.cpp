@@ -27,7 +27,7 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
   write_idx %= 1000;
 }
 
-ImVec4 cube_verts[8] = {{-1, -1, -1, 0}, {1, -1, -1, 0}, {1, 1, -1, 0}, {-1, 1, -1, 0}, {-1, -1, 1, 0}, {1, -1, 1, 0}, {1, 1, 1, 0}, {-1, 1, 1, 0}};
+ImVec4 cube_verts[8] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0}, {1, 1, 2, 0}, {-1, 1, 2, 0}};
 int cube_edges[12][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
 
 ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
@@ -46,13 +46,14 @@ void rotatable_cube(ImVec4 q) {
   }
 
   if (ImPlot3D::BeginPlot("##Cube3D")) {
-    ImPlot3D::SetupAxesLimits(-2, 2, -2, 2, -2, 2);
+    ImPlot3D::SetupAxes("East (m)", "North (m)", "Up (m)");
+    ImPlot3D::SetupAxesLimits(-3, 3, -3, 3, -3, 3, ImPlot3DCond_Always);
 
     for (int i = 0; i < 12; i++) {
       ImVec4 a = rot[cube_edges[i][0]];
       ImVec4 b = rot[cube_edges[i][1]];
       // Draw line segment
-      double xs[2] = {-a.y, -b.y};
+      double xs[2] = {a.y, b.y};
       double ys[2] = {-a.x, -b.x};
       double zs[2] = {a.z, b.z};
       ImPlot3D::PlotLine("##edge", xs, ys, zs, 2);
@@ -85,7 +86,7 @@ void drop_position_target_plot(drop_pos_target_arg_t arg, ImVec4 state, ImVec4 t
     double target_y[2] = {target.y, target.y};
     double target_z[2] = {0, target.z};
 
-    ImPlot3D::SetupAxes("West (m)", "North (m)", "Up (m)");
+    ImPlot3D::SetupAxes("East (m)", "North (m)", "Up (m)");
     ImPlot3D::SetupAxisLimits(ImAxis3D_Z, 0, arg.alt_max);
     ImPlot3D::SetupAxisLimits(ImAxis3D_X, arg.hor_min, arg.hor_max);
     ImPlot3D::SetupAxisLimits(ImAxis3D_Y, arg.hor_min, arg.hor_max);
@@ -109,7 +110,7 @@ void drop_position_target_plot(drop_pos_target_arg_t arg, ImVec4 state, ImVec4 t
 void top_down_vector_plot(top_down_vector_arg_t arg, float x, float y) {
   centered_text(arg.plot_title);
   if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
-    ImPlot::SetupAxes("West (m/s)", "North (m/s)");
+    ImPlot::SetupAxes("East (m/s)", "North (m/s)");
     ImPlot::SetupAxesLimits(arg.min, arg.max, arg.min, arg.max);
 
     double gps_x[2] = {0, x};
@@ -125,7 +126,7 @@ void top_down_vector_plot(top_down_vector_arg_t arg, float x, float y) {
 void top_down_position_target_plot(top_down_pos_target_arg_t arg, float state_x, float state_y, float target_x, float target_y) {
   centered_text(arg.plot_title);
   if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
-    ImPlot::SetupAxes("West (m)", "North (m)");
+    ImPlot::SetupAxes("East (m)", "North (m)");
     ImPlot::SetupAxesLimits(arg.min, arg.max, arg.min, arg.max);
     ImPlot::PlotScatter("State", &state_x, &state_y, 1);
     ImPlot::PlotScatter("Target", &target_x, &target_y, 1);

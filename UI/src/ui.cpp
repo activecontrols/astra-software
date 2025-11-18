@@ -77,10 +77,11 @@ void live_sensor_panel() {
   if (ImGui::BeginTable("live_sensor_table", 3, ImGuiTableFlags_Resizable)) {
     ImGui::TableNextRow();
     ImGui::TableSetColumnIndex(0);
-    top_down_position_target_plot(gps_position, state_packet.gps_pos_west, state_packet.gps_pos_north, state_packet.target_pos_west, state_packet.target_pos_north);
+    // note - west is negated here b/c plot is in east/north frame
+    top_down_position_target_plot(gps_position, -state_packet.gps_pos_west, state_packet.gps_pos_north, -state_packet.target_pos_west, state_packet.target_pos_north);
 
     ImGui::TableSetColumnIndex(1);
-    top_down_vector_plot(gps_velocity, state_packet.gps_vel_west, state_packet.gps_vel_north);
+    top_down_vector_plot(gps_velocity, -state_packet.gps_vel_west, state_packet.gps_vel_north);
 
     ImGui::TableSetColumnIndex(2);
     centered_text("Altitude");
@@ -122,11 +123,11 @@ void controller_state_panel() {
     estimated_pos_plot.hor_max = 5;
 
     ImVec4 state;
-    state.x = state_packet.state_pos_west;
+    state.x = -state_packet.state_pos_west;
     state.y = state_packet.state_pos_north;
     state.z = state_packet.state_pos_up;
     ImVec4 target;
-    target.x = state_packet.target_pos_west;
+    target.x = -state_packet.target_pos_west;
     target.y = state_packet.target_pos_north;
     target.z = state_packet.target_pos_up;
     drop_position_target_plot(estimated_pos_plot, state, target);
