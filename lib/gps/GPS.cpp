@@ -21,8 +21,8 @@ void gps_speed_test() {
     pump_events();
     unsigned long delta_micros = micros() - start_micros;
 
-    Router::printf("(%d, %d),", ubx.updated, delta_micros);
-    ubx.updated = false;
+    Router::printf("(%d, %d),", ubx.pvt_solution.updated, delta_micros);
+    ubx.pvt_solution.updated = false;
     delay(1);
   }
   Router::println();
@@ -32,30 +32,50 @@ void print_gps_events() {
   while (!Serial.available()) {
     pump_events();
 
-    if (ubx.updated) {
-      ubx.updated = false;
+    if (ubx.pvt_solution.updated && has_valid_recent_pos()) {
+      ubx.pvt_solution.updated = false;
 
       // convert from (degrees * 10^-7) to degrees
-      double real_lat = ubx.pvt_solution.lat / 10000000.0;
-      double real_lon = ubx.pvt_solution.lon / 10000000.0;
+      double real_lat = ubx.pvt_solution.data->lat / 10000000.0;
+      double real_lon = ubx.pvt_solution.data->lon / 10000000.0;
 
       // convert from mm/s to m/s
-      double velocity_north = ubx.pvt_solution.velN * 1e-3;
-      double velocity_east = ubx.pvt_solution.velE * 1e-3;
-      double velocity_down = ubx.pvt_solution.velD * 1e-3;
+      double velocity_north = ubx.pvt_solution.data->velN * 1e-3;
+      double velocity_east = ubx.pvt_solution.data->velE * 1e-3;
+      double velocity_down = ubx.pvt_solution.data->velD * 1e-3;
 
-      double altitude = ubx.pvt_solution.hMSL * 1e-3; // convert mm to meters
+      double altitude = ubx.pvt_solution.data->hMSL * 1e-3; // convert mm to meters
 
       Router::println("================");
-      Router::printf("Satellite Count: %d\n", ubx.pvt_solution.numSV);
-      Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.lat, ubx.pvt_solution.lon);
+      Router::printf("Satellite Count: %d\n", ubx.pvt_solution.data->numSV);
+      Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.data->lat, ubx.pvt_solution.data->lon);
       Router::printf("Latitude  (deg):  %lf\n", real_lat);
       Router::printf("Longitude (deg): %lf\n", real_lon);
       Router::printf("Velocity North (m/s): %lf\n", velocity_north);
       Router::printf("Velocity East  (m/s): %lf\n", velocity_east);
       Router::printf("Velocity Down  (m/s): %lf\n", velocity_down);
       Router::printf("Altitude (m): %lf\n", altitude);
+      Router::printf("Horizontal Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->hAcc / 1000.0);
+      Router::printf("Vertical Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->vAcc / 1000.0);
+
       Router::println("================");
+    }
+
+    if (ubx.cov.updated) {
+      ubx.cov.updated = false;
+
+      // output covariance matrices
+      Router::print("================\n");
+      Router::print("Position covariance (m^2)\n");
+      Router::printf("%9.3f %9.3f %9.3f\n", ubx.cov.data->posCovNN, -ubx.cov.data->posCovNE, -ubx.cov.data->posCovND);
+      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->posCovNE, ubx.cov.data->posCovEE, ubx.cov.data->posCovED);
+      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->posCovND, ubx.cov.data->posCovED, ubx.cov.data->posCovDD);
+
+      Router::print("Velocity Covariance (m^2/s^2)\n");
+      Router::printf("%9.3f %9.3f %9.3f\n", ubx.cov.data->velCovNN, -ubx.cov.data->velCovNE, -ubx.cov.data->velCovND);
+      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->velCovNE, ubx.cov.data->velCovEE, ubx.cov.data->velCovED);
+      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->velCovND, ubx.cov.data->velCovED, ubx.cov.data->velCovDD);
+      Router::print("================\n");
     }
 
     delay(10);
@@ -94,19 +114,19 @@ void pump_events() {
 #ifdef DEBUG_GPS_MSG
   if (ubx.updated) {
     // convert from (degrees * 10^-7) to degrees
-    double real_lat = ubx.pvt_solution.lat / 10000000.0;
-    double real_lon = ubx.pvt_solution.lon / 10000000.0;
+    double real_lat = ubx.pvt_solution.data->lat / 10000000.0;
+    double real_lon = ubx.pvt_solution.data->lon / 10000000.0;
 
     // convert from mm/s to m/s
-    double velocity_north = ubx.pvt_solution.velN * 1e-3;
-    double velocity_east = ubx.pvt_solution.velE * 1e-3;
-    double velocity_down = ubx.pvt_solution.velD * 1e-3;
+    double velocity_north = ubx.pvt_solution.data->velN * 1e-3;
+    double velocity_east = ubx.pvt_solution.data->velE * 1e-3;
+    double velocity_down = ubx.pvt_solution.data->velD * 1e-3;
 
-    double altitude = ubx.pvt_solution.hMSL * 1e-3; // convert mm to meters
+    double altitude = ubx.pvt_solution.data->hMSL * 1e-3; // convert mm to meters
 
     Router::println("================");
-    Router::printf("Satellite Count: %d\n", ubx.pvt_solution.numSV);
-    Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.lat, ubx.pvt_solution.lon);
+    Router::printf("Satellite Count: %d\n", ubx.pvt_solution.data->numSV);
+    Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.data->lat, ubx.pvt_solution.data->lon);
     Router::printf("Latitude  (deg):  %lf\n", real_lat);
     Router::printf("Longitude (deg): %lf\n", real_lon);
     Router::printf("Velocity North (m/s): %lf\n", velocity_north);
@@ -119,15 +139,15 @@ void pump_events() {
 }
 
 bool has_valid_recent_pos() {
-  return ubx.isValid();
+  return ubx.pvt_solution.is_valid() && !(ubx.pvt_solution.data->flags3 & 1); // (check bit flag for invalid lat, long, hmsl)
 }
 
 GPS_Coord get_lat_lon_alt() {
-  return GPS_Coord{ubx.pvt_solution.lat / 10000000.0, ubx.pvt_solution.lon / 10000000.0, ubx.pvt_solution.hMSL / 1000.0};
+  return GPS_Coord{ubx.pvt_solution.data->lat / 10000000.0, ubx.pvt_solution.data->lon / 10000000.0, ubx.pvt_solution.data->hMSL / 1000.0};
 }
 
 GPS_Velocity get_velocity() {
-  return GPS_Velocity{ubx.pvt_solution.velN / 1000.0, -ubx.pvt_solution.velE / 1000.0, -ubx.pvt_solution.velD / 1000.0};
+  return GPS_Velocity{ubx.pvt_solution.data->velN / 1000.0, -ubx.pvt_solution.data->velE / 1000.0, -ubx.pvt_solution.data->velD / 1000.0};
 }
 
 void set_current_position_as_origin() {
@@ -145,8 +165,8 @@ Point get_rel_xyz_pos() {
   double dlat_rad = deg_to_rad(pos.lat - origin.lat);
   double dlon_rad = deg_to_rad(pos.lon - origin.lon);
 
-  double north_m = EARTH_RADIUS_M * dlat_rad;
-  double east_m = EARTH_RADIUS_M * std::cos(origin_lat_rad) * dlon_rad;
+  double north_m = (EARTH_RADIUS_M + pos.alt) * dlat_rad;
+  double east_m = (EARTH_RADIUS_M + pos.alt) * std::cos(origin_lat_rad) * dlon_rad;
   double west_m = -east_m;
   double up_m = pos.alt - origin.alt;
 
