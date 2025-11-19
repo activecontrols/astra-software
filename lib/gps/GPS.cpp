@@ -28,6 +28,25 @@ void gps_speed_test() {
   Router::println();
 }
 
+void output_gps_inf_cbk(uint8_t id, const char *msg) {
+  Router::printf(" -GPS INFO- [%s]: %s\n", UBX::inf_message_name(id), msg);
+}
+
+// outputs gps info messages
+void output_gps_inf() {
+  ubx.set_inf_cbk(output_gps_inf_cbk);
+
+  while (!Serial.available()) {
+    pump_events();
+
+    delay(20);
+  }
+
+  while (Serial.read() != '\n')
+    ;
+  ubx.clear_inf_cbk();
+}
+
 void print_gps_events() {
   while (!Serial.available()) {
     pump_events();
@@ -99,10 +118,10 @@ void begin() {
   Router::add({pump_events, "pump_events"});
   Router::add({gps_speed_test, "gps_speed_test"});
   Router::add({print_gps_events, "print_gps_events"});
+  Router::add({output_gps_inf, "gps_print_info"});
 }
 
-bool is_vel_cov_valid()
-{
+bool is_vel_cov_valid() {
   return (ubx.cov.data->velCovValid);
 }
 
