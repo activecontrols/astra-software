@@ -2,9 +2,18 @@
 #include <stdint.h>
 
 #define CLASS_NAV 0x01
+#define CLASS_INF 0x04
 
+// class NAV
 #define ID_PVT 0x07
 #define ID_COV 0x36
+
+// class INF
+#define ID_DEBUG 0x04
+#define ID_ERROR 0x00
+#define ID_NOTICE 0x02
+#define ID_TEST 0x03
+#define ID_WARNING 0x01
 
 struct __attribute__((packed)) UBX_NAV_PVT {
   uint32_t iTOW; // ms

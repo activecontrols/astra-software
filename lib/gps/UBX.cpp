@@ -1,10 +1,8 @@
 #include "UBX.h"
-#include <cstring>
 
 UBX::UBX() {
   reset_state();
 }
-
 
 void UBX::reset_state() {
   state = PRE_PAYLOAD;
@@ -68,13 +66,35 @@ void UBX::encode_payload(uint8_t x) {
       term_size = sizeof(UBX_NAV_COV);
       encode_term(x);
     }
+    else
+    {
+      state = SKIP;
+      return;
+    }
+  } else if (message_class == CLASS_INF) {
+    if (payload_position != 0) {
+      // this indicates that the term has finished parsing, which means the length of the message exceeds the size of the buffer. info messages aren't very important so we will skip the rest of the data
+      state = SKIP;
+      return;
+    }
+
+    state = ENCODE_TERM;
+    term_index = 0;
+
+    // copy_length = min(payload_length, INF_BUF_LEN)
+    int copy_length = payload_length < INF_BUF_LEN ? payload_length : INF_BUF_LEN;
+
+    inf_buf[copy_length] = 0; // insert null terminator
+
+    term_location = inf_buf;
+    term_size = copy_length;
+
+    encode_term(x);
   }
 }
 
 void UBX::encode_term(uint8_t x) {
-  *((uint8_t *)term_location + term_index) = x;
-
-  ++term_index;
+  ((uint8_t *)term_location)[term_index++] = x;
 
   if (term_index >= term_size) {
     state = PAYLOAD;
@@ -100,11 +120,12 @@ void UBX::checksum(uint8_t x) {
   {
     if (message_id == ID_PVT) {
       pvt_solution.swap();
-    }
-    else if (message_id == ID_COV)
-    {
+    } else if (message_id == ID_COV) {
       cov.swap();
     }
+  } else if (message_class == CLASS_INF) {
+    if (this->inf_msg_cbk)
+      this->inf_msg_cbk(this->message_id, this->inf_buf);
   }
 
   reset_state();
@@ -131,6 +152,8 @@ void UBX::encode(uint8_t x) {
   case CHECKSUM:
     checksum(x);
     break;
+  case SKIP:
+    break;
   }
 
   ++frame_position;
@@ -139,5 +162,31 @@ void UBX::encode(uint8_t x) {
     // end of payload has been reached
     state = CHECKSUM;
     return;
+  }
+}
+
+// Note: The callback should use minimal resources and return quickly. The message buffer is null terminated. Do not modify the message buffer and do not read past the null terminator.
+void UBX::set_inf_cbk(void (*cbk)(uint8_t, const char *)) {
+  this->inf_msg_cbk = cbk;
+}
+
+void UBX::clear_inf_cbk() {
+  this->inf_msg_cbk = nullptr;
+}
+
+const char *UBX::inf_message_name(uint8_t id) {
+  switch (id) {
+  case ID_DEBUG:
+    return "DEBUG";
+  case ID_ERROR:
+    return "ERROR";
+  case ID_NOTICE:
+    return "NOTICE";
+  case ID_TEST:
+    return "TEST";
+  case ID_WARNING:
+    return "WARNING";
+  default:
+    return "UNKNOWN";
   }
 }

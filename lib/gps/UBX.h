@@ -3,6 +3,8 @@
 #include "UBX_DEFS.h"
 #include <stdint.h>
 
+#define INF_BUF_LEN 1024
+
 class UBX;
 
 template <typename t> struct GPS_Packet {
@@ -13,8 +15,7 @@ public:
   bool updated = false;
 
   // this is kind of a dummy check that just checks if the first packet has been received
-  bool is_valid()
-  {
+  bool is_valid() {
     return valid;
   }
 
@@ -43,6 +44,11 @@ public:
 
   UBX();
 
+  static const char *inf_message_name(uint8_t id);
+
+  void set_inf_cbk(void (*cbk)(uint8_t, const char *));
+  void clear_inf_cbk();
+
 private:
   void reset_state();
 
@@ -50,8 +56,11 @@ private:
     PRE_PAYLOAD, // is in pre-payload or waiting for preamble
     PAYLOAD,     // is processing payload and is not in the middle of a term
     ENCODE_TERM, // is in a term (in payload)
-    CHECKSUM     // is past the payload and needs to verify checksum
+    CHECKSUM,    // is past the payload and needs to verify checksum
+    SKIP         // dummy state for skipping over the rest of the payload
   };
+
+  void (*inf_msg_cbk)(uint8_t, const char *);
   States state;
   // encoder state variables
 
@@ -65,12 +74,14 @@ private:
 
   uint8_t message_class;
   uint8_t message_id;
-  uint8_t payload_length;
+  uint16_t payload_length;
 
   // destination and size of the term currently being processed
   void *term_location;
   unsigned int term_size;
   unsigned int term_index;
+
+  char inf_buf[INF_BUF_LEN + 1]; // extra byte for null terminator, if a message were to be INF_BUF_LEN bytes long
 
   void encode_pre_payload(uint8_t);
   void encode_payload(uint8_t);
