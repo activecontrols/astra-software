@@ -35,14 +35,14 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
   write_idx %= 1000;
 }
 
-ImVec4 cube_verts[12] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0}, {1, 1, 2, 0}, {-1, 1, 2, 0}, {0, 0, 0, 0}, {-3, 0, 0, 0}, {0, -3, 0, 0}, {0, 0, 3, 0}};
+ImVec4 cube_verts[12] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0}, {1, 1, 2, 0}, {-1, 1, 2, 0}, {0, 0, 0, 0}, {3, 0, 0, 0}, {0, 3, 0, 0}, {0, 0, 3, 0}};
 int cube_edges[15][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}, {8, 9}, {8, 10}, {8, 11}};
 
 ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
   ImVec4 out;
-  out.x = vtx.x * (1 - 2 * (q.y * q.y + q.z * q.z)) + vtx.y * (2 * (q.x * q.y + q.w * q.z)) + vtx.z * (2 * (q.x * q.z - q.w * q.y));
-  out.y = vtx.x * (2 * (q.x * q.y - q.w * q.z)) + vtx.y * (1 - 2 * (q.x * q.x + q.z * q.z)) + vtx.z * (2 * (q.y * q.z + q.w * q.x));
-  out.z = vtx.x * (2 * (q.x * q.z + q.w * q.y)) + vtx.y * (2 * (q.y * q.z - q.w * q.x)) + vtx.z * (1 - 2 * (q.x * q.x + q.y * q.y));
+  out.x = vtx.x * (1 - 2 * (q.y * q.y + q.z * q.z)) + vtx.y * (2 * (q.x * q.y - q.w * q.z)) + vtx.z * (2 * (q.x * q.z + q.w * q.y));
+  out.y = vtx.x * (2 * (q.x * q.y + q.w * q.z)) + vtx.y * (1 - 2 * (q.x * q.x + q.z * q.z)) + vtx.z * (2 * (q.y * q.z - q.w * q.x));
+  out.z = vtx.x * (2 * (q.x * q.z - q.w * q.y)) + vtx.y * (2 * (q.y * q.z + q.w * q.x)) + vtx.z * (1 - 2 * (q.x * q.x + q.y * q.y));
   return out;
 }
 
@@ -62,8 +62,8 @@ void rotatable_cube(ImVec4 q) {
       ImVec4 a = rot[cube_edges[i][0]];
       ImVec4 b = rot[cube_edges[i][1]];
       // Draw line segment
-      double xs[2] = {a.y, b.y};
-      double ys[2] = {-a.x, -b.x};
+      double xs[2] = {-a.y, -b.y};
+      double ys[2] = {a.x, b.x};
       double zs[2] = {a.z, b.z};
       ImPlot3D::PlotLine("##edge", xs, ys, zs, 2);
     }
@@ -75,8 +75,8 @@ void rotatable_cube(ImVec4 q) {
       ImVec4 a = rot[cube_edges[i + 12][0]];
       ImVec4 b = rot[cube_edges[i + 12][1]];
       // Draw line segment
-      double xs[2] = {a.y, b.y};
-      double ys[2] = {-a.x, -b.x};
+      double xs[2] = {-a.y, -b.y};
+      double ys[2] = {a.x, b.x};
       double zs[2] = {a.z, b.z};
       ImPlot3D::SetNextLineStyle(axis_colors[i]);
       ImPlot3D::PlotLine(axis_labels[i], xs, ys, zs, 2);
