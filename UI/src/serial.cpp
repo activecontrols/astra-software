@@ -1,7 +1,7 @@
-#include <windows.h>
+#include "serial.h"
 #include <stdio.h>
 #include <string.h>
-#include "serial.h"
+#include <windows.h>
 
 HANDLE hSerial;
 state_packet_t state_packet;
@@ -15,18 +15,18 @@ char msg_buffer[MAX_MSGS][MAX_MSG_LEN];
 int msg_count = 0;
 char concat_msg_buf[OUT_BUF_SIZE];
 
-void concat_messages(char *out) {
-}
+void concat_messages(char *out) {}
 
 // your message callback
 void handle_message(const char *msg) {
   if (msg[0] == '>') {
-    sscanf(msg, ">%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
-           &state_packet.accel_x, &state_packet.accel_y, &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch, &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north, &state_packet.gps_pos_west, &state_packet.gps_pos_up, &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up,
-           &state_packet.state_q_vec_0, &state_packet.state_q_vec_1, &state_packet.state_q_vec_2, &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north, &state_packet.state_vel_west, &state_packet.state_vel_up, &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4, &state_packet.state_5,
-           &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N,
-           &state_packet.target_pos_north, &state_packet.target_pos_west, &state_packet.target_pos_up,
-           &state_packet.elapsed_time, &state_packet.GND_flag);
+    sscanf(msg, ">%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.accel_x, &state_packet.accel_y,
+           &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch, &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north,
+           &state_packet.gps_pos_west, &state_packet.gps_pos_up, &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up, &state_packet.state_q_vec_0,
+           &state_packet.state_q_vec_1, &state_packet.state_q_vec_2, &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north,
+           &state_packet.state_vel_west, &state_packet.state_vel_up, &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4,
+           &state_packet.state_5, &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north,
+           &state_packet.target_pos_west, &state_packet.target_pos_up, &state_packet.elapsed_time, &state_packet.GND_flag);
   } else {
     for (int i = MAX_MSGS - 1; i > 0; i--) {
       strcpy(msg_buffer[i], msg_buffer[i - 1]);
@@ -94,11 +94,7 @@ void poll_serial() {
 }
 
 void init_serial() {
-  hSerial = CreateFileA(
-      "\\\\.\\COM15",
-      GENERIC_READ | GENERIC_WRITE,
-      0, NULL, OPEN_EXISTING,
-      0, NULL);
+  hSerial = CreateFileA("\\\\.\\COM15", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
   if (hSerial == INVALID_HANDLE_VALUE) {
     printf("Error opening serial port\n");

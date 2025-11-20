@@ -3,6 +3,10 @@
 #include "ui_components.h"
 #include "ui_graphs.h"
 
+ImVec4 axis_colors[3] = {{1.0, 0.0, 0.0, 1.0},
+                         {0.0, 1.0, 0.0, 1.0},
+                         {0.0, 0.0, 1.0, 1.0}};
+
 void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int &write_idx, float y1, float y2, float y3) {
   history[0][write_idx] = y1;
   history[1][write_idx] = y2;
@@ -16,8 +20,12 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000, ImPlotCond_Always);
     ImPlot::SetupAxisLimits(ImAxis_Y1, arg.y_min, arg.y_max);
     ImPlot::SetupLegend(ImPlotLocation_NorthEast);
+
+    ImPlot::SetNextLineStyle(axis_colors[0]);
     ImPlot::PlotLine(arg.y1_label, &history[0][write_idx], 1000);
+    ImPlot::SetNextLineStyle(axis_colors[1]);
     ImPlot::PlotLine(arg.y2_label, &history[1][write_idx], 1000);
+    ImPlot::SetNextLineStyle(axis_colors[2]);
     ImPlot::PlotLine(arg.y3_label, &history[2][write_idx], 1000);
     ImPlot::EndPlot();
   }
@@ -27,8 +35,8 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
   write_idx %= 1000;
 }
 
-ImVec4 cube_verts[8] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0}, {1, 1, 2, 0}, {-1, 1, 2, 0}};
-int cube_edges[12][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
+ImVec4 cube_verts[12] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0}, {1, 1, 2, 0}, {-1, 1, 2, 0}, {0, 0, 0, 0}, {-3, 0, 0, 0}, {0, -3, 0, 0}, {0, 0, 3, 0}};
+int cube_edges[15][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}, {8, 9}, {8, 10}, {8, 11}};
 
 ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
   ImVec4 out;
@@ -40,8 +48,8 @@ ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
 
 void rotatable_cube(ImVec4 q) {
   // rotate cube vertices
-  ImVec4 rot[8];
-  for (int i = 0; i < 8; i++) {
+  ImVec4 rot[15];
+  for (int i = 0; i < 15; i++) {
     rot[i] = quatRot(q, cube_verts[i]);
   }
 
@@ -49,6 +57,7 @@ void rotatable_cube(ImVec4 q) {
     ImPlot3D::SetupAxes("East (m)", "North (m)", "Up (m)");
     ImPlot3D::SetupAxesLimits(-3, 3, -3, 3, -3, 3, ImPlot3DCond_Always);
 
+    // plot cube
     for (int i = 0; i < 12; i++) {
       ImVec4 a = rot[cube_edges[i][0]];
       ImVec4 b = rot[cube_edges[i][1]];
@@ -57,6 +66,20 @@ void rotatable_cube(ImVec4 q) {
       double ys[2] = {-a.x, -b.x};
       double zs[2] = {a.z, b.z};
       ImPlot3D::PlotLine("##edge", xs, ys, zs, 2);
+    }
+
+    const char *axis_labels[3] = {"yaw", "pitch", "roll"};
+
+    // plot axis
+    for (int i = 0; i < 3; i++) {
+      ImVec4 a = rot[cube_edges[i + 12][0]];
+      ImVec4 b = rot[cube_edges[i + 12][1]];
+      // Draw line segment
+      double xs[2] = {a.y, b.y};
+      double ys[2] = {-a.x, -b.x};
+      double zs[2] = {a.z, b.z};
+      ImPlot3D::SetNextLineStyle(axis_colors[i]);
+      ImPlot3D::PlotLine(axis_labels[i], xs, ys, zs, 2);
     }
 
     ImPlot3D::EndPlot();
