@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <SPI.h>
 
+#include "portenta_pins.h"
+
 #include "IMU.h"
 
 #include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
@@ -16,7 +18,7 @@
 
 // Unit: Hz
 // !!! DO NOT EXCEED 24MHz !!!
-#define SPI_RATE (1 * 1000000)
+#define SPI_RATE (24 * 1000000)
 
 #define G_TO_MS2 9.80145
 
@@ -89,15 +91,15 @@ int Sensor::init() {
       ---- enable the anti-alias filter (this must be done while accel/gyro is disabled) ----
      =========================================================================================*/
 
-  // adjust these as per the datasheet to choose the aaf filter bandwidth
-  // these values have been chosen for a filter bandwidth of 997 Hz
-  const uint8_t accel_aaf_delt = 21;
-  const uint16_t accel_aaf_deltsqr = accel_aaf_delt * accel_aaf_delt;
-  const uint8_t accel_aaf_bitshift = 6;
+  // adjust these per the datasheet to choose the aaf filter bandwidth
+  // these values have been chosen for a filter bandwidth of 488 Hz
+  const uint8_t accel_aaf_delt = 11;
+  const uint16_t accel_aaf_deltsqr = 122;
+  const uint8_t accel_aaf_bitshift = 8;
 
-  const uint8_t gyro_aaf_delt = 21;
-  const uint16_t gyro_aaf_deltsqr = gyro_aaf_delt * gyro_aaf_delt;
-  const uint8_t gyro_aaf_bitshift = 6;
+  const uint8_t gyro_aaf_delt = 11;
+  const uint16_t gyro_aaf_deltsqr = 122;
+  const uint8_t gyro_aaf_bitshift = 8;
 
   // switch to user bank 1
   status = inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 1);
@@ -138,11 +140,10 @@ int Sensor::init() {
   }
 
   // set gyro and accel odr
-  status |= inv_icm406xx_wr_gyro_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_GYRO_CONFIG0_ODR_2_KHZ);
-  status |= inv_icm406xx_wr_accel_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_ACCEL_CONFIG0_ODR_2_KHZ);
+  status |= inv_icm406xx_wr_gyro_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_GYRO_CONFIG0_ODR_1_KHZ);
+  status |= inv_icm406xx_wr_accel_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_ACCEL_CONFIG0_ODR_1_KHZ);
 
-  if (status)
-  {
+  if (status) {
     const char *error_message = inv_error_str(status);
     Router::printf("Error occurred while setting odr on IMU: %s\n", error_message);
     return status;
