@@ -48,6 +48,8 @@ typedef struct {
 
   float elapsed_time;
   float GND_flag;
+  float thrust_perc;
+  float diffy_perc;
 } state_packet_t;
 
 extern state_packet_t state_packet;

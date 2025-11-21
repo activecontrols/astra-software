@@ -153,12 +153,14 @@ void controls_output_panel() {
     ImGui::TableSetColumnIndex(0);
     ImGui::Text("  Target Thrust: %5.2f N", state_packet.thrust_N);
     ImGui::Text("    Target Roll: %5.2f rad/s^2", state_packet.roll_N);
+    ImGui::Text("         Thrust: %5.2f %%", state_packet.thrust_perc);
+    ImGui::Text("   Differential: %5.2f %%", state_packet.diffy_perc);
 
     ImGui::TableSetColumnIndex(1);
 
     top_down_pos_plot_arg_t gimbal_pos_plot;
-    gimbal_pos_plot.plot_title = "Gimbal Position";
-    gimbal_pos_plot.render_title = "##Gimbal Position";
+    gimbal_pos_plot.plot_title = "Gimbal Command";
+    gimbal_pos_plot.render_title = "##Gimbal Command";
     gimbal_pos_plot.point_name = "##Gimbal";
     gimbal_pos_plot.x_axis_label = "Yaw (deg)";
     gimbal_pos_plot.y_axis_label = "Pitch (deg)";
