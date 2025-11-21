@@ -18,19 +18,28 @@ int current_throttle_1 = MIN_PULSE;
 int current_throttle_2 = MIN_PULSE;
 bool armed = false;
 
-#define THRUST_MEASUREMENT_QTY 11
-#define ROLL_MEASUREMENT_QTY 5
-
-// TODO - fill these tables and then test the query function
+#define THRUST_MEASUREMENT_QTY 9
+#define ROLL_MEASUREMENT_QTY 4
 
 // maps thrust in N to thrust %
-float thrust_table[2][THRUST_MEASUREMENT_QTY] = {{}, {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100}};
+float thrust_table[2][THRUST_MEASUREMENT_QTY] = {{0, 1.96029, 3.4305075, 4.900725, 6.3709425, 8.3312325, 9.80145, 13.2319575, 15.68232}, // Thrust (N)
+                                                 {0, 20, 30, 40, 50, 60, 70, 80, 90}};                                                   // Thurst (%)
 
 // contains diffy %
-float roll_table_roll_perc[ROLL_MEASUREMENT_QTY] = {-5, -2.5, 0, 2.5, 5};
+float roll_table_roll_perc[ROLL_MEASUREMENT_QTY] = {-5, 0, 2.5, 5};
 
 // for each thrust in %, contains rolls in rad/sec^2 in order of roll_table_roll_perc
-float roll_table[THRUST_MEASUREMENT_QTY][ROLL_MEASUREMENT_QTY] = {};
+float roll_table[THRUST_MEASUREMENT_QTY][ROLL_MEASUREMENT_QTY] = {
+    {-100, 0, 100, 100},                                    // 0%
+    {-0.390878977, -0.097806543, 0.024223127, 0.204754574}, // 20%
+    {-0.339431146, -0.115873367, 0.083320491, 0.218522341}, // 30%
+    {-0.179999844, -0.0842441, 0.113443593, 0.391775541},   // 40%
+    {-0.027414388, -0.120395976, 0.08948976, 0.447323613},  // 50%
+    {-0.031847838, -0.086742267, 0.1, 0.6},                 // 60%
+    {-0.051756141, 0.018706414, 0.263005152, 0.840379736},  // 70%
+    {-0.131469118, 0.202871203, 0.437694149, 1.184869617},  // 80%
+    {-0.202587043, 0.022354158, 0.59466497, 1.231386159}    // 90%
+};
 
 // maps v from (min_in, max_in) to (min_out, max_out)
 float linear_interpolation(float v, float min_in, float max_in, float min_out, float max_out) {
@@ -74,7 +83,7 @@ void get_prop_perc(float thrust_N, float roll_accel, float *thrust_perc, float *
   } else {
     for (int i = 0; i < ROLL_MEASUREMENT_QTY - 1; i++) {
       if (roll_table[thrust_idx_low][i] <= roll_accel && roll_accel < roll_table[thrust_idx_low][i + 1]) {
-        roll_low = linear_interpolation(thrust_N, roll_table[thrust_idx_low][i], roll_table[thrust_idx_low][i + 1], roll_table_roll_perc[i], roll_table_roll_perc[i + 1]);
+        roll_low = linear_interpolation(roll_accel, roll_table[thrust_idx_low][i], roll_table[thrust_idx_low][i + 1], roll_table_roll_perc[i], roll_table_roll_perc[i + 1]);
       }
     }
   }
@@ -86,7 +95,7 @@ void get_prop_perc(float thrust_N, float roll_accel, float *thrust_perc, float *
   } else {
     for (int i = 0; i < ROLL_MEASUREMENT_QTY - 1; i++) {
       if (roll_table[thrust_idx_high][i] <= roll_accel && roll_accel < roll_table[thrust_idx_high][i + 1]) {
-        roll_high = linear_interpolation(thrust_N, roll_table[thrust_idx_high][i], roll_table[thrust_idx_high][i + 1], roll_table_roll_perc[i], roll_table_roll_perc[i + 1]);
+        roll_high = linear_interpolation(roll_accel, roll_table[thrust_idx_high][i], roll_table[thrust_idx_high][i + 1], roll_table_roll_perc[i], roll_table_roll_perc[i + 1]);
       }
     }
   }
