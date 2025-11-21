@@ -27,25 +27,50 @@ void roll_test(const char *args) {
 
   IMU::Data last_imu;
 
+  for (int i = 0; i < 3; ++i)
+    Serial.print('\n');
+  Serial.flush();
+
+  delayMicroseconds(2000);
+
+  Serial.print("<<<  START  >>>\n");
+
+  Serial.print("Time (s),Acceleration X (m/s^2),Acceleration Y (m/s^2),Acceleration Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
+
+  delayMicroseconds(2000);
+
   unsigned long start_time = micros();
-
-  Router::print("<<<  START  >>>\n");
-
-  Router::printf("Thrust % (prop 1, 2): (%.2f, %.2f)\n", Prop::get_throttle_1(), Prop::get_throttle_2());
-
-  Router::printf("Time (s), Acceleration X (m/s^2), Acceleration Y (m/s^2), Acceleration Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n");
-
+  unsigned long last_time = start_time;
   // run until the user presses enter
   while (!Serial.available()) {
-    double t = (micros() - start_time) * 1e-6;
+    unsigned long now_time = micros();
+    double t = (now_time - start_time) * 1e-6;
     IMU::IMUs[0].read_latest(&last_imu);
 
-    Router::printf("%lf, %lf, %lf, %lf, %.10lf, %.10lf, %.10lf\n", t, last_imu.acc[0], last_imu.acc[1], last_imu.acc[2], last_imu.gyro[0], last_imu.gyro[1], last_imu.gyro[2]);
+    Serial.print(t, 6);
+    for (int i = 0; i < 3; ++i) {
+      Serial.print(',');
+      Serial.print(last_imu.acc[i], 6);
+    }
 
-    delay(1);
+    for (int i = 0; i < 3; ++i) {
+      Serial.print(',');
+      Serial.print(last_imu.gyro[i], 10);
+    }
+
+    Serial.print('\n');
+    
+    unsigned long delta_us = now_time - last_time;
+    if (delta_us < 1000)
+      delayMicroseconds(1000 - delta_us);
+    last_time = now_time;
   }
   Serial.readStringUntil('\n');
-  Router::print("<<<  END  >>>\n");
+  Serial.print("<<<  END  >>>\n");
+
+  for (int i = 0; i < 3; ++i)
+    Serial.print('\n');
+  Serial.flush();
 
   // stop props
   Prop::cmd_set_both("0 0");
