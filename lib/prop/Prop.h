@@ -12,4 +12,7 @@ void arm();
 int get_throttle_1();
 int get_throttle_2();
 bool is_armed();
+
+void cmd_set(const char*);
+void cmd_set_both(const char*);
 }
