@@ -9,6 +9,8 @@
 
 namespace Router {
 
+UART radio_uart(RADIO_TX, RADIO_RX, NC, NC);
+
 File comms_log_file;
 
 CString<COMMAND_BUFFER_SIZE> commandBuffer; // TODO: IG think about if this should be a raw char array? we don't use append or anything fancy

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "portenta_pins.h"
 #include <Arduino.h>
 #include <SD.h>
 #include <functional>
@@ -8,13 +9,23 @@
 
 using namespace std;
 
-#define COMMS_SERIAL Serial
-#define COMMS_RATE 115200
+// #define USE_RADIO
 
 struct func;
 struct func_no_args;
 
 namespace Router {
+
+#ifdef USE_RADIO
+extern UART radio_uart;
+#define COMMS_SERIAL radio_uart
+#define COMMS_RATE 57600
+#endif
+
+#ifndef USE_RADIO
+#define COMMS_SERIAL Serial
+#define COMMS_RATE 115200
+#endif
 
 extern File comms_log_file;
 

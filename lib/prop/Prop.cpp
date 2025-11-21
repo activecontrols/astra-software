@@ -1,11 +1,10 @@
+#include "portenta_pins.h"
 #include <Prop.h>
 #include <Router.h>
 
 #include <Arduino.h>
 #include <mbed.h>
 
-#define PROP1_PIN D4
-#define PROP2_PIN D2
 #define MIN_PULSE 1000
 #define MAX_PULSE 2000
 #define ARM_TIME 5000

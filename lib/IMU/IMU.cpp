@@ -9,6 +9,7 @@
 
 #include "Router.h"
 #include "SDCard.h"
+#include "portenta_pins.h"
 
 #define WRITE_FLAG (0)
 #define READ_FLAG (1 << 7)
@@ -29,7 +30,7 @@ constexpr double GYRO_RESOLUTION = 1.0 / 16.4;
 
 using namespace IMU;
 
-Sensor IMU::IMUs[IMU_COUNT] = {Sensor(D6, &SPI)};
+Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &SPI)};
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
