@@ -35,17 +35,22 @@ void roll_test(const char *args) {
 
   Serial.print("<<<  START  >>>\n");
 
-  Serial.print("Time (s),Acceleration X (m/s^2),Acceleration Y (m/s^2),Acceleration Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
+  Serial.print("Line Num,Time (s),Acceleration X (m/s^2),Acceleration Y (m/s^2),Acceleration Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
 
   delayMicroseconds(2000);
 
   unsigned long start_time = micros();
   unsigned long last_time = start_time;
+
+  uint32_t line_num = 0;
   // run until the user presses enter
   while (!Serial.available()) {
     unsigned long now_time = micros();
     double t = (now_time - start_time) * 1e-6;
     IMU::IMUs[0].read_latest(&last_imu);
+
+    Serial.print(line_num++);
+    Serial.print(',');
 
     Serial.print(t, 6);
     for (int i = 0; i < 3; ++i) {
