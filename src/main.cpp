@@ -17,7 +17,7 @@ void ping(const char *args) {
 /*
 Sample IMU Calibration:
 
--0.995 -0.582 0.655
+-0.914 -0.589 0.625
 0.001285802273694 1.963703053573527e-04 0.024535158578756
 0.996176127990454 0.999260555553662 0.996176127990454
 */
@@ -66,6 +66,7 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
+  Router::add({roll_test, "roll_test"});
 }
 
 void loop() {
