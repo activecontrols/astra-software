@@ -7,8 +7,8 @@ Matrix12_12 P;
 Vector13 x_est;
 Vector3 lastEMA;
 Matrix4_12 K;
-Matrix9_6 dnf_X;
-Matrix9_6 dnf_Y;
+Matrix9_4 dnf_X;
+Matrix9_4 dnf_Y;
 float last_thrust;
 
 unsigned long last_call_time; // ms
@@ -48,8 +48,8 @@ void reset_controller_state() {
       2.068573e-14, -1.808309e-13, -7.941772e-14, -1.782415e-17, -7.805697e-17, 4.559014e-03, -2.450348e-14, -1.100699e-14, 3.040842e+00, -1.390689e-15, -2.931921e-15, -2.405146e-14, //
       -3.030093e-15, 1.483349e-14, 5.065571e+00, 4.278588e-18, -5.374655e-18, 2.685444e-18, 2.056540e-15, 1.574826e-16, 2.541668e-16, -1.544970e-16, 9.234013e-16, 2.252961e+00;       //
 
-  dnf_X = Matrix9_6::Ones();
-  dnf_Y = Matrix9_6::Ones();
+  dnf_X = Matrix9_4::Ones();
+  dnf_Y = Matrix9_4::Ones();
   last_thrust = 0;
 
   last_call_time = millis();
