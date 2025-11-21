@@ -104,7 +104,7 @@ void follow_trajectory() {
 
       Controller_Output co = Controller::get_controller_output(ci);
 
-      Prop::set_throttle_roll(co.thrust_N, co.roll_N); // TODO - need to check/fix set units
+      Prop::set_throttle_roll(co.thrust_N, co.roll_accel); // TODO - need to check/fix set units
       GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       if (timer - lastlog > LOG_INTERVAL_US) {
