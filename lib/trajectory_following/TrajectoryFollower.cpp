@@ -22,10 +22,9 @@ namespace TrajectoryFollower {
  * Follows a trajectory by interpolating between position values.
  */
 void follow_trajectory() {
-  elapsedMicros timer = elapsedMicros();
-  unsigned long lastlog = timer;
-  unsigned long lastloop = timer;
   bool has_left_ground = false;
+  bool flight_armed = false;
+  bool should_kill = false;
 
   long counter = 0;
 
@@ -47,8 +46,23 @@ void follow_trajectory() {
 
   GPS::set_current_position_as_origin();
 
+  elapsedMicros timer = elapsedMicros();
+  unsigned long lastlog = timer;
+  unsigned long lastloop = timer;
+
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
-    while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time) {
+    while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
+      if (Serial.available() && Serial.read() == 'k') {
+        should_kill = true;
+        break;
+      }
+      if (Serial.available() && Serial.read() == 'y') {
+        flight_armed = true;
+        timer = elapsedMicros();
+        long counter = 0;
+        GPS::set_current_position_as_origin();
+      }
+
       Controller_Input ci;
 
       has_left_ground = has_left_ground | (TrajectoryLoader::trajectory[i].up > 0);
@@ -119,6 +133,9 @@ void follow_trajectory() {
       delayMicroseconds(target_slp < COMMAND_INTERVAL_US ? target_slp : 0); // don't delay for too long
       lastloop += COMMAND_INTERVAL_US;
     }
+    if (should_kill) {
+      break;
+    }
   }
 
   Prop::stop();
@@ -146,12 +163,6 @@ void arm(const char *) {
   TrajectoryLogger::create_trajectory_log(log_file_name.c_str()); // lower case files have issues on teensy
 
   Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");
-  String final_check_str = Router::read(50);
-  if (final_check_str != "y") {
-    Router::println("ARMING FAILURE: Cancelled by operator.");
-    TrajectoryLogger::close_trajectory_log();
-    return;
-  }
 
   follow_trajectory();
 
