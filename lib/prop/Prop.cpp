@@ -30,7 +30,7 @@ float roll_table_roll_perc[ROLL_MEASUREMENT_QTY] = {-30, -10, 10, 30};
 
 // for each thrust in %, contains rolls in rad/sec^2 in order of roll_table_roll_perc
 float roll_table[THRUST_MEASUREMENT_QTY][ROLL_MEASUREMENT_QTY] = {
-    {-100, 100, 100, 100},  // 0%
+    {-100, -100, 100, 100}, // 0%
     {-0.4, -0.2, 0.2, 0.4}, // 20%
     {-0.4, -0.2, 0.2, 0.4}, // 30%
     {-0.4, -0.2, 0.2, 0.4}, // 40%

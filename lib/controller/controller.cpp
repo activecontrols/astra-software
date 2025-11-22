@@ -54,7 +54,7 @@ void reset_controller_state() {
   last_call_time = millis();
 }
 
-Controller_Output get_controller_output(Controller_Input ci) {
+Controller_Output get_controller_output(Controller_Input ci, bool should_log, int traj_idx) {
   unsigned long call_time = millis();
   float dT = (call_time - last_call_time) / 1000.0;
   last_call_time = call_time;
@@ -85,6 +85,40 @@ Controller_Output get_controller_output(Controller_Input ci) {
     raw_co = Vector4::Zero();
   }
   last_thrust = raw_co(2);
+
+  if (should_log) {
+    Serial.print(">a");
+    for (int i = 0; i < 15; i++) {
+      Serial.print(z(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    Serial.print(">b");
+    Serial.print(x_est(0));
+    Serial.print(" ");
+    for (int i = 0; i < 15; i++) {
+      Serial.print(X(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    Serial.print(">c");
+    for (int i = 0; i < 4; i++) {
+      Serial.print(raw_co(i), 4);
+      Serial.print(" ");
+    }
+    if (traj_idx == 0) {
+      Serial.print("0 0 0.0 ");
+    } else if (traj_idx == 1) {
+      Serial.print("0 0 0.3 ");
+    } else if (traj_idx == 2) {
+      Serial.print("0 0 0.3 ");
+    } else {
+      Serial.print("0 0 0.0 ");
+    }
+    Serial.println();
+  }
 
   Controller_Output co;
   co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;

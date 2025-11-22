@@ -39,11 +39,11 @@ void follow_trajectory() {
     Router::println("Waiting on mag...");
     delay(100);
   }
-  while (!GPS::has_valid_recent_pos()) {
-    GPS::pump_events();
-    Router::println("Waiting on gps...");
-    delay(100);
-  }
+  // while (!GPS::has_valid_recent_pos()) {
+  //   GPS::pump_events();
+  //   Router::println("Waiting on gps...");
+  //   delay(100);
+  // }
 
   GPS::set_current_position_as_origin();
 
@@ -53,11 +53,15 @@ void follow_trajectory() {
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
-      if (Serial.available() && Serial.read() == 'k') {
+      char cmd_char = ' ';
+      if (Serial.available()) {
+        cmd_char = Serial.read();
+      }
+      if (cmd_char == 'k') {
         should_kill = true;
         break;
       }
-      if (Serial.available() && Serial.read() == 'y') {
+      if (cmd_char == 'y') {
         flight_armed = true;
         timer = elapsedMicros();
         lastlog = timer;
@@ -67,7 +71,7 @@ void follow_trajectory() {
       }
 
       if (timer - lastlog > LOG_INTERVAL_US) {
-        lastlog = LOG_INTERVAL_US;
+        lastlog = timer;
         should_log = true;
       } else {
         should_log = false;
@@ -126,17 +130,27 @@ void follow_trajectory() {
         ci.GND_val = 1.0;
       }
 
-      Controller_Output co = Controller::get_controller_output(ci);
+      Controller_Output co = Controller::get_controller_output(ci, should_log, i);
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
-      Prop::set_throttle_roll(thrust_perc, diffy_perc);
-      GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
+      // Prop::set_throttle_roll(thrust_perc, diffy_perc);
+      // GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
-      if (timer - lastlog > LOG_INTERVAL_US) {
-        lastlog += LOG_INTERVAL_US;
-        // TrajectoryLogger::log_trajectory_csv(timer / 1000000.0, i, ci, co);
+      if (should_log) {
+        Serial.print(">d");
+        Serial.print(timer / 1000000.0);
+        Serial.print(" ");
+        Serial.print(ci.GND_val);
+        Serial.print(" ");
+        Serial.print(flight_armed);
+        Serial.print(" ");
+        Serial.print(thrust_perc);
+        Serial.print(" ");
+        Serial.print(diffy_perc);
+        Serial.println();
       }
+
       counter++;
 
       unsigned long target_slp = COMMAND_INTERVAL_US - (timer - lastloop);
@@ -147,6 +161,18 @@ void follow_trajectory() {
       break;
     }
   }
+
+  Serial.print(">d");
+  Serial.print(timer / 1000000.0);
+  Serial.print(" ");
+  Serial.print("1.0"); // GND val
+  Serial.print(" ");
+  Serial.print("0.00"); // armed val
+  Serial.print(" ");
+  Serial.print("0.00"); // thrust perc
+  Serial.print(" ");
+  Serial.print("0.00"); // diffy perc
+  Serial.println();
 
   Prop::stop();
 
