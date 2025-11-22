@@ -1,9 +1,10 @@
 #pragma once
+#include "matlab_funcs.h"
 #include <Arduino.h>
 
 #define GPS_UART Serial1
 
-#define EARTH_RADIUS_M 6371000.0
+#define EARTH_RADIUS_M 6371001.0
 
 struct GPS_Coord {
   double lat; // deg lat
@@ -55,5 +56,11 @@ GPS_Velocity get_velocity();
 // router functions
 void print_gps_pos();
 void print_rel_pos();
+
+void get_vel_cov(Matrix3_3 &out);
+void get_pos_cov(Matrix3_3 &out);
+
+bool is_vel_cov_valid();
+bool is_pos_cov_valid();
 
 } // namespace GPS

@@ -1,33 +1,49 @@
+#pragma once
+
+#include "UBX_DEFS.h"
 #include <stdint.h>
 
-struct UBX_NAV_PVT {
-  uint8_t numSV; // number of satellites
-  int32_t lon;   // longitude (degrees 1e-7)
-  int32_t lat;   // latitude (degrees 1e-7)
-  int32_t hMSL;  // height above mean sea level (mm)
-  int32_t velN;  // velocity north (mm/s)
-  int32_t velE;  // velocity east (mm/s)
-  int32_t velD;  // velocity down (mm/s)
+class UBX;
+
+template <typename t> struct GPS_Packet {
+  friend class UBX;
+
+public:
+  t *data{0};
+  bool updated = false;
+
+  // this is kind of a dummy check that just checks if the first packet has been received
+  bool is_valid() {
+    return valid;
+  }
+
+private:
+  bool valid = false;
+  t a;
+  t b;
+  t *new_data = &a;
+  void swap() {
+    data = new_data;
+
+    new_data = new_data == &a ? &b : &a;
+
+    valid = true;
+    updated = true;
+  }
 };
 
 class UBX {
 
 public:
-  UBX_NAV_PVT pvt_solution{0};
-
   void encode(uint8_t);
-  bool isValid();
 
-  bool updated;
+  GPS_Packet<UBX_NAV_PVT> pvt_solution;
+  GPS_Packet<UBX_NAV_COV> cov;
 
   UBX();
 
 private:
   void reset_state();
-
-  bool valid;
-
-  UBX_NAV_PVT new_pvt_solution{0};
 
   enum States {
     PRE_PAYLOAD, // is in pre-payload or waiting for preamble

@@ -3,12 +3,6 @@
 
 UBX::UBX() {
   reset_state();
-  updated = false;
-  valid = false;
-}
-
-bool UBX::isValid() {
-  return valid;
 }
 
 void UBX::reset_state() {
@@ -56,46 +50,23 @@ void UBX::encode_pre_payload(uint8_t x) {
 void UBX::encode_payload(uint8_t x) {
   int payload_position = frame_position - 6; // the first 6 bytes of the frame are pre-payload
 
-  if (message_class == 0x01 && message_id == 0x07) // UBX-NAV-PVT
+  if (message_class == CLASS_NAV) // UBX-NAV-PVT
   {
-    state = ENCODE_TERM;
-    term_index = 0;
+    if (message_id == ID_PVT) {
+      state = ENCODE_TERM;
+      term_index = 0;
 
-    switch (payload_position) {
-    case 23: // numSV
-      term_location = &new_pvt_solution.numSV;
-      term_size = sizeof(new_pvt_solution.numSV);
-      break;
-    case 24: // longitude
-      term_location = &new_pvt_solution.lon;
-      term_size = sizeof(new_pvt_solution.lon);
-      break;
-    case 28: // latitude
-      term_location = &new_pvt_solution.lat;
-      term_size = sizeof(new_pvt_solution.lat);
-      break;
-    case 36:
-      term_location = &new_pvt_solution.hMSL;
-      term_size = sizeof(new_pvt_solution.hMSL);
-      break;
-    case 48: // velN
-      term_location = &new_pvt_solution.velN;
-      term_size = sizeof(new_pvt_solution.velN);
-      break;
-    case 52: // velE
-      term_location = &new_pvt_solution.velE;
-      term_size = sizeof(new_pvt_solution.velE);
-      break;
-    case 56: // velD
-      term_location = &new_pvt_solution.velD;
-      term_size = sizeof(new_pvt_solution.velD);
-      break;
-    default:
-      state = PAYLOAD;
-      // we will ignore this term
-      return;
+      term_location = pvt_solution.new_data;
+      term_size = sizeof(UBX_NAV_PVT);
+      encode_term(x);
+    } else if (message_id == ID_COV) {
+      state = ENCODE_TERM;
+      term_index = 0;
+
+      term_location = cov.new_data;
+      term_size = sizeof(UBX_NAV_COV);
+      encode_term(x);
     }
-    encode_term(x);
   }
 }
 
@@ -124,13 +95,13 @@ void UBX::checksum(uint8_t x) {
     reset_state();
     return;
   }
-  if (message_class == 0x01 && message_id == 0x07) // UBX-NAV-PVT
+  if (message_class == CLASS_NAV) // UBX-NAV-PVT
   {
-    // copy values over
-    memcpy(&pvt_solution, &new_pvt_solution, sizeof(UBX_NAV_PVT));
-    // set flags
-    updated = true;
-    valid = true;
+    if (message_id == ID_PVT) {
+      pvt_solution.swap();
+    } else if (message_id == ID_COV) {
+      cov.swap();
+    }
   }
 
   reset_state();
