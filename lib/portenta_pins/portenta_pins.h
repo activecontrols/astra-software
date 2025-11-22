@@ -1,8 +1,8 @@
 #pragma once
 #include <Arduino.h>
 
-#define YAW_SERVO_PIN D0
-#define PITCH_SERVO_PIN D1
+#define BOTTOM_SERVO_PIN D0
+#define TOP_SERVO_PIN D1
 #define PROP2_PIN D2
 #define SD_CARD_CS D3
 #define RADIO_TX PC_6 // D4
