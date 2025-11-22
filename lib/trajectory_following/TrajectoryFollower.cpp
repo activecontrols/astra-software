@@ -39,11 +39,11 @@ void follow_trajectory() {
     Router::println("Waiting on mag...");
     delay(100);
   }
-  // while (!GPS::has_valid_recent_pos()) {
-  //   GPS::pump_events();
-  //   Router::println("Waiting on gps...");
-  //   delay(100);
-  // }
+  while (!GPS::has_valid_recent_pos()) {
+    GPS::pump_events();
+    Router::println("Waiting on gps...");
+    delay(100);
+  }
 
   GPS::set_current_position_as_origin();
 
