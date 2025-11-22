@@ -70,10 +70,10 @@ Controller_Output get_controller_output(Controller_Input ci) {
   // clang-format on
 
   Vector9 imu = z.segment<9>(0);
-  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
+  Vector9 filt_imu = DigitalNF(imu, 0.0, last_thrust, dT, dnf_X, dnf_Y);
   z.segment<9>(0) = filt_imu;
 
-  x_est = EstimateStateFCN(x_est, constantsASTRA, z, dT, ci.GND_val, P, ci.new_imu_packet, ci.new_gps_packet);
+  x_est = EstimateStateFCN(x_est, constantsASTRA, z, dT, 1.0, P, ci.new_imu_packet, ci.new_gps_packet);
   Vector3 EMA_G = EMA_Gyros(z, lastEMA);
   Vector15 X = StateAUG(x_est, EMA_G);
   Vector3 TargetPos;
@@ -82,10 +82,28 @@ Controller_Output get_controller_output(Controller_Input ci) {
   Vector4 raw_co = -K * error;
   raw_co(2) = raw_co(2) + constantsASTRA.g * constantsASTRA.m;
   raw_co = output_clamp(raw_co);
-  if (ci.GND_val) {
+  if (0.0) {
     raw_co = Vector4::Zero();
   }
   last_thrust = raw_co(2);
+
+  Serial.print(">");
+  for (int i = 0; i < 15; i++) {
+    Serial.print(z(i), 4);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < 15; i++) {
+    Serial.print(X(i), 4);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < 4; i++) {
+    Serial.print(raw_co(i), 4);
+    Serial.print(" ");
+  }
+  for (int i = 0; i < 3; i++) {
+    Serial.print(TargetPos(i), 4);
+    Serial.print(" ");
+  }
 
   Controller_Output co;
   co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;

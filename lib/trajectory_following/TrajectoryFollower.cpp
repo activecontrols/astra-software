@@ -103,15 +103,27 @@ void follow_trajectory() {
       }
 
       Controller_Output co = Controller::get_controller_output(ci);
+      co.thrust_N = 8.3312325;
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
-      Prop::set_throttle_roll(thrust_perc, diffy_perc);
-      GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
+
+      Serial.print(timer / 1000000.0);
+      Serial.print(" ");
+      Serial.print(ci.GND_val);
+      Serial.println();
+      Serial.print(" ");
+      Serial.print(thrust_perc);
+      Serial.print(" ");
+      Serial.print(diffy_perc);
+      Serial.println();
+
+      // Prop::set_throttle_roll(thrust_perc, diffy_perc);
+      //  GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       if (timer - lastlog > LOG_INTERVAL_US) {
         lastlog += LOG_INTERVAL_US;
-        TrajectoryLogger::log_trajectory_csv(timer / 1000000.0, i, ci, co);
+        // TrajectoryLogger::log_trajectory_csv(timer / 1000000.0, i, ci, co);
       }
       counter++;
 
@@ -141,22 +153,22 @@ void arm(const char *) {
   }
 
   // filenames use DOS 8.3 standard
-  Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
-  String log_file_name = Router::read(50);
-  TrajectoryLogger::create_trajectory_log(log_file_name.c_str()); // lower case files have issues on teensy
+  // Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
+  // String log_file_name = Router::read(50);
+  // TrajectoryLogger::create_trajectory_log(log_file_name.c_str()); // lower case files have issues on teensy
 
   Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");
   String final_check_str = Router::read(50);
   if (final_check_str != "y") {
     Router::println("ARMING FAILURE: Cancelled by operator.");
-    TrajectoryLogger::close_trajectory_log();
+    // TrajectoryLogger::close_trajectory_log();
     return;
   }
 
   follow_trajectory();
 
   Router::println("Finished following trajectory!");
-  TrajectoryLogger::close_trajectory_log();
+  // TrajectoryLogger::close_trajectory_log();
 }
 
 } // namespace TrajectoryFollower
