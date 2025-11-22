@@ -131,10 +131,16 @@ void follow_trajectory() {
       }
 
       Controller_Output co = Controller::get_controller_output(ci, should_log, i);
+      if (ci.GND_val == 0.0) {
+        co.thrust_N = 6.370942;
+      } else {
+        co.thrust_N = 0;
+      }
+
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
-      // Prop::set_throttle_roll(thrust_perc, diffy_perc);
+      Prop::set_throttle_roll(thrust_perc, diffy_perc);
       // GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       if (should_log) {

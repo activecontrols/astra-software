@@ -85,8 +85,8 @@ Vector13 EstimateStateFCN(Vector13 x_est, t_constantsASTRA constantsASTRA, Vecto
     Matrix3_3 gps_vel_covar;
     GPS::get_pos_cov(gps_pos_covar);
     GPS::get_vel_cov(gps_vel_covar);
-    gps_pos_covar = gps_pos_covar * 10;
-    gps_vel_covar = gps_vel_covar * 10;
+    gps_pos_covar = gps_pos_covar * 20;
+    gps_vel_covar = gps_vel_covar * 5;
 
     Matrix6_6 R = Matrix6_6::Zero();
     R.block<3, 3>(0, 0) = gps_pos_covar;

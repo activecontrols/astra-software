@@ -146,7 +146,7 @@ void pump_events() {
   }
 
 #ifdef DEBUG_GPS_MSG
-  if (ubx.updated) {
+  if (false) {
     // convert from (degrees * 10^-7) to degrees
     double real_lat = ubx.pvt_solution.data->lat / 10000000.0;
     double real_lon = ubx.pvt_solution.data->lon / 10000000.0;
