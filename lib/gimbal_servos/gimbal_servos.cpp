@@ -79,7 +79,7 @@ void init() {
   bottom_servo.period_ms(20);
   top_servo.period_ms(20);
   centerGimbal();
-  Router::add({setGimbalAngleCmd, "gimbal_set_angle_yp"});
+  Router::add({setGimbalAngleCmd, "gimbal_set_angle_bt"});
   Router::add({centerGimbal, "gimbal_center"});
 }
 } // namespace GimbalServos

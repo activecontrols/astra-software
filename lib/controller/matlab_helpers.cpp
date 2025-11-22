@@ -101,9 +101,9 @@ Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos) {
 Vector4 output_clamp(Vector4 U) {
   float thrust_max = 1.5 * 9.8; // N
   Vector4 maxU;
-  maxU << M_PI / 24, M_PI / 24, thrust_max, thrust_max * 10;
+  maxU << M_PI / 12, M_PI / 12, thrust_max, thrust_max * 10;
   Vector4 minU;
-  minU << -M_PI / 24, -M_PI / 24, thrust_max * 0.4, -thrust_max * 10;
+  minU << -M_PI / 12, -M_PI / 12, thrust_max * 0.4, -thrust_max * 10;
 
   U = U.cwiseMin(maxU).cwiseMax(minU);
   return U;
