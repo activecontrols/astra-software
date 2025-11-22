@@ -16,6 +16,14 @@ void begin() {
   Router::add({load_trajectory_serial, "load_trajectory_serial"});
   Router::add({load_trajectory_sd_cmd, "load_trajectory_sd"});
   Router::add({write_trajectory_sd, "write_trajectory_sd"});
+
+  loaded_trajectory = true;
+  trajectory = (traj_point_pos *)malloc(sizeof(traj_point_pos) * 2);
+  header.num_points = 4;
+  trajectory[0] = {.time = 0, .north = 0, .west = 0, .up = 0};
+  trajectory[1] = {.time = 3, .north = 0, .west = 0, .up = 0.1};   // velocity targets (m/s)
+  trajectory[2] = {.time = 6, .north = 0, .west = 0, .up = 0.0};   // velocity targets (m/s)
+  trajectory[3] = {.time = 15, .north = 0, .west = 0, .up = -0.1}; // velocity targets (m/s)
 }
 
 void load_trajectory_generic(bool serial, File *f) {
@@ -110,4 +118,4 @@ void write_trajectory_sd(const char *) {
   Router::println("Wrote trajectory!");
 }
 
-}
+} // namespace TrajectoryLoader

@@ -62,7 +62,7 @@ Vector3 EMA_Gyros(Vector15 Y, Vector3 &lastEMA) {
   Vector3 gyros = Y.segment<3>(3);
 
   // Exponential Moving Avg Step
-  Vector3 EMA_G = ExpMovingAvg(gyros, lastEMA, 0.3);
+  Vector3 EMA_G = ExpMovingAvg(gyros, lastEMA, 0.5);
   lastEMA = EMA_G;
   return EMA_G;
 }
@@ -79,7 +79,7 @@ Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos) {
   Vector3 PosError = TargetPos - x.segment<3>(3);
   Vector3 PosGain;
   PosGain << 0.55, 0.55, 0.75;
-  Vector3 TargetVel = PosGain.cwiseProduct(PosError);
+  Vector3 TargetVel = TargetPos; // PosGain.cwiseProduct(PosError);
 
   float MaxAscentSpeed = 4;   // m/s
   float MaxDescentSpeed = -4; // m/s
@@ -93,7 +93,7 @@ Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos) {
   TargetVel = TargetVel.cwiseMin(MaxVel).cwiseMax(MinVel);
 
   Vector12 TargetVec;
-  TargetVec << Vector3::Zero(), TargetPos, TargetVel, Vector3::Zero();
+  TargetVec << Vector3::Zero(), Vector3::Zero(), TargetVel, Vector3::Zero();
   Vector12 ref = x - TargetVec;
   return ref;
 }
@@ -101,9 +101,9 @@ Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos) {
 Vector4 output_clamp(Vector4 U) {
   float thrust_max = 1.5 * 9.8; // N
   Vector4 maxU;
-  maxU << M_PI / 24, M_PI / 24, thrust_max, thrust_max * 10;
+  maxU << M_PI / 18, M_PI / 18, thrust_max, thrust_max * 10;
   Vector4 minU;
-  minU << -M_PI / 24, -M_PI / 24, thrust_max * 0.4, -thrust_max * 10;
+  minU << -M_PI / 18, -M_PI / 18, thrust_max * 0.4, -thrust_max * 10;
 
   U = U.cwiseMin(maxU).cwiseMax(minU);
   return U;
