@@ -1,7 +1,7 @@
 #include "serial.h"
+#include <ctime>
 #include <stdio.h>
 #include <string.h>
-#include <ctime>
 #include <windows.h>
 
 HANDLE hSerial;
@@ -24,16 +24,18 @@ void concat_messages(char *out) {}
 void handle_message(const char *msg) {
   fprintf(log_file, "%s", msg);
   if (msg[0] == '>' && msg[1] == 'a') {
-    sscanf(msg, ">a %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.accel_x, &state_packet.accel_y, &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch, &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north, &state_packet.gps_pos_west, &state_packet.gps_pos_up, &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up);
+    sscanf(msg, ">a %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.accel_x, &state_packet.accel_y, &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch,
+           &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north, &state_packet.gps_pos_west, &state_packet.gps_pos_up,
+           &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up);
   } else if (msg[0] == '>' && msg[1] == 'b') {
-    sscanf(msg, ">b %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.state_q_vec_new, &state_packet.state_q_vec_0,
-           &state_packet.state_q_vec_1, &state_packet.state_q_vec_2, &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north,
-           &state_packet.state_vel_west, &state_packet.state_vel_up, &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4,
-           &state_packet.state_5);
+    sscanf(msg, ">b %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.state_q_vec_new, &state_packet.state_q_vec_0, &state_packet.state_q_vec_1, &state_packet.state_q_vec_2,
+           &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north, &state_packet.state_vel_west, &state_packet.state_vel_up,
+           &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4, &state_packet.state_5);
   } else if (msg[0] == '>' && msg[1] == 'c') {
-    sscanf(msg, ">c %f %f %f %f %f %f %f", &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north, &state_packet.target_pos_west, &state_packet.target_pos_up);
+    sscanf(msg, ">c %f %f %f %f %f %f %f", &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north,
+           &state_packet.target_pos_west, &state_packet.target_pos_up);
   } else if (msg[0] == '>' && msg[1] == 'd') {
-    sscanf(msg, ">d %f %f %f %f", &state_packet.elapsed_time, &state_packet.GND_flag, &state_packet.thrust_perc, &state_packet.diffy_perc);
+    sscanf(msg, ">d %f %f %f %f %f", &state_packet.elapsed_time, &state_packet.GND_flag, &state_packet.flight_armed, &state_packet.thrust_perc, &state_packet.diffy_perc);
   } else {
     for (int i = MAX_MSGS - 1; i > 0; i--) {
       strcpy(msg_buffer[i], msg_buffer[i - 1]);

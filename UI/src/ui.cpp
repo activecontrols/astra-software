@@ -174,8 +174,19 @@ void controls_output_panel() {
 }
 
 void system_state_panel() {
-  ImGui::Text("Elasped Time: %5.2f s", state_packet.elapsed_time);
-  colored_flag("    GND Flag", state_packet.GND_flag, ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
+  if (ImGui::BeginTable("system_state", 2, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextRow();
+    ImGui::TableSetColumnIndex(0);
+    ImGui::Text("Elasped Time: %5.2f s", state_packet.elapsed_time);
+    colored_flag("    GND Flag", state_packet.GND_flag, ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), "##gnd_flag");
+    ImGui::TableSetColumnIndex(1);
+    if (state_packet.flight_armed) {
+      colored_flag("       Armed", state_packet.flight_armed, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##armed_flag");
+    } else {
+      colored_flag("     Not Armed", state_packet.flight_armed, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##armed_flag");
+    }
+    ImGui::EndTable();
+  }
 }
 
 void render_loop() {

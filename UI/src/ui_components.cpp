@@ -51,7 +51,7 @@ void panel(const char *panel_name, ImVec2 size, void (*panel_ui_func)()) {
   ImGui::EndChild();
 }
 
-void colored_flag(char *text, bool state, ImVec4 on_color, ImVec4 off_color) {
+void colored_flag(char *text, bool state, ImVec4 on_color, ImVec4 off_color, char *imgui_id) {
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
   if (state) {
     ImGui::PushStyleColor(ImGuiCol_FrameBg, on_color);
@@ -65,7 +65,7 @@ void colored_flag(char *text, bool state, ImVec4 on_color, ImVec4 off_color) {
 
   ImGui::SetNextItemWidth(200.0f); // pixels
   ImGui::BeginDisabled();          // prevent editing
-  ImGui::InputText("##dummy", text, ImGuiInputTextFlags_ReadOnly);
+  ImGui::InputText(imgui_id, text, ImGuiInputTextFlags_ReadOnly);
   ImGui::EndDisabled();
   ImGui::PopStyleColor(3);
   ImGui::PopStyleVar();

@@ -49,6 +49,7 @@ typedef struct {
 
   float elapsed_time;
   float GND_flag;
+  float flight_armed;
   float thrust_perc;
   float diffy_perc;
 } state_packet_t;
