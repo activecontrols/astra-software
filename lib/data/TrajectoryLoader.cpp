@@ -21,9 +21,9 @@ void begin() {
   trajectory = (traj_point_pos *)malloc(sizeof(traj_point_pos) * 2);
   header.num_points = 4;
   trajectory[0] = {.time = 0, .north = 0, .west = 0, .up = 0};
-  trajectory[1] = {.time = 3, .north = 0, .west = 0, .up = 0.1};   // velocity targets (m/s)
-  trajectory[2] = {.time = 6, .north = 0, .west = 0, .up = 0.0};   // velocity targets (m/s)
-  trajectory[3] = {.time = 15, .north = 0, .west = 0, .up = -0.1}; // velocity targets (m/s)
+  trajectory[1] = {.time = 5, .north = 0, .west = 0, .up = 0.3};   // velocity targets (m/s)
+  trajectory[2] = {.time = 10, .north = 0, .west = 0, .up = 0.0};  // velocity targets (m/s)
+  trajectory[3] = {.time = 15, .north = 0, .west = 0, .up = -0.3}; // velocity targets (m/s)
 }
 
 void load_trajectory_generic(bool serial, File *f) {
