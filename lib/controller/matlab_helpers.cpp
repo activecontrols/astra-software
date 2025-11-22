@@ -93,7 +93,7 @@ Vector12 ref_generator3(Vector15 full_x, Vector3 TargetPos) {
   TargetVel = TargetVel.cwiseMin(MaxVel).cwiseMax(MinVel);
 
   Vector12 TargetVec;
-  TargetVec << Vector3::Zero(), TargetPos, TargetVel, Vector3::Zero();
+  TargetVec << Vector3::Zero(), Vector3::Zero(), Vector3::Zero(), Vector3::Zero();
   Vector12 ref = x - TargetVec;
   return ref;
 }

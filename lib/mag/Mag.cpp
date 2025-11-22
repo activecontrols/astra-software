@@ -457,8 +457,7 @@ void mag_record_test(const char *arg) {
     x = y = z = 0;
     mag.beginMeasurement();
     delay(1);
-    while (!mag.isMeasurementReady())
-    {
+    while (!mag.isMeasurementReady()) {
       delayMicroseconds(500);
     }
 
@@ -523,6 +522,10 @@ void begin() {
   Router::add({mag_record_test, "mag_record_test"});
 
   do_instant_calib();
+
+  calib.hard_x = -3262;
+  calib.hard_y = 1704;
+  calib.hard_z = -142;
 
   Router::println("Magnetometer initialized.");
 }

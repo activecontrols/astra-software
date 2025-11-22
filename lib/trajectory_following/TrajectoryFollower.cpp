@@ -109,12 +109,12 @@ void follow_trajectory() {
 
       Controller_Output co = Controller::get_controller_output(ci, should_log, first_cycle);
       first_cycle = false;
-      co.thrust_N = 4.900725;
+      co.thrust_N = 13;
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
 
-      // Prop::set_throttle_roll(thrust_perc, diffy_perc);
+      Prop::set_throttle_roll(thrust_perc, diffy_perc);
       GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       if (Serial.available() && Serial.read() == 'k') {
