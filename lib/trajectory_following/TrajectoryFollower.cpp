@@ -13,7 +13,7 @@
 #include "elapsedMillis.h"
 #include "gimbal_servos.h"
 
-#define LOG_INTERVAL_US 5000
+#define LOG_INTERVAL_US 50000
 #define COMMAND_INTERVAL_US 1000
 
 namespace TrajectoryFollower {
@@ -22,9 +22,6 @@ namespace TrajectoryFollower {
  * Follows a trajectory by interpolating between position values.
  */
 void follow_trajectory() {
-  elapsedMicros timer = elapsedMicros();
-  unsigned long lastlog = timer;
-  unsigned long lastloop = timer;
   bool has_left_ground = false;
 
   long counter = 0;
@@ -33,19 +30,23 @@ void follow_trajectory() {
   Mag::beginMeasurement();
 
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
-  Controller::reset_controller_state();
 
   while (!Mag::isMeasurementReady()) {
     Router::println("Waiting on mag...");
     delay(100);
   }
-  while (!GPS::has_valid_recent_pos()) {
-    GPS::pump_events();
-    Router::println("Waiting on gps...");
-    delay(100);
-  }
+  // while (!GPS::has_valid_recent_pos()) {
+  //   GPS::pump_events();
+  //   Router::println("Waiting on gps...");
+  //   delay(100);
+  // }
 
   GPS::set_current_position_as_origin();
+  Controller::reset_controller_state();
+  elapsedMicros timer = elapsedMicros();
+  unsigned long lastlog = timer;
+  unsigned long lastloop = timer;
+  bool first_cycle = true;
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time) {
@@ -101,28 +102,37 @@ void follow_trajectory() {
       } else {
         ci.GND_val = 1.0;
       }
+      bool should_log = false;
+      if (timer - lastlog > LOG_INTERVAL_US) {
+        should_log = true;
+      }
 
-      Controller_Output co = Controller::get_controller_output(ci);
-      co.thrust_N = 8.3312325;
+      Controller_Output co = Controller::get_controller_output(ci, should_log, first_cycle);
+      first_cycle = false;
+      co.thrust_N = 4.900725;
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
 
-      Serial.print(timer / 1000000.0);
-      Serial.print(" ");
-      Serial.print(ci.GND_val);
-      Serial.println();
-      Serial.print(" ");
-      Serial.print(thrust_perc);
-      Serial.print(" ");
-      Serial.print(diffy_perc);
-      Serial.println();
+      Prop::set_throttle_roll(thrust_perc, diffy_perc);
+      //    GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
-      // Prop::set_throttle_roll(thrust_perc, diffy_perc);
-      //  GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
+      if (Serial.available() && Serial.read() == 'k') {
+        break;
+      }
 
       if (timer - lastlog > LOG_INTERVAL_US) {
-        lastlog += LOG_INTERVAL_US;
+        lastlog = timer;
+        Serial.print(">d");
+        Serial.print(timer / 1000000.0);
+        Serial.print(" ");
+        Serial.print(ci.GND_val);
+        Serial.print(" ");
+        Serial.print(" ");
+        Serial.print(thrust_perc);
+        Serial.print(" ");
+        Serial.print(diffy_perc);
+        Serial.println();
         // TrajectoryLogger::log_trajectory_csv(timer / 1000000.0, i, ci, co);
       }
       counter++;
@@ -134,6 +144,7 @@ void follow_trajectory() {
   }
 
   Prop::stop();
+  Router::println();
 
   Router::print("Finished ");
   Router::print(counter);
@@ -157,7 +168,7 @@ void arm(const char *) {
   // String log_file_name = Router::read(50);
   // TrajectoryLogger::create_trajectory_log(log_file_name.c_str()); // lower case files have issues on teensy
 
-  Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");
+  Router::print("ARMING COMPLETE. Type `y` and press enter to confirm.\n");
   String final_check_str = Router::read(50);
   if (final_check_str != "y") {
     Router::println("ARMING FAILURE: Cancelled by operator.");

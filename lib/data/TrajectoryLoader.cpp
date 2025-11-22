@@ -19,6 +19,7 @@ void begin() {
 
   loaded_trajectory = true;
   trajectory = (traj_point_pos *)malloc(sizeof(traj_point_pos) * 2);
+  header.num_points = 2;
   trajectory[0] = {.time = 0, .north = 0, .west = 0, .up = 0};
   trajectory[1] = {.time = 10, .north = 0, .west = 0, .up = 0};
 }

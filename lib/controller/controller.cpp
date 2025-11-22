@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "Router.h"
 #include "matlab_funcs.h"
 
 namespace Controller {
@@ -42,11 +43,10 @@ void reset_controller_state() {
   x_est[0] = 1;
   lastEMA = Vector3::Zero();
 
-  Matrix4_12 K;
   K << 1.727316e+00, 1.397551e-15, -4.496957e-16, -2.191563e-17, -9.946226e-05, 2.443746e-18, 1.009896e-16, -1.808889e-01, -9.204288e-17, 2.101464e-01, 9.046160e-17, -2.504290e-16,   //
       -1.001805e-15, 1.752664e+00, -1.979585e-14, 9.946226e-05, -3.640769e-18, 1.341432e-18, 1.808896e-01, 1.090076e-16, 1.485138e-16, -8.495741e-17, 2.163589e-01, -4.800818e-15,     //
       2.068573e-14, -1.808309e-13, -7.941772e-14, -1.782415e-17, -7.805697e-17, 4.559014e-03, -2.450348e-14, -1.100699e-14, 3.040842e+00, -1.390689e-15, -2.931921e-15, -2.405146e-14, //
-      -3.030093e-15, 1.483349e-14, 5.065571e+00, 4.278588e-18, -5.374655e-18, 2.685444e-18, 2.056540e-15, 1.574826e-16, 2.541668e-16, -1.544970e-16, 9.234013e-16, 2.252961e+00;       //
+      -3.030093e-15, 1.483349e-14, 1, 4.278588e-18, -5.374655e-18, 2.685444e-18, 2.056540e-15, 1.574826e-16, 2.541668e-16, -1.544970e-16, 9.234013e-16, 0;                             //
 
   dnf_X = Matrix9_4::Ones();
   dnf_Y = Matrix9_4::Ones();
@@ -55,10 +55,13 @@ void reset_controller_state() {
   last_call_time = millis();
 }
 
-Controller_Output get_controller_output(Controller_Input ci) {
+Controller_Output get_controller_output(Controller_Input ci, bool should_log, bool first_cycle) {
   unsigned long call_time = millis();
   float dT = (call_time - last_call_time) / 1000.0;
   last_call_time = call_time;
+  if (dT < 0.001) {
+    dT = 0.001;
+  }
 
   Vector15 z;
   // clang-format off
@@ -69,9 +72,16 @@ Controller_Output get_controller_output(Controller_Input ci) {
        ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
   // clang-format on
 
-  Vector9 imu = z.segment<9>(0);
-  Vector9 filt_imu = DigitalNF(imu, 0.0, last_thrust, dT, dnf_X, dnf_Y);
-  z.segment<9>(0) = filt_imu;
+  // Vector9 imu = z.segment<9>(0);
+  // Vector9 filt_imu;
+  // if (first_cycle) {
+  //   filt_imu = DigitalNF(imu, 1.0, last_thrust, dT, dnf_X, dnf_Y);
+  // } else {
+  //   filt_imu = DigitalNF(imu, 0.0, last_thrust, dT, dnf_X, dnf_Y);
+  // }
+
+  // z.segment<9>(0) = filt_imu;
+  // Router::printf("%f\n", dT);
 
   x_est = EstimateStateFCN(x_est, constantsASTRA, z, dT, 1.0, P, ci.new_imu_packet, ci.new_gps_packet);
   Vector3 EMA_G = EMA_Gyros(z, lastEMA);
@@ -82,27 +92,38 @@ Controller_Output get_controller_output(Controller_Input ci) {
   Vector4 raw_co = -K * error;
   raw_co(2) = raw_co(2) + constantsASTRA.g * constantsASTRA.m;
   raw_co = output_clamp(raw_co);
-  if (0.0) {
-    raw_co = Vector4::Zero();
-  }
+  // if (0.0) {
+  //   raw_co = Vector4::Zero();
+  // }
   last_thrust = raw_co(2);
 
-  Serial.print(">");
-  for (int i = 0; i < 15; i++) {
-    Serial.print(z(i), 4);
+  if (should_log) {
+    Serial.print(">a");
+    for (int i = 0; i < 15; i++) {
+      Serial.print(z(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    Serial.print(">b");
+    Serial.print(x_est(0));
     Serial.print(" ");
-  }
-  for (int i = 0; i < 15; i++) {
-    Serial.print(X(i), 4);
-    Serial.print(" ");
-  }
-  for (int i = 0; i < 4; i++) {
-    Serial.print(raw_co(i), 4);
-    Serial.print(" ");
-  }
-  for (int i = 0; i < 3; i++) {
-    Serial.print(TargetPos(i), 4);
-    Serial.print(" ");
+    for (int i = 0; i < 15; i++) {
+      Serial.print(X(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    Serial.print(">c");
+    for (int i = 0; i < 4; i++) {
+      Serial.print(raw_co(i), 4);
+      Serial.print(" ");
+    }
+    for (int i = 0; i < 3; i++) {
+      Serial.print(TargetPos(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
   }
 
   Controller_Output co;

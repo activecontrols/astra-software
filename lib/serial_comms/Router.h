@@ -9,7 +9,7 @@
 
 using namespace std;
 
-#define USE_RADIO
+// #define USE_RADIO
 
 struct func;
 struct func_no_args;
