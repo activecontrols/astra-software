@@ -139,7 +139,7 @@ void controller_state_panel() {
     q.x = state_packet.state_q_vec_0;
     q.y = state_packet.state_q_vec_1;
     q.z = state_packet.state_q_vec_2;
-    q.w = sqrt(1 - q.x * q.x - q.y * q.y - q.z * q.z);
+    q.w = state_packet.state_q_vec_new;
     rotatable_cube(q);
 
     ImGui::EndTable();

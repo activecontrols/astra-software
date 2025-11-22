@@ -1,6 +1,7 @@
 #include "serial.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctime>
 #include <windows.h>
 
 HANDLE hSerial;
@@ -15,18 +16,24 @@ char msg_buffer[MAX_MSGS][MAX_MSG_LEN];
 int msg_count = 0;
 char concat_msg_buf[OUT_BUF_SIZE];
 
+FILE *log_file;
+
 void concat_messages(char *out) {}
 
 // your message callback
 void handle_message(const char *msg) {
-  if (msg[0] == '>') {
-    sscanf(msg, ">%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.accel_x, &state_packet.accel_y,
-           &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch, &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north,
-           &state_packet.gps_pos_west, &state_packet.gps_pos_up, &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up, &state_packet.state_q_vec_0,
+  fprintf(log_file, "%s", msg);
+  if (msg[0] == '>' && msg[1] == 'a') {
+    sscanf(msg, ">a %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.accel_x, &state_packet.accel_y, &state_packet.accel_z, &state_packet.gyro_yaw, &state_packet.gyro_pitch, &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north, &state_packet.gps_pos_west, &state_packet.gps_pos_up, &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up);
+  } else if (msg[0] == '>' && msg[1] == 'b') {
+    sscanf(msg, ">b %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.state_q_vec_new, &state_packet.state_q_vec_0,
            &state_packet.state_q_vec_1, &state_packet.state_q_vec_2, &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north,
            &state_packet.state_vel_west, &state_packet.state_vel_up, &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4,
-           &state_packet.state_5, &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north,
-           &state_packet.target_pos_west, &state_packet.target_pos_up, &state_packet.elapsed_time, &state_packet.GND_flag, &state_packet.thrust_perc, &state_packet.diffy_perc);
+           &state_packet.state_5);
+  } else if (msg[0] == '>' && msg[1] == 'c') {
+    sscanf(msg, ">c %f %f %f %f %f %f %f", &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north, &state_packet.target_pos_west, &state_packet.target_pos_up);
+  } else if (msg[0] == '>' && msg[1] == 'd') {
+    sscanf(msg, ">d %f %f %f %f", &state_packet.elapsed_time, &state_packet.GND_flag, &state_packet.thrust_perc, &state_packet.diffy_perc);
   } else {
     for (int i = MAX_MSGS - 1; i > 0; i--) {
       strcpy(msg_buffer[i], msg_buffer[i - 1]);
@@ -48,6 +55,7 @@ void handle_message(const char *msg) {
 }
 
 void write_serial(const char *msg) {
+  fprintf(log_file, "%s\n", msg);
   DWORD bytes_written = 0;
 
   int len = (int)strlen(msg);
@@ -94,7 +102,16 @@ void poll_serial() {
 }
 
 void init_serial() {
-  hSerial = CreateFileA("\\\\.\\COM15", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+  std::time_t now = std::time(nullptr);
+  std::tm tm_buf;
+  localtime_s(&tm_buf, &now);
+  char timestamp[64];
+  strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", &tm_buf);
+  char filename[128];
+  snprintf(filename, sizeof(filename), "logs/log_%s.txt", timestamp);
+  log_file = fopen(filename, "w");
+
+  hSerial = CreateFileA("\\\\.\\COM9", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
   if (hSerial == INVALID_HANDLE_VALUE) {
     printf("Error opening serial port\n");
@@ -127,5 +144,6 @@ void init_serial() {
 }
 
 void deinit_serial() {
+  fclose(log_file);
   CloseHandle(hSerial);
 }

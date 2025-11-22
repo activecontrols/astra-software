@@ -21,6 +21,7 @@ typedef struct {
   float gps_vel_west;
   float gps_vel_up;
 
+  float state_q_vec_new;
   float state_q_vec_0;
   float state_q_vec_1;
   float state_q_vec_2;
