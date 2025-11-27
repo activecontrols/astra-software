@@ -1,6 +1,9 @@
 #ifndef ASTRA_GS_UI_GRAPHS_H
 #define ASTRA_GS_UI_GRAPHS_H
 
+#include "imgui.h"
+#include "implot.h"
+
 typedef struct {
   const char *render_title;
   const char *plot_title;
