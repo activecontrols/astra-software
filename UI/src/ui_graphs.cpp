@@ -1,11 +1,9 @@
+#include "ui_graphs.h"
 #include "implot.h"
 #include "implot3d.h"
 #include "ui_components.h"
-#include "ui_graphs.h"
 
-ImVec4 axis_colors[3] = {{1.0, 0.0, 0.0, 1.0},
-                         {0.0, 1.0, 0.0, 1.0},
-                         {0.0, 0.0, 1.0, 1.0}};
+ImVec4 axis_colors[3] = {{1.0, 0.0, 0.0, 1.0}, {0.0, 1.0, 0.0, 1.0}, {0.0, 0.0, 1.0, 1.0}};
 
 void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000], int &write_idx, float y1, float y2, float y3) {
   history[0][write_idx] = y1;
@@ -35,7 +33,8 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float history[3][2000]
   write_idx %= 1000;
 }
 
-ImVec4 cube_verts[12] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0}, {1, 1, 2, 0}, {-1, 1, 2, 0}, {0, 0, 0, 0}, {3, 0, 0, 0}, {0, 3, 0, 0}, {0, 0, 3, 0}};
+ImVec4 cube_verts[12] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0},
+                         {1, 1, 2, 0},    {-1, 1, 2, 0},  {0, 0, 0, 0},  {3, 0, 0, 0},   {0, 3, 0, 0},   {0, 0, 3, 0}};
 int cube_edges[15][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}, {8, 9}, {8, 10}, {8, 11}};
 
 ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {

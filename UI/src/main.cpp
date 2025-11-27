@@ -9,16 +9,16 @@
 // Modified by RobertJN64 to add plot support and split render into its own file
 
 #include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
 #include "implot.h"
 #include "implot3d.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx11.h"
 #include <d3d11.h>
 #include <tchar.h>
 
 #include "serial.h"
-#include "ui_components.h"
 #include "ui.h"
+#include "ui_components.h"
 
 // Data
 static ID3D11Device *g_pd3dDevice = nullptr;
@@ -90,14 +90,8 @@ int main(int, char **) {
 
   style.FontSizeBase = 16.0f;
   io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf");
-  panel_header_font = io.Fonts->AddFontFromFileTTF(
-      "imgui/misc/fonts/Cousine-Regular.ttf",
-      24.0f // larger size
-  );
-  large_font = io.Fonts->AddFontFromFileTTF(
-      "imgui/misc/fonts/Cousine-Regular.ttf",
-      20.0f // larger size
-  );
+  panel_header_font = io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf", 24.0f); // larger size
+  large_font = io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf", 20.0f);        // larger size
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -199,9 +193,11 @@ bool CreateDeviceD3D(HWND hWnd) {
       D3D_FEATURE_LEVEL_11_0,
       D3D_FEATURE_LEVEL_10_0,
   };
-  HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+  HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel,
+                                              &g_pd3dDeviceContext);
   if (res == DXGI_ERROR_UNSUPPORTED) // Try high-performance WARP software driver if hardware is not available.
-    res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+    res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel,
+                                        &g_pd3dDeviceContext);
   if (res != S_OK)
     return false;
 

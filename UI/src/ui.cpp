@@ -1,15 +1,14 @@
+#include "ui.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "implot.h"
 #include "implot3d.h"
 #include "math.h"
-#include <string>
-
-#include <iostream>
-
+#include "serial.h"
 #include "ui_components.h"
 #include "ui_graphs.h"
-#include "serial.h"
+#include <iostream>
+#include <string>
 
 float acc_history[3][2000];
 float gyro_history[3][2000];
