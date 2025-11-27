@@ -57,7 +57,7 @@ typedef struct {
 extern state_packet_t state_packet;
 void poll_serial();
 void write_serial(const char *msg);
-void init_serial();
+bool init_serial(char *com_port);
 void deinit_serial();
 
 #endif

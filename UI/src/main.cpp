@@ -14,6 +14,7 @@
 #include "implot.h"
 #include "implot3d.h"
 #include <d3d11.h>
+#include <stdio.h>
 #include <tchar.h>
 
 #include "serial.h"
@@ -36,7 +37,12 @@ void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Main code
-int main(int, char **) {
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf("Usage: ./app.exe COM# or ./app.exe FILE");
+    return EXIT_FAILURE;
+  }
+
   // Make process DPI aware and obtain main monitor scale
   ImGui_ImplWin32_EnableDpiAwareness();
   float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY));
@@ -95,7 +101,9 @@ int main(int, char **) {
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-  init_serial();
+  if (!init_serial(argv[1])) {
+    return EXIT_FAILURE;
+  }
 
   // Main loop
   bool done = false;
