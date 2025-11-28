@@ -95,14 +95,33 @@ void live_sensor_panel() {
 }
 
 void serial_control_panel() {
+  ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
   static char inputBuffer[128] = ""; // buffer for text input
-  ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer));
+  bool should_send = false;
+
+  if (ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer), flags)) {
+    should_send = true;
+  }
+
+  bool text_box_active = ImGui::IsItemActive();
   ImGui::SameLine();
   if (rounded_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
-    // Do something with inputBuffer
+    should_send = true;
+  }
+
+  if (should_send) {
+    ImGui::ActivateItemByID(ImGui::GetID("##serial_input"));
+  }
+
+  if (should_send) {
     write_serial(inputBuffer);
     printf("You entered: %s\n", inputBuffer);
     inputBuffer[0] = '\0';
+  }
+
+  if (!text_box_active && ImGui::IsKeyPressed(ImGuiKey_K)) {
+    write_serial("k");
+    printf("You entered: %s\n", "k");
   }
 
   ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100));
