@@ -17,10 +17,8 @@ int input_mode; // SERIAL or FILE
 // this manages ingoing and outgoing serial buffers
 #define BUF_SIZE 4096
 #define T_BUF_SIZE 1024
-#define MAX_MSGS 32
-#define MAX_MSG_LEN 1024
-char msg_buffer[MAX_MSGS][MAX_MSG_LEN];
-int msg_count = 0;
+
+int current_buf_len = 0;
 char concat_msg_buf[OUT_BUF_SIZE];
 
 // your message callback
@@ -43,22 +41,23 @@ void handle_message(char *msg) {
   } else if (msg[0] == '>' && msg[1] == 'd') {
     sscanf(msg, ">d %f %f %f %f %f", &state_packet.elapsed_time, &state_packet.GND_flag, &state_packet.flight_armed, &state_packet.thrust_perc, &state_packet.diffy_perc);
   } else {
-    for (int i = MAX_MSGS - 1; i > 0; i--) {
-      strcpy(msg_buffer[i], msg_buffer[i - 1]);
+    // TODO - need to check this over to make sure no memory issues
+    int msg_len = strlen(msg) + 1; // +1 for \n
+    if (current_buf_len > 0) {
+      concat_msg_buf[current_buf_len - 1] = '\n';
     }
 
-    // insert new message at front
-    strncpy(msg_buffer[0], msg, MAX_MSG_LEN - 1);
-    msg_buffer[0][MAX_MSG_LEN - 1] = '\0';
-
-    if (msg_count < MAX_MSGS)
-      msg_count++;
-
-    concat_msg_buf[0] = '\0'; // start empty
-    for (int i = 0; i < msg_count; i++) {
-      strncat(concat_msg_buf, msg_buffer[i], OUT_BUF_SIZE - strlen(concat_msg_buf) - 1);
-      strncat(concat_msg_buf, "\n", OUT_BUF_SIZE - strlen(concat_msg_buf) - 1);
+    if (current_buf_len + msg_len >= OUT_BUF_SIZE) {
+      int half = current_buf_len / 2;
+      // Shift second half to the front
+      memmove(concat_msg_buf, concat_msg_buf + half, current_buf_len - half + 1); // +1 for the '\0'
+      current_buf_len = half;
     }
+
+    strncat(concat_msg_buf, msg, OUT_BUF_SIZE - current_buf_len - 1);
+    strncat(concat_msg_buf, "\n", OUT_BUF_SIZE - current_buf_len - 1);
+    current_buf_len += msg_len;
+    concat_msg_buf[current_buf_len - 1] = '\0';
   }
 }
 

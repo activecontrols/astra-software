@@ -124,7 +124,14 @@ void serial_control_panel() {
     printf("You entered: %s\n", "k");
   }
 
-  ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100));
+  ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100), ImGuiInputTextFlags_ReadOnly);
+
+  // autoscroll code - // TODO - only enable if autoscroll enabled
+  ImGuiContext &g = *GImGui;
+  const char *child_window_name = NULL;
+  ImFormatStringToTempBuffer(&child_window_name, NULL, "%s/%s_%08X", g.CurrentWindow->Name, "##serial_output", ImGui::GetID("##serial_output"));
+  ImGuiWindow *child_window = ImGui::FindWindowByName(child_window_name);
+  ImGui::SetScrollY(child_window, child_window->ScrollMax.y);
 }
 
 void controller_state_panel() {
