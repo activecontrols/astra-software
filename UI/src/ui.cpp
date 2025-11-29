@@ -35,7 +35,7 @@ bool daq_button(const char *label, const ImVec2 &size, ImU32 color, float roundi
   return clicked;
 }
 
-void toggle_button(const char *label, const ImVec2 &size, ImU32 active_color, ImU32 deactive_color, bool *control_var, float rounding = 10.0f) {
+void toggle_button(const char *labelActive, const ImVec2 &size, ImU32 active_color, ImU32 deactive_color, bool *control_var, float rounding = 10.0f) {
   ImU32 color;
   ImU32 clicked_color;
   if (*control_var) {
@@ -51,7 +51,7 @@ void toggle_button(const char *label, const ImVec2 &size, ImU32 active_color, Im
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, AdjustBrightness(color, 1.2)); // stops flickering
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, rounding);
 
-  bool clicked = ImGui::Button(label, size);
+  bool clicked = ImGui::SmallButton(labelActive);
 
   ImGui::PopStyleVar();
   ImGui::PopStyleColor(3);
@@ -384,73 +384,101 @@ void system_state_panel() {
   ImGui::PopStyleVar();
 }
 
+bool thrusterBool = false;
+
 void ground_control_panel() {
   ImGui::Text("Controls");
-
-  ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f));
+  ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(8.0 / 255.0, 255.0 / 255.0, 156.0 / 255.0, 1.0f));
   ImU32 deactiveCol = ImGui::ColorConvertFloat4ToU32(ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
-  bool thrusterBool = new bool(false);
-  bool *pointThruster = &thrusterBool;
-  toggle_button("Fill Thruster", ImVec2(175, 0), activeCol, deactiveCol, pointThruster);
+  toggle_button("Fill Thruster", ImVec2(175, 0), activeCol, deactiveCol, &thrusterBool);
 }
+
+int page = 1;
 
 void render_loop() {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::SetNextWindowPos(ImVec2(0, 0));
   ImGui::SetNextWindowSize(io.DisplaySize);
 
-  ImGui::Begin("MainWindow", nullptr,
-               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+  if (ImGui::Begin("MainWindow", nullptr,
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                       ImGuiWindowFlags_NoNavFocus)) {
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::BeginMenu("Windows")) {
+        if (ImGui::MenuItem("Sensor")) {
+          page = 1;
+        }
+        if (ImGui::MenuItem("Live Doc")) {
+          page = 2;
+        }
+        if (ImGui::MenuItem("Controls")) {
+          page = 3;
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::EndMenuBar();
+    }
+    if (page == 1) {
+      centered_text("Sensors");
+      if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
+        ImGui::TableNextColumn(); // LEFT
 
-  if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
-    ImGui::TableNextColumn(); // LEFT
+        ImGui::BeginChild("live_sensor_subpanel", ImVec2(0, 750), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("Live Sensor Data");
+        ImGui::PopFont();
+        live_sensor_panel();
+        ImGui::EndChild();
 
-    ImGui::BeginChild("live_sensor_subpanel", ImVec2(0, 750), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Live Sensor Data");
-    ImGui::PopFont();
-    live_sensor_panel();
-    ImGui::EndChild();
+        ImGui::BeginChild("serial_control_subpanel", ImVec2(0, 0), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("Serial Monitor");
+        ImGui::PopFont();
+        serial_control_panel();
+        ImGui::EndChild();
 
-    ImGui::BeginChild("serial_control_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Serial Monitor");
-    ImGui::PopFont();
-    serial_control_panel();
-    ImGui::EndChild();
+        ImGui::TableNextColumn(); // RIGHT
 
-    ImGui::TableNextColumn(); // RIGHT
+        ImGui::BeginChild("controller_state_subpanel", ImVec2(0, 500), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("Controller State");
+        ImGui::PopFont();
+        controller_state_panel();
+        ImGui::EndChild();
 
-    ImGui::BeginChild("controller_state_subpanel", ImVec2(0, 500), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Controller State");
-    ImGui::PopFont();
-    controller_state_panel();
-    ImGui::EndChild();
+        ImGui::BeginChild("controller_output_subpanel", ImVec2(0, 350), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("Controller Output");
+        ImGui::PopFont();
+        controls_output_panel();
+        ImGui::EndChild();
 
-    ImGui::BeginChild("controller_output_subpanel", ImVec2(0, 350), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Controller Output");
-    ImGui::PopFont();
-    controls_output_panel();
-    ImGui::EndChild();
+        ImGui::BeginChild("system_state_subpanel", ImVec2(0, 0), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("System State");
+        ImGui::PopFont();
+        system_state_panel();
+        ImGui::EndChild();
 
-    ImGui::BeginChild("system_state_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("System State");
-    ImGui::PopFont();
-    system_state_panel();
-    ImGui::EndChild();
+        ImGui::EndTable();
+      }
+    }
+    if (page == 2) {
+      if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
+        ImGui::TableNextColumn();
 
-    ImGui::BeginChild("ground_control_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Control");
-    ImGui::PopFont();
-    ground_control_panel();
-    ImGui::EndChild();
+        ImGui::EndTable();
+      }
+    }
+    if (page == 3) {
+      ImGui::BeginChild("ground_control_subpanel", ImVec2(0, 0), true);
+      ImGui::PushFont(panel_header_font);
+      ImGui::SeparatorText("Control");
+      ImGui::PopFont();
+      ground_control_panel();
+      ImGui::EndChild();
+    }
 
-    ImGui::EndTable();
+    ImGui::End();
   }
-
-  ImGui::End();
 }
