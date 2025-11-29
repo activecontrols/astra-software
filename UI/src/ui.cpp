@@ -295,7 +295,6 @@ void render_loop() {
       ImGui::EndMenuBar();
     }
     if (page == 1) {
-      centered_text("Sensors");
       if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
         ImGui::TableNextColumn();
         panel("Live Sensor Data", ImVec2(0, 750), live_sensor_panel);
@@ -320,6 +319,7 @@ void render_loop() {
 
         panel("Ground control", ImVec2(0, 0), ground_control_panel);
         panel("Serial Monitor", ImVec2(0, 200), serial_control_panel);
+        ImGui::EndTable();
       }
     }
 
