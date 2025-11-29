@@ -243,21 +243,12 @@ void serial_control_panel() {
 
 ImVec4 verts[8] = {
     {-1, -1, -1, 0}, {1, -1, -1, 0}, {1, 1, -1, 0}, {-1, 1, -1, 0}, // bottom
-    {-1, -1, 1, 0},
-    {1, -1, 1, 0},
-    {1, 1, 1, 0},
-    {-1, 1, 1, 0} // top
+    {-1, -1, 1, 0},  {1, -1, 1, 0},  {1, 1, 1, 0},  {-1, 1, 1, 0}   // top
 };
 int edges[12][2] = {
     {0, 1}, {1, 2}, {2, 3}, {3, 0}, // bottom square
-    {4, 5},
-    {5, 6},
-    {6, 7},
-    {7, 4}, // top square
-    {0, 4},
-    {1, 5},
-    {2, 6},
-    {3, 7} // verticals
+    {4, 5}, {5, 6}, {6, 7}, {7, 4}, // top square
+    {0, 4}, {1, 5}, {2, 6}, {3, 7}  // verticals
 };
 
 ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
@@ -393,6 +384,16 @@ void system_state_panel() {
   ImGui::PopStyleVar();
 }
 
+void ground_control_panel() {
+  ImGui::Text("Controls");
+
+  ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f));
+  ImU32 deactiveCol = ImGui::ColorConvertFloat4ToU32(ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
+  bool thrusterBool = new bool(false);
+  bool *pointThruster = &thrusterBool;
+  toggle_button("Fill Thruster", ImVec2(175, 0), activeCol, deactiveCol, pointThruster);
+}
+
 void render_loop() {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -439,6 +440,13 @@ void render_loop() {
     ImGui::SeparatorText("System State");
     ImGui::PopFont();
     system_state_panel();
+    ImGui::EndChild();
+
+    ImGui::BeginChild("ground_control_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Control");
+    ImGui::PopFont();
+    ground_control_panel();
     ImGui::EndChild();
 
     ImGui::EndTable();
