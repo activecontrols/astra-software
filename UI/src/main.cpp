@@ -9,15 +9,17 @@
 // Modified by RobertJN64 to add plot support and split render into its own file
 
 #include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
 #include "implot.h"
 #include "implot3d.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx11.h"
 #include <d3d11.h>
+#include <stdio.h>
 #include <tchar.h>
 
 #include "serial.h"
 #include "ui.h"
+#include "ui_components.h"
 
 // Data
 static ID3D11Device *g_pd3dDevice = nullptr;
@@ -35,7 +37,12 @@ void CleanupRenderTarget();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Main code
-int main(int, char **) {
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf("Usage: ./app.exe COM# or ./app.exe FILE");
+    return EXIT_FAILURE;
+  }
+
   // Make process DPI aware and obtain main monitor scale
   ImGui_ImplWin32_EnableDpiAwareness();
   float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY));
@@ -89,18 +96,14 @@ int main(int, char **) {
 
   style.FontSizeBase = 16.0f;
   io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf");
-  panel_header_font = io.Fonts->AddFontFromFileTTF(
-      "imgui/misc/fonts/Cousine-Regular.ttf",
-      24.0f // larger size
-  );
-  large_font = io.Fonts->AddFontFromFileTTF(
-      "imgui/misc/fonts/Cousine-Regular.ttf",
-      20.0f // larger size
-  );
+  panel_header_font = io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf", 24.0f); // larger size
+  large_font = io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf", 20.0f);        // larger size
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-  init_serial();
+  if (!init_serial(argv[1])) {
+    return EXIT_FAILURE;
+  }
 
   // Main loop
   bool done = false;
@@ -198,9 +201,11 @@ bool CreateDeviceD3D(HWND hWnd) {
       D3D_FEATURE_LEVEL_11_0,
       D3D_FEATURE_LEVEL_10_0,
   };
-  HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+  HRESULT res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel,
+                                              &g_pd3dDeviceContext);
   if (res == DXGI_ERROR_UNSUPPORTED) // Try high-performance WARP software driver if hardware is not available.
-    res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel, &g_pd3dDeviceContext);
+    res = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_WARP, nullptr, createDeviceFlags, featureLevelArray, 2, D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &featureLevel,
+                                        &g_pd3dDeviceContext);
   if (res != S_OK)
     return false;
 

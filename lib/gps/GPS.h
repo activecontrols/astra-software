@@ -1,5 +1,4 @@
 #pragma once
-#include "TinyGPS++.h"
 #include <Arduino.h>
 
 #define GPS_UART Serial1
@@ -12,6 +11,12 @@ struct GPS_Coord {
   double alt; // meters
 };
 
+struct GPS_Velocity {
+  double north; // m/s velocity north
+  double west;  // m/s velocity west
+  double up;    // m/s velocity up
+};
+
 struct Point {
   double north; // meters
   double west;  // meters
@@ -21,7 +26,6 @@ struct Point {
 namespace GPS {
 
 extern GPS_Coord origin;
-extern TinyGPSPlus gps;
 
 // setup communication to GPS hardware
 void begin();
@@ -43,6 +47,10 @@ void set_current_position_as_origin();
 
 // uses get_lat_lon_alt() and origin to get the relative north/west/up in meters
 Point get_rel_xyz_pos();
+
+// gets the latest lat/lon/alt vel sent by the GPS
+// only safe to call if has_valid_recent_pos() = true
+GPS_Velocity get_velocity();
 
 // router functions
 void print_gps_pos();

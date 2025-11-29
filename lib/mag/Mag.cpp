@@ -43,14 +43,16 @@ void apply_calibration(double &x, double &y, double &z) {
   apply_calibration(x, y, z, calib);
 }
 
+// values may be stale!!!
 void get_centered_reading(int &mx, int &my, int &mz) {
   uint32_t rawValueX, rawValueY, rawValueZ;
-  mag.getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
+  mag.readFieldsXYZ(&rawValueX, &rawValueY, &rawValueZ);
   mx = (int)rawValueX - 131072;
   my = (int)rawValueY - 131072;
   mz = (int)rawValueZ - 131072;
 }
 
+// values may be stale!!!
 void read_xyz(double &mx, double &my, double &mz) {
   int rx, ry, rz;
   get_centered_reading(rx, ry, rz);
@@ -332,6 +334,7 @@ void no_calib() {
 
 void begin() {
   Wire.begin();
+  Wire.setClock(400000);
   // Initialize the magnetometer
   if (!mag.begin()) {
     while (true) {
@@ -340,6 +343,9 @@ void begin() {
     }
   }
   mag.softReset();
+
+  mag.setContinuousModeFrequency(1000);
+  mag.enableContinuousMode();
 
   // Router::add({mag_rawprint, "mag_raw"});
   Router::add({mag_heading, "mag_heading"});

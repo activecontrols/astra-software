@@ -14,7 +14,7 @@ IMGUI_SRC := imgui\imgui.cpp \
              implot3d\implot3d.cpp \
              implot3d\implot3d_items.cpp
 
-APP_SRC   := main.cpp ui.cpp serial.cpp
+APP_SRC   := main.cpp ui.cpp ui_components.cpp ui_graphs.cpp serial.cpp
 SRC       := $(APP_SRC) $(IMGUI_SRC)
 BUILD_FOLDER := build
 

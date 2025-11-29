@@ -21,6 +21,7 @@ typedef struct {
   float gps_vel_west;
   float gps_vel_up;
 
+  float state_q_vec_new;
   float state_q_vec_0;
   float state_q_vec_1;
   float state_q_vec_2;
@@ -48,12 +49,15 @@ typedef struct {
 
   float elapsed_time;
   float GND_flag;
+  float flight_armed;
+  float thrust_perc;
+  float diffy_perc;
 } state_packet_t;
 
 extern state_packet_t state_packet;
 void poll_serial();
 void write_serial(const char *msg);
-void init_serial();
+bool init_serial(char *com_port);
 void deinit_serial();
 
 #endif
