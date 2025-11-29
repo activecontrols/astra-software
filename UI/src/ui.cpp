@@ -387,10 +387,54 @@ void system_state_panel() {
 bool thrusterBool = false;
 
 void ground_control_panel() {
-  ImGui::Text("Controls");
-  ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(8.0 / 255.0, 255.0 / 255.0, 156.0 / 255.0, 1.0f));
-  ImU32 deactiveCol = ImGui::ColorConvertFloat4ToU32(ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
-  toggle_button("Fill Thruster", ImVec2(175, 0), activeCol, deactiveCol, &thrusterBool);
+  if (ImGui::BeginTable("controls_table", 4, ImGuiTableFlags_Resizable)) {
+    ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(8.0 / 255.0, 255.0 / 255.0, 156.0 / 255.0, 1.0f));
+    ImU32 deactiveCol = ImGui::ColorConvertFloat4ToU32(ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
+
+    ImGui::TableNextColumn();
+    ImGui::BeginChild("COPV_Manifold_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("COPV Manifold");
+    toggle_button("Open Valve 1 ", ImVec2(175, 0), activeCol, deactiveCol, &thrusterBool);
+    ImGui::PopFont();
+
+    ImGui::EndChild();
+
+    ImGui::BeginChild("low_pressure_subpanel", ImVec2(0, 300), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Low Pressure Circuit");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::TableNextColumn();
+
+    ImGui::BeginChild("tank_rcs_subpanel", ImVec2(0, 300), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Tank set & RCS Circuit");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::BeginChild("purge_circuit_subpanel", ImVec2(0, 300), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Purge Circuit");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::TableNextColumn();
+    ImGui::BeginChild("liquid_oxygen_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Liquid Oxygen Tank");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::TableNextColumn();
+    ImGui::BeginChild("isopropyl_alc_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Isopropyl Alcohol Tank");
+    ImGui::PopFont();
+    ImGui::EndChild();
+    ImGui::EndTable();
+  }
 }
 
 int page = 1;
@@ -430,11 +474,11 @@ void render_loop() {
         live_sensor_panel();
         ImGui::EndChild();
 
-        ImGui::BeginChild("serial_control_subpanel", ImVec2(0, 0), true);
+        ImGui::BeginChild("system_state_subpanel", ImVec2(0, 0), true);
         ImGui::PushFont(panel_header_font);
-        ImGui::SeparatorText("Serial Monitor");
+        ImGui::SeparatorText("System State");
         ImGui::PopFont();
-        serial_control_panel();
+        system_state_panel();
         ImGui::EndChild();
 
         ImGui::TableNextColumn(); // RIGHT
@@ -453,13 +497,6 @@ void render_loop() {
         controls_output_panel();
         ImGui::EndChild();
 
-        ImGui::BeginChild("system_state_subpanel", ImVec2(0, 0), true);
-        ImGui::PushFont(panel_header_font);
-        ImGui::SeparatorText("System State");
-        ImGui::PopFont();
-        system_state_panel();
-        ImGui::EndChild();
-
         ImGui::EndTable();
       }
     }
@@ -471,12 +508,24 @@ void render_loop() {
       }
     }
     if (page == 3) {
-      ImGui::BeginChild("ground_control_subpanel", ImVec2(0, 0), true);
-      ImGui::PushFont(panel_header_font);
-      ImGui::SeparatorText("Control");
-      ImGui::PopFont();
-      ground_control_panel();
-      ImGui::EndChild();
+      if (ImGui::BeginTable("main_split", 1)) {
+        ImGui::TableNextColumn();
+
+        ImGui::BeginChild("ground_control_subpanel", ImVec2(0, 0), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("Control");
+        ImGui::PopFont();
+        ground_control_panel();
+        ImGui::EndChild();
+
+        ImGui::BeginChild("serial_control_subpanel", ImVec2(0, 200), true);
+        ImGui::PushFont(panel_header_font);
+        ImGui::SeparatorText("Serial Monitor");
+        ImGui::PopFont();
+        serial_control_panel();
+        ImGui::EndChild();
+        ImGui::EndTable();
+      }
     }
 
     ImGui::End();
