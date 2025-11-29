@@ -214,6 +214,7 @@ void system_state_panel() {
     ImGui::EndTable();
   }
 }
+
 bool thrusterBool = false;
 
 void ground_control_panel() {
@@ -225,7 +226,7 @@ void ground_control_panel() {
     ImGui::BeginChild("COPV_Manifold_subpanel", ImVec2(0, 0), true);
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("COPV Manifold");
-    toggle_button("Open Valve 1 ", ImVec2(175, 0), activeCol, deactiveCol, &thrusterBool);
+    ImGui::Checkbox("Open Valve 1 ", &thrusterBool);
     ImGui::PopFont();
 
     ImGui::EndChild();
@@ -258,40 +259,13 @@ void ground_control_panel() {
     ImGui::EndChild();
 
     ImGui::TableNextColumn();
-    ImGui::BeginChild("isopropyl_alc_subpanel", ImVec2(0, 0), true);
+    ImGui::BeginChild("Isopropyl Alcohol Tank", ImVec2(0, 0), true);
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Isopropyl Alcohol Tank");
     ImGui::PopFont();
     ImGui::EndChild();
 
     ImGui::EndTable();
-  }
-}
-
-void toggle_button(const char *labelActive, const ImVec2 &size, ImU32 active_color, ImU32 deactive_color, bool *control_var, float rounding = 10.0f) {
-  ImU32 color;
-  ImU32 clicked_color;
-  if (*control_var) {
-    color = active_color;
-    clicked_color = deactive_color;
-  } else {
-    color = deactive_color;
-    clicked_color = active_color;
-  }
-
-  ImGui::PushStyleColor(ImGuiCol_Button, color);
-  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, AdjustBrightness(color, 1.2));
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, AdjustBrightness(color, 1.2)); // stops flickering
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, rounding);
-
-  bool clicked = ImGui::SmallButton(labelActive);
-
-  ImGui::PopStyleVar();
-  ImGui::PopStyleColor(3);
-
-  if (clicked) {
-    std::cout << "toggle" << std::endl;
-    *control_var = !(*control_var);
   }
 }
 
