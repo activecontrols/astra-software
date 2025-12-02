@@ -38,8 +38,8 @@ typedef struct {
   float state_4;
   float state_5;
 
-  float gimbal_yaw_deg;
-  float gimbal_pitch_deg;
+  float gimbal_yaw_raw;
+  float gimbal_pitch_raw;
   float thrust_N;
   float roll_N;
 

@@ -32,11 +32,11 @@ void handle_message(char *msg) {
            &state_packet.gyro_roll, &state_packet.mag_x, &state_packet.mag_y, &state_packet.mag_z, &state_packet.gps_pos_north, &state_packet.gps_pos_west, &state_packet.gps_pos_up,
            &state_packet.gps_vel_north, &state_packet.gps_vel_west, &state_packet.gps_vel_up);
   } else if (msg[0] == '>' && msg[1] == 'b') {
-    sscanf(msg, ">b %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.state_q_vec_new, &state_packet.state_q_vec_0, &state_packet.state_q_vec_1, &state_packet.state_q_vec_2,
+    sscanf(msg, ">b %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &state_packet.state_q_vec_new, &state_packet.state_q_vec_0, &state_packet.state_q_vec_1, &state_packet.state_q_vec_2,
            &state_packet.state_pos_north, &state_packet.state_pos_west, &state_packet.state_pos_up, &state_packet.state_vel_north, &state_packet.state_vel_west, &state_packet.state_vel_up,
            &state_packet.state_0, &state_packet.state_1, &state_packet.state_2, &state_packet.state_3, &state_packet.state_4, &state_packet.state_5);
   } else if (msg[0] == '>' && msg[1] == 'c') {
-    sscanf(msg, ">c %f %f %f %f %f %f %f", &state_packet.gimbal_yaw_deg, &state_packet.gimbal_pitch_deg, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north,
+    sscanf(msg, ">c %f %f %f %f %f %f %f", &state_packet.gimbal_yaw_raw, &state_packet.gimbal_pitch_raw, &state_packet.thrust_N, &state_packet.roll_N, &state_packet.target_pos_north,
            &state_packet.target_pos_west, &state_packet.target_pos_up);
   } else if (msg[0] == '>' && msg[1] == 'd') {
     sscanf(msg, ">d %f %f %f %f %f", &state_packet.elapsed_time, &state_packet.GND_flag, &state_packet.flight_armed, &state_packet.thrust_perc, &state_packet.diffy_perc);
@@ -148,6 +148,10 @@ bool init_serial(char *com_port) {
     char filename[128];
     snprintf(filename, sizeof(filename), "logs/log_%s.txt", timestamp);
     log_file = fopen(filename, "w");
+    if (log_file == NULL) {
+      printf("Failed to create log file.");
+      return false;
+    }
 
     char portName[20];
     snprintf(portName, sizeof(portName), "\\\\.\\%s", com_port);

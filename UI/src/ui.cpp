@@ -192,7 +192,7 @@ void controls_output_panel() {
     gimbal_pos_plot.axis_lock = ImPlotCond_Always;
     gimbal_pos_plot.min = -20;
     gimbal_pos_plot.max = 20;
-    top_down_position_plot(gimbal_pos_plot, state_packet.gimbal_yaw_deg * 180 / 3.1415, state_packet.gimbal_pitch_deg * 180 / 3.1415);
+    top_down_position_plot(gimbal_pos_plot, state_packet.gimbal_yaw_raw * 180 / 3.1415, state_packet.gimbal_pitch_raw * 180 / 3.1415);
 
     ImGui::EndTable();
   }
