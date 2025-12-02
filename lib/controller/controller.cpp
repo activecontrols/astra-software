@@ -6,7 +6,6 @@ t_constantsASTRA constantsASTRA;
 Matrix12_12 P;
 Vector13 x_est;
 Vector3 lastEMA;
-Matrix4_12 K;
 Matrix9_4 dnf_X;
 Matrix9_4 dnf_Y;
 float last_thrust;
@@ -18,12 +17,13 @@ void begin() {
 }
 
 void reset_controller_state() {
-  constantsASTRA.g = 9.80145;
-  constantsASTRA.m = 1;
+  t_constantsASTRA constantsASTRA;
+  constantsASTRA.g = 9.8015;
+  constantsASTRA.m = 1.2490;
   constantsASTRA.mag << -0.4512, 0, 0.8924;
-  constantsASTRA.Q << 1.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10, 0, 0, //
-      0, 1.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10, 0,                 //
-      0, 0, 1.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10,                 //
+  constantsASTRA.Q << 4.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10, 0, 0, //
+      0, 4.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10, 0,                 //
+      0, 0, 4.000004e-05, 0, 0, 0, 0, 0, 0, 0, 0, -6.250000e-10,                 //
       0, 0, 0, 6.250000e-07, 0, 0, 2.083333e-09, 0, 0, 0, 0, 0,                  //
       0, 0, 0, 0, 6.250000e-07, 0, 0, 2.083333e-09, 0, 0, 0, 0,                  //
       0, 0, 0, 0, 0, 6.250000e-07, 0, 0, 2.083333e-09, 0, 0, 0,                  //
@@ -35,21 +35,21 @@ void reset_controller_state() {
       0, 0, -6.250000e-10, 0, 0, 0, 0, 0, 0, 0, 0, 1.250000e-07;                 //
   constantsASTRA.R = Matrix6_6::Zero();
   constantsASTRA.R.block<3, 3>(0, 0) = Matrix3_3::Identity() * 0.1500;
-  constantsASTRA.R.block<3, 3>(3, 3) = Matrix3_3::Identity() * 0.1000;
+  constantsASTRA.R.block<3, 3>(3, 3) = Matrix3_3::Identity() * 0.1200;
+
+  constantsASTRA.K_Att << 1.133604e+00, -3.297985e-16, 1.683627e-16, 1.925898e-01, -3.507285e-17, -7.648992e-17, -6.324555e-01, 6.628460e-17, -1.142330e-16, //
+      2.717801e-16, 1.136934e+00, 2.449270e-16, 4.799793e-17, 1.985662e-01, 2.505480e-17, -7.524250e-17, -6.324555e-01, -2.397136e-16,                       //
+      -1.788593e-15, 1.828852e-15, 8.462398e+00, -2.226297e-16, 2.620046e-16, 4.355001e+00, 1.286862e-15, -1.097175e-15, -4.472136e+00;                      //
 
   P = 1 * Matrix12_12::Identity();
   x_est = Vector13::Zero();
   x_est[0] = 1;
   lastEMA = Vector3::Zero();
-
-  K << 1.727316e+00, 1.397551e-15, -4.496957e-16, -2.191563e-17, -9.946226e-05, 2.443746e-18, 1.009896e-16, -1.808889e-01, -9.204288e-17, 2.101464e-01, 9.046160e-17, -2.504290e-16,   //
-      -1.001805e-15, 1.752664e+00, -1.979585e-14, 9.946226e-05, -3.640769e-18, 1.341432e-18, 1.808896e-01, 1.090076e-16, 1.485138e-16, -8.495741e-17, 2.163589e-01, -4.800818e-15,     //
-      2.068573e-14, -1.808309e-13, -7.941772e-14, -1.782415e-17, -7.805697e-17, 4.559014e-03, -2.450348e-14, -1.100699e-14, 3.040842e+00, -1.390689e-15, -2.931921e-15, -2.405146e-14, //
-      -3.030093e-15, 1.483349e-14, 5.065571e+00, 4.278588e-18, -5.374655e-18, 2.685444e-18, 2.056540e-15, 1.574826e-16, 2.541668e-16, -1.544970e-16, 9.234013e-16, 2.252961e+00;       //
-
   dnf_X = Matrix9_4::Ones();
   dnf_Y = Matrix9_4::Ones();
   last_thrust = 0;
+
+  ASTRAv2_Controller_reset();
 
   last_call_time = millis();
 }
@@ -74,13 +74,10 @@ Controller_Output get_controller_output(Controller_Input ci) {
 
   x_est = EstimateStateFCN(x_est, constantsASTRA, z, dT, ci.GND_val, P, ci.new_imu_packet, ci.new_gps_packet);
   Vector3 EMA_G = EMA_Gyros(z, lastEMA);
-  Vector15 X = StateAUG(x_est, EMA_G);
+  Vector16 X = StateAUG(x_est, EMA_G);
   Vector3 TargetPos;
   TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
-  Vector12 error = ref_generator3(X, TargetPos);
-  Vector4 raw_co = -K * error;
-  raw_co(2) = raw_co(2) + constantsASTRA.g * constantsASTRA.m;
-  raw_co = output_clamp(raw_co);
+  Vector4 raw_co = ASTRAv2_Controller(TargetPos, X, constantsASTRA, dT);
   if (ci.GND_val) {
     raw_co = Vector4::Zero();
   }
