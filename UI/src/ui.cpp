@@ -7,6 +7,7 @@
 #include "serial.h"
 #include "ui_components.h"
 #include "ui_graphs.h"
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -215,6 +216,48 @@ void system_state_panel() {
   }
 }
 
+std::string docText = "";
+
+void livedoc_panel() {
+  ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+  static char inputBuffer[128] = ""; // buffer for text input
+  bool should_send = false;
+
+  if (ImGui::InputTextWithHint("##livedoc", "enter output to look for", inputBuffer, IM_ARRAYSIZE(inputBuffer), flags)) {
+    should_send = true;
+  }
+
+  bool text_box_active = ImGui::IsItemActive();
+  ImGui::SameLine();
+  if (rounded_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
+    should_send = true;
+  }
+
+  if (should_send) {
+    ImGui::ActivateItemByID(ImGui::GetID("##livedoc"));
+  }
+
+  if (should_send || docText == "") {
+    std::ofstream DocInpFile("src\\livedoc_info.txt", std::ios::app);
+    std::string stringInp = std::string(inputBuffer);
+    DocInpFile << "\n" + stringInp;
+    printf("You entered: %s\n", inputBuffer);
+    inputBuffer[0] = '\0';
+    DocInpFile.flush();
+    std::ifstream DocOutFile("src\\livedoc_info.txt");
+    std::string inpText;
+    while (getline(DocOutFile, inpText)) {
+      // Output the text from the file
+      docText = docText + "\n" + inpText;
+    }
+    DocOutFile.close();
+  }
+  printf(docText.c_str());
+  ImGui::BeginDisabled(); // prevent editing
+  ImGui::InputTextMultiline("##livedoc_text", const_cast<char *>(docText.c_str()), IM_ARRAYSIZE(const_cast<char *>(docText.c_str())), ImVec2(1000, 1000), ImGuiInputTextFlags_ReadOnly);
+  ImGui::EndDisabled();
+}
+
 bool thrusterBool = false;
 
 void ground_control_panel() {
@@ -309,7 +352,7 @@ void render_loop() {
     if (page == 2) {
       if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
         ImGui::TableNextColumn();
-
+        panel("Livedoc", ImVec2(0, 0), livedoc_panel);
         ImGui::EndTable();
       }
     }
