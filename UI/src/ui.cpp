@@ -246,15 +246,16 @@ void livedoc_panel() {
     DocInpFile.flush();
     std::ifstream DocOutFile("src\\livedoc_info.txt");
     std::string inpText;
+    std::string fullDocText = "";
     while (getline(DocOutFile, inpText)) {
       // Output the text from the file
-      docText = docText + "\n" + inpText;
+      fullDocText = fullDocText + "\n" + inpText;
     }
+    docText = fullDocText;
     DocOutFile.close();
   }
-  printf(docText.c_str());
   ImGui::BeginDisabled(); // prevent editing
-  ImGui::InputTextMultiline("##livedoc_text", const_cast<char *>(docText.c_str()), IM_ARRAYSIZE(const_cast<char *>(docText.c_str())), ImVec2(1000, 1000), ImGuiInputTextFlags_ReadOnly);
+  ImGui::InputTextMultiline("##livedoc_text", const_cast<char *>(docText.c_str()), IM_ARRAYSIZE(const_cast<char *>(docText.c_str())), ImVec2(1200, 1000), ImGuiInputTextFlags_ReadOnly);
   ImGui::EndDisabled();
 }
 
