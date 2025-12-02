@@ -7,6 +7,7 @@
 #include "serial.h"
 #include "ui_components.h"
 #include "ui_graphs.h"
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -210,28 +211,161 @@ void system_state_panel() {
     } else {
       colored_flag("     Not Armed", state_packet.flight_armed, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##armed_flag");
     }
+
     ImGui::EndTable();
   }
 }
+
+std::string docText = "";
+
+void livedoc_panel() {
+  ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+  static char inputBuffer[128] = ""; // buffer for text input
+  bool should_send = false;
+
+  if (ImGui::InputTextWithHint("##livedoc", "enter output to look for", inputBuffer, IM_ARRAYSIZE(inputBuffer), flags)) {
+    should_send = true;
+  }
+
+  bool text_box_active = ImGui::IsItemActive();
+  ImGui::SameLine();
+  if (rounded_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
+    should_send = true;
+  }
+
+  if (should_send) {
+    ImGui::ActivateItemByID(ImGui::GetID("##livedoc"));
+  }
+
+  if (should_send || docText == "") {
+    std::ofstream DocInpFile("src\\livedoc_info.txt", std::ios::app);
+    std::string stringInp = std::string(inputBuffer);
+    DocInpFile << "\n" + stringInp;
+    printf("You entered: %s\n", inputBuffer);
+    inputBuffer[0] = '\0';
+    DocInpFile.flush();
+    std::ifstream DocOutFile("src\\livedoc_info.txt");
+    std::string inpText;
+    while (getline(DocOutFile, inpText)) {
+      // Output the text from the file
+      docText = docText + "\n" + inpText;
+    }
+    DocOutFile.close();
+  }
+  printf(docText.c_str());
+  ImGui::BeginDisabled(); // prevent editing
+  ImGui::InputTextMultiline("##livedoc_text", const_cast<char *>(docText.c_str()), IM_ARRAYSIZE(const_cast<char *>(docText.c_str())), ImVec2(1000, 1000), ImGuiInputTextFlags_ReadOnly);
+  ImGui::EndDisabled();
+}
+
+bool thrusterBool = false;
+
+void ground_control_panel() {
+  if (ImGui::BeginTable("controls_table", 4, ImGuiTableFlags_Resizable)) {
+    ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(8.0 / 255.0, 255.0 / 255.0, 156.0 / 255.0, 1.0f));
+    ImU32 deactiveCol = ImGui::ColorConvertFloat4ToU32(ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
+
+    ImGui::TableNextColumn();
+    ImGui::BeginChild("COPV_Manifold_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("COPV Manifold");
+    ImGui::Checkbox("Open Valve 1 ", &thrusterBool);
+    ImGui::PopFont();
+
+    ImGui::EndChild();
+
+    ImGui::BeginChild("low_pressure_subpanel", ImVec2(0, 300), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Low Pressure Circuit");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::TableNextColumn();
+
+    ImGui::BeginChild("tank_rcs_subpanel", ImVec2(0, 300), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Tank set & RCS Circuit");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::BeginChild("purge_circuit_subpanel", ImVec2(0, 300), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Purge Circuit");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::TableNextColumn();
+    ImGui::BeginChild("liquid_oxygen_subpanel", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Liquid Oxygen Tank");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::TableNextColumn();
+    ImGui::BeginChild("Isopropyl Alcohol Tank", ImVec2(0, 0), true);
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Isopropyl Alcohol Tank");
+    ImGui::PopFont();
+    ImGui::EndChild();
+
+    ImGui::EndTable();
+  }
+}
+
+int page = 1;
 
 void render_loop() {
   ImGuiIO &io = ImGui::GetIO();
   ImGui::SetNextWindowPos(ImVec2(0, 0));
   ImGui::SetNextWindowSize(io.DisplaySize);
 
-  ImGui::Begin("MainWindow", nullptr,
-               ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+  if (ImGui::Begin("MainWindow", nullptr,
+                   ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                       ImGuiWindowFlags_NoNavFocus)) {
+    if (ImGui::BeginMenuBar()) {
+      if (ImGui::BeginMenu("Windows")) {
+        if (ImGui::MenuItem("Sensor")) {
+          page = 1;
+        }
+        if (ImGui::MenuItem("Live Doc")) {
+          page = 2;
+        }
+        if (ImGui::MenuItem("Controls")) {
+          page = 3;
+        }
+        ImGui::EndMenu();
+      }
+      ImGui::EndMenuBar();
+    }
+    if (page == 1) {
+      if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
+        ImGui::TableNextColumn();
+        panel("Live Sensor Data", ImVec2(0, 750), live_sensor_panel);
+        panel("Serial Monitor", ImVec2(0, 0), serial_control_panel);
+        ImGui::TableNextColumn();
+        panel("Controller State", ImVec2(0, 500), controller_state_panel);
+        panel("Controller Output", ImVec2(0, 350), controls_output_panel);
+        panel("System State", ImVec2(0, 0), system_state_panel);
+        ImGui::EndTable();
+      }
+    }
+    if (page == 2) {
+      if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
+        ImGui::TableNextColumn();
+        panel("Livedoc", ImVec2(0, 0), livedoc_panel);
+        ImGui::EndTable();
+      }
+    }
+    if (page == 3) {
+      if (ImGui::BeginTable("main_split", 1)) {
+        ImGui::TableNextColumn();
 
-  if (ImGui::BeginTable("main_split", 2, ImGuiTableFlags_Resizable)) {
-    ImGui::TableNextColumn();
-    panel("Live Sensor Data", ImVec2(0, 750), live_sensor_panel);
-    panel("Serial Monitor", ImVec2(0, 0), serial_control_panel);
-    ImGui::TableNextColumn();
-    panel("Controller State", ImVec2(0, 500), controller_state_panel);
-    panel("Controller Output", ImVec2(0, 350), controls_output_panel);
-    panel("System State", ImVec2(0, 0), system_state_panel);
-    ImGui::EndTable();
+        panel("Ground control", ImVec2(0, 0), ground_control_panel);
+        panel("Serial Monitor", ImVec2(0, 200), serial_control_panel);
+        ImGui::EndTable();
+      }
+    }
+
+    ImGui::End();
   }
-
-  ImGui::End();
 }
