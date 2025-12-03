@@ -22,10 +22,16 @@ Sample IMU Calibration:
 0.996176127990454 0.999260555553662 0.996176127990454
 */
 
-void roll_test(const char *args) {
-  Prop::cmd_set(args);
+struct test_packet
+{
+  IMU::Data imu_data;
+  double t;
+};
 
-  IMU::Data last_imu;
+void roll_test(const char *args) {
+  const int max_test_duration = 5 * 1000; // ms; 5 seconds
+  static test_packet data[max_test_duration];
+  Prop::cmd_set(args);
 
   for (int i = 0; i < 3; ++i)
     Serial.print('\n');
@@ -33,25 +39,35 @@ void roll_test(const char *args) {
 
   delayMicroseconds(2000);
 
-  Serial.print("<<<  START  >>>\n");
-
-  Serial.print("Line Num,Time (s),Acceleration X (m/s^2),Acceleration Y (m/s^2),Acceleration Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
-
-  delayMicroseconds(2000);
-
   unsigned long start_time = micros();
-  unsigned long last_time = start_time;
 
-  uint32_t line_num = 0;
+  uint32_t index = 0;
   // run until the user presses enter
-  while (!Serial.available()) {
+  while (!Serial.available() && index < max_test_duration) {
     unsigned long now_time = micros();
     double t = (now_time - start_time) * 1e-6;
-    IMU::IMUs[0].read_latest(&last_imu);
+    IMU::IMUs[0].read_latest(&data[index].imu_data);
+    data[index].t = t;
+    
+    delayMicroseconds(1000);
+    ++index;
+  }
 
-    Serial.print(line_num++);
+  Serial.readStringUntil('\n');
+  // stop props
+  Prop::cmd_set_both("0 0");
+  Serial.print("\n\n\n");
+  Serial.print("<<<  START  >>>\n");
+  Serial.print(args);
+  Serial.print('\n');
+  Serial.print("Line Num,Time (s),Acceleration X (m/s^2),Acceleration Y (m/s^2),Acceleration Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
+
+  for (unsigned int lcv = 0; lcv < index; ++lcv)
+  {
+    double t = data[lcv].t;
+    IMU::Data &last_imu = data[lcv].imu_data;
+    Serial.print(lcv);
     Serial.print(',');
-
     Serial.print(t, 6);
     for (int i = 0; i < 3; ++i) {
       Serial.print(',');
@@ -63,22 +79,14 @@ void roll_test(const char *args) {
       Serial.print(last_imu.gyro[i], 10);
     }
 
+
     Serial.print('\n');
-    
-    unsigned long delta_us = now_time - last_time;
-    if (delta_us < 1000)
-      delayMicroseconds(1000 - delta_us);
-    last_time = now_time;
   }
-  Serial.readStringUntil('\n');
   Serial.print("<<<  END  >>>\n");
 
   for (int i = 0; i < 3; ++i)
     Serial.print('\n');
   Serial.flush();
-
-  // stop props
-  Prop::cmd_set_both("0 0");
 }
 
 void setup() {
