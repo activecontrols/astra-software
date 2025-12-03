@@ -46,8 +46,8 @@ public:
 
   static const char *inf_message_name(uint8_t id);
 
-  void set_inf_cbk(void (*cbk)(uint8_t, const char *));
-  void clear_inf_cbk();
+  // set to nullptr for no callback
+  void (*inf_msg_cbk)(uint8_t, const char *);
 
 private:
   void reset_state();
@@ -59,8 +59,6 @@ private:
     CHECKSUM,    // is past the payload and needs to verify checksum
     SKIP         // dummy state for skipping over the rest of the payload
   };
-
-  void (*inf_msg_cbk)(uint8_t, const char *);
   States state;
   // encoder state variables
 

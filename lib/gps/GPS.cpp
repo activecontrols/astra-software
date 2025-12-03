@@ -34,7 +34,8 @@ void output_gps_inf_cbk(uint8_t id, const char *msg) {
 
 // outputs gps info messages
 void output_gps_inf() {
-  ubx.set_inf_cbk(output_gps_inf_cbk);
+  void (*old_cbk)(uint8_t, const char *) = ubx.inf_msg_cbk;
+  ubx.inf_msg_cbk = output_gps_inf_cbk;
 
   while (!Serial.available()) {
     pump_events();
@@ -44,7 +45,7 @@ void output_gps_inf() {
 
   while (Serial.read() != '\n')
     ;
-  ubx.clear_inf_cbk();
+  ubx.inf_msg_cbk = old_cbk;
 }
 
 void print_gps_events() {

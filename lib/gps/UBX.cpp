@@ -1,6 +1,7 @@
 #include "UBX.h"
 
 UBX::UBX() {
+  this->inf_msg_cbk = nullptr;
   reset_state();
 }
 
@@ -49,9 +50,9 @@ void UBX::encode_pre_payload(uint8_t x) {
 void UBX::encode_payload(uint8_t x) {
   int payload_position = frame_position - 6; // the first 6 bytes of the frame are pre-payload
 
-  if (message_class == CLASS_NAV) // UBX-NAV-PVT
+  if (message_class == CLASS_NAV) // UBX-NAV
   {
-    if (message_id == ID_PVT) {
+    if (message_id == ID_PVT) { // ie. UBX-NAV-PVT
       state = ENCODE_TERM;
       term_index = 0;
 
@@ -163,15 +164,6 @@ void UBX::encode(uint8_t x) {
     state = CHECKSUM;
     return;
   }
-}
-
-// Note: The callback should use minimal resources and return quickly. The message buffer is null terminated. Do not modify the message buffer and do not read past the null terminator.
-void UBX::set_inf_cbk(void (*cbk)(uint8_t, const char *)) {
-  this->inf_msg_cbk = cbk;
-}
-
-void UBX::clear_inf_cbk() {
-  this->inf_msg_cbk = nullptr;
 }
 
 const char *UBX::inf_message_name(uint8_t id) {
