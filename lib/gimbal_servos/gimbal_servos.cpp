@@ -54,6 +54,8 @@ int calc_servo_pulsewidth(float angle) {
 void setGimbalAngle(float bottom, float top) {
   float servo_bottom_angle = clamped_table_interplolation(bottom, bottom_gs_table, bottom_gs_table_len);
   float servo_top_angle = clamped_table_interplolation(top, top_gs_table, top_gs_table_len);
+  servo_bottom_angle += 5.15;
+  servo_top_angle -= 24.25;
 
   // Router::printf("Outputted Bottom Angle: %.2f\n", servo_bottom_angle);
   // Router::printf("Outputted Top Angle: %.2f\n", servo_top_angle);

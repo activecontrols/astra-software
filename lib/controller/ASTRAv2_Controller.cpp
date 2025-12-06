@@ -45,7 +45,7 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, t_constantsASTRA const
 
   // Velocity Command
   Vector3 K_P;
-  K_P << 0.55, 0.55, 0.65;
+  K_P << 0.55, 0.55, 0.7;
   Vector3 VelTarget = K_P.cwiseProduct(PosError);
 
   // Velocity Saturation Step
@@ -59,16 +59,16 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, t_constantsASTRA const
 
   // Integral Accumulator
   Vector3 K_I;
-  K_I << 2.3, 2.3, 5;
+  K_I << 1.6, 1.6, 3;
   float Leak = 0.30;
   Vector3 Clamp;
   Clamp << 1, 1, 2;
 
   // Normalize errors (0 to 1 scale)
   Vector3 MaxAttError;
-  MaxAttError << 0.03, 0.03, 0.3;
+  MaxAttError << 0.05, 0.05, 0.3;
   Vector3 MaxVelError;
-  MaxVelError << 0.4, 0.4, 0.3;
+  MaxVelError << 0.5, 0.5, 0.4;
   Vector3 NormAttErr = lastAttError.cwiseAbs().cwiseQuotient(MaxAttError);
   Vector3 NormVelErr = VelError.cwiseAbs().cwiseQuotient(MaxVelError);
 
@@ -84,7 +84,7 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, t_constantsASTRA const
   K_I = K_I.cwiseProduct(Gate);
   VelErrorI = VelErrorI + K_I.cwiseProduct(VelError) * dT;
   VelErrorI = VelErrorI.cwiseMin(Clamp).cwiseMax(-Clamp);
-  K_P << 2.85, 2.85, 3.5;
+  K_P << 2.85, 2.85, 4;
 
   // Acceleration Target
   Vector3 g_vec;
@@ -132,7 +132,7 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, t_constantsASTRA const
   lastAttError = AttError.segment<3>(1);
 
   // Error accumulation and clamping
-  Clamp << 3, 3, 0.4;
+  Clamp << 2, 2, 0.1;
   AttErrorI = AttErrorI + AttError.segment<3>(1) * dT;
   AttErrorI = AttErrorI.cwiseMin(Clamp).cwiseMax(-Clamp);
 

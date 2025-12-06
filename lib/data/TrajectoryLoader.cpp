@@ -21,8 +21,8 @@ void begin() {
   trajectory = (traj_point_pos *)malloc(sizeof(traj_point_pos) * 4);
   header.num_points = 4;
   trajectory[0] = {.time = 0, .north = 0, .west = 0, .up = 0};
-  trajectory[1] = {.time = 5, .north = 0, .west = 0, .up = 0.3};
-  trajectory[2] = {.time = 10, .north = 0, .west = 0, .up = 0.3};
+  trajectory[1] = {.time = 5, .north = 0, .west = 0, .up = 1};
+  trajectory[2] = {.time = 10, .north = 0, .west = 0, .up = 1};
   trajectory[3] = {.time = 15, .north = 0, .west = 0, .up = -0.1};
 }
 
