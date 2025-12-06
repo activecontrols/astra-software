@@ -1,3 +1,4 @@
+#include "GPS.h"
 #include "matlab_funcs.h"
 
 #define FILTER_MODE 1
@@ -10,6 +11,9 @@ Vector13 EstimateStateFCN(Vector13 x_est, t_constantsASTRA constantsASTRA, Vecto
 
   // Remove bias from gyro
   z.segment<3>(3) = z.segment<3>(3) - x_est.segment<3>(10) * (FILTER_MODE == 1 || GND == 1);
+  Vector3 r_gps;
+  r_gps << 0, 0, 0.31;
+  z.segment<3>(12) = z.segment<3>(12) - z.segment<3>(3).cross(r_gps);
 
   // Extract quaternion
   Vector12 dx = Vector12::Zero();
@@ -80,11 +84,16 @@ Vector13 EstimateStateFCN(Vector13 x_est, t_constantsASTRA constantsASTRA, Vecto
     H.block<3, 3>(3, 6) = Matrix3_3::Identity();
 
     // Measurement Covariance Matrix
-    float gps_pos_covar = 1 * RTK + 10 * (1 - RTK);
-    float gps_vel_covar = gps_pos_covar * 0.1;
-    Vector6 R_vec;
-    R_vec << gps_pos_covar * gps_pos_covar * Vector3::Ones(), gps_vel_covar * gps_vel_covar * Vector3::Ones();
-    Matrix6_6 R = R_vec.asDiagonal();
+    Matrix3_3 gps_pos_covar;
+    Matrix3_3 gps_vel_covar;
+    GPS::get_pos_cov(gps_pos_covar);
+    GPS::get_vel_cov(gps_vel_covar);
+    gps_pos_covar = gps_pos_covar * 10;
+    gps_vel_covar = gps_vel_covar * 2;
+
+    Matrix6_6 R = Matrix6_6::Zero();
+    R.block<3, 3>(0, 0) = gps_pos_covar;
+    R.block<3, 3>(3, 3) = gps_vel_covar;
 
     // A priori covariance and Kalman gain
     Matrix12_6 L = P * H.transpose() * (H * P * H.transpose() + R).inverse();

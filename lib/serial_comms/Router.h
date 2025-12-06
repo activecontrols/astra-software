@@ -27,39 +27,39 @@ extern UART radio_uart;
 #define COMMS_RATE 115200
 #endif
 
-extern File comms_log_file;
+// extern File comms_log_file;
 
 // initializes the serial port and configures logs
 void begin();
 
 inline void println() {
   COMMS_SERIAL.println();
-  comms_log_file.println();
-  comms_log_file.flush();
+  // comms_log_file.println();
+  // comms_log_file.flush();
 }
 
 template <typename T> void println(T value) {
   COMMS_SERIAL.println(value);
-  comms_log_file.println(value);
-  comms_log_file.flush();
+  // comms_log_file.println(value);
+  // comms_log_file.flush();
 }
 
 template <typename T> void print(T value) {
   COMMS_SERIAL.print(value);
-  comms_log_file.print(value);
-  comms_log_file.flush();
+  // comms_log_file.print(value);
+  // comms_log_file.flush();
 }
 
 template <typename T> void print(T value, int prec_or_base) {
   COMMS_SERIAL.print(value, prec_or_base);
-  comms_log_file.print(value, prec_or_base);
-  comms_log_file.flush();
+  // comms_log_file.print(value, prec_or_base);
+  // comms_log_file.flush();
 }
 
 template <typename T> void println(T value, int prec_or_base) {
   COMMS_SERIAL.println(value, prec_or_base);
-  comms_log_file.println(value, prec_or_base);
-  comms_log_file.flush();
+  // comms_log_file.println(value, prec_or_base);
+  // comms_log_file.flush();
 }
 
 template <typename... Args> void printf(const char *format, Args... args) {

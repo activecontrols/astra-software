@@ -92,14 +92,14 @@ int Sensor::init() {
      =========================================================================================*/
 
   // adjust these per the datasheet to choose the aaf filter bandwidth
-  // these values have been chosen for a filter bandwidth of 394 Hz
-  const uint8_t accel_aaf_delt = 9;
-  const uint16_t accel_aaf_deltsqr = 81;
-  const uint8_t accel_aaf_bitshift = 9;
+  // these values have been chosen for a filter bandwidth of 42 Hz
+  const uint8_t accel_aaf_delt = 1;
+  const uint16_t accel_aaf_deltsqr = 1;
+  const uint8_t accel_aaf_bitshift = 15;
 
-  const uint8_t gyro_aaf_delt = 9;
-  const uint16_t gyro_aaf_deltsqr = 81;
-  const uint8_t gyro_aaf_bitshift = 9;
+  const uint8_t gyro_aaf_delt = 1;
+  const uint16_t gyro_aaf_deltsqr = 1;
+  const uint8_t gyro_aaf_bitshift = 15;
 
   // switch to user bank 1
   status = inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 1);
