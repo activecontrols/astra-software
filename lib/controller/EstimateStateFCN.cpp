@@ -11,9 +11,6 @@ Vector13 EstimateStateFCN(Vector13 x_est, t_constantsASTRA constantsASTRA, Vecto
 
   // Remove bias from gyro
   z.segment<3>(3) = z.segment<3>(3) - x_est.segment<3>(10) * (FILTER_MODE == 1 || GND == 1);
-  Vector3 r_gps;
-  r_gps << 0, 0, 0.31;
-  z.segment<3>(12) = z.segment<3>(12) - z.segment<3>(3).cross(r_gps);
 
   // Extract quaternion
   Vector12 dx = Vector12::Zero();
