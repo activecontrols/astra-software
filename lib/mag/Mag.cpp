@@ -523,6 +523,10 @@ void begin() {
 
   do_instant_calib();
 
+  calib.hard_x = -2992.5000;
+  calib.hard_y = 129.0000;
+  calib.hard_z = -483.5000;
+
   Router::println("Magnetometer initialized.");
 }
 
