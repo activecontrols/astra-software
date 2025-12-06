@@ -53,7 +53,7 @@ void readCommand() {
 void begin() {
   COMMS_SERIAL.begin(COMMS_RATE);
   COMMS_SERIAL.setTimeout((unsigned long)-1); // wrap around to max long so we never time out
-
+  SDCard::begin();
   // if (SDCard::begin()) {
   //   comms_log_file = SDCard::open("log.txt", FILE_WRITE);
   // } else {
