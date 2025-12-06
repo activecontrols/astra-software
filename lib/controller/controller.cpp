@@ -37,9 +37,9 @@ void reset_controller_state() {
   constantsASTRA.R.block<3, 3>(0, 0) = Matrix3_3::Identity() * 0.1500;
   constantsASTRA.R.block<3, 3>(3, 3) = Matrix3_3::Identity() * 0.1200;
 
-  constantsASTRA.K_Att << 1.133604e+00, -3.297985e-16, 1.683627e-16, 1.925898e-01, -3.507285e-17, -7.648992e-17, -6.324555e-01, 6.628460e-17, -1.142330e-16, //
-      2.717801e-16, 1.136934e+00, 2.449270e-16, 4.799793e-17, 1.985662e-01, 2.505480e-17, -7.524250e-17, -6.324555e-01, -2.397136e-16,                       //
-      -1.788593e-15, 1.828852e-15, 8.462398e+00, -2.226297e-16, 2.620046e-16, 4.355001e+00, 1.286862e-15, -1.097175e-15, -4.472136e+00;                      //
+  constantsASTRA.K_Att << 1.401021e+00, 4.402054e-16, 2.550781e-16, 1.989907e-01, 3.523806e-17, 5.684376e-17, -7.071068e-01, -7.847684e-16, -7.670511e-17, //
+      -9.887527e-16, 1.401021e+00, -1.093737e-15, -9.937777e-17, 1.989907e-01, -9.661409e-17, 2.779389e-16, -7.071068e-01, 8.099283e-16,                   //
+      3.753223e-16, -2.147608e-15, 9.197585e+00, 2.572903e-16, -3.245850e-16, 3.352436e+00, -1.103104e-15, 2.036072e-15, -3.872983e+00;                    //
 
   P = 1 * Matrix12_12::Identity();
   x_est = Vector13::Zero();
@@ -54,7 +54,7 @@ void reset_controller_state() {
   last_call_time = millis();
 }
 
-Controller_Output get_controller_output(Controller_Input ci) {
+Controller_Output get_controller_output(Controller_Input ci, bool should_log) {
   unsigned long call_time = millis();
   float dT = (call_time - last_call_time) / 1000.0;
   last_call_time = call_time;
@@ -68,9 +68,9 @@ Controller_Output get_controller_output(Controller_Input ci) {
        ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
   // clang-format on
 
-  Vector9 imu = z.segment<9>(0);
-  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
-  z.segment<9>(0) = filt_imu;
+  // Vector9 imu = z.segment<9>(0);
+  // Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
+  // z.segment<9>(0) = filt_imu;
 
   x_est = EstimateStateFCN(x_est, constantsASTRA, z, dT, ci.GND_val, P, ci.new_imu_packet, ci.new_gps_packet);
   Vector3 EMA_G = EMA_Gyros(z, lastEMA);
@@ -82,6 +82,36 @@ Controller_Output get_controller_output(Controller_Input ci) {
     raw_co = Vector4::Zero();
   }
   last_thrust = raw_co(2);
+
+  if (should_log) {
+    Serial.print(">a");
+    for (int i = 0; i < 15; i++) {
+      Serial.print(z(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    Serial.print(">b");
+    Serial.print(x_est(0));
+    Serial.print(" ");
+    for (int i = 0; i < 15; i++) {
+      Serial.print(X(i), 4);
+      Serial.print(" ");
+    }
+    Serial.println();
+
+    Serial.print(">c");
+    for (int i = 0; i < 4; i++) {
+      Serial.print(raw_co(i), 4);
+      Serial.print(" ");
+    }
+    Serial.print(ci.target_pos_north);
+    Serial.print(" ");
+    Serial.print(ci.target_pos_west);
+    Serial.print(" ");
+    Serial.print(ci.target_pos_up);
+    Serial.println();
+  }
 
   Controller_Output co;
   co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;

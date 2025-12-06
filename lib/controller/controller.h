@@ -38,5 +38,5 @@ struct Controller_Input {
 namespace Controller {
 void begin();
 void reset_controller_state();
-Controller_Output get_controller_output(Controller_Input ci);
+Controller_Output get_controller_output(Controller_Input ci, bool should_log);
 }; // namespace Controller
