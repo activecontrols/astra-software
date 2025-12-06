@@ -113,6 +113,8 @@ void begin() {
   Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
 #endif
 
+  ubx.inf_msg_cbk = output_gps_inf_cbk;
+
   Router::add({print_gps_pos, "gps_print_pos"});
   Router::add({print_rel_pos, "gps_print_rel_pos"});
   Router::add({set_current_position_as_origin, "gps_set_origin"});
