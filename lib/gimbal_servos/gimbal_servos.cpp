@@ -75,7 +75,7 @@ void setGimbalAngleCmd(const char *args) {
   setGimbalAngle(bottom_top_angle[0], bottom_top_angle[1]);
 }
 
-void init() {
+void begin() {
   bottom_servo.period_ms(20);
   top_servo.period_ms(20);
   centerGimbal();

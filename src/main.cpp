@@ -16,6 +16,7 @@ void ping(const char *args) {
 
 void setup() {
   delay(3000);
+  SPI.begin(); // spi is a shared interface, so we always begin here
   Router::begin();
   Router::println("Controller started.");
 
@@ -23,7 +24,7 @@ void setup() {
   Mag::begin();
   GPS::begin();
   IMU::begin();
-  GimbalServos::init();
+  GimbalServos::begin();
   TrajectoryLoader::begin();
   TrajectoryFollower::begin();
 

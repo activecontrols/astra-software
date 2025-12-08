@@ -25,6 +25,7 @@ void follow_trajectory() {
   bool has_left_ground = false;
   bool flight_armed = false;
   bool should_kill = false;
+  bool should_log = false;
 
   long counter = 0;
 
@@ -52,15 +53,28 @@ void follow_trajectory() {
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
-      if (Serial.available() && Serial.read() == 'k') {
+      char cmd_char = ' ';
+      if (Serial.available()) {
+        cmd_char = Serial.read();
+      }
+      if (cmd_char == 'k') {
         should_kill = true;
         break;
       }
-      if (Serial.available() && Serial.read() == 'y') {
+      if (cmd_char == 'y') {
         flight_armed = true;
         timer = elapsedMicros();
-        long counter = 0;
+        lastlog = timer;
+        lastloop = timer;
+        counter = 0;
         GPS::set_current_position_as_origin();
+      }
+
+      if (timer - lastlog > LOG_INTERVAL_US) {
+        lastlog = timer;
+        should_log = true;
+      } else {
+        should_log = false;
       }
 
       Controller_Input ci;
@@ -123,8 +137,7 @@ void follow_trajectory() {
       Prop::set_throttle_roll(thrust_perc, diffy_perc);
       GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
-      if (timer - lastlog > LOG_INTERVAL_US) {
-        lastlog += LOG_INTERVAL_US;
+      if (should_log) {
         TrajectoryLogger::log_trajectory_csv(timer / 1000000.0, i, ci, co);
       }
       counter++;
@@ -139,6 +152,8 @@ void follow_trajectory() {
   }
 
   Prop::stop();
+
+  // TODO - log to indicate flight disarm
 
   Router::print("Finished ");
   Router::print(counter);

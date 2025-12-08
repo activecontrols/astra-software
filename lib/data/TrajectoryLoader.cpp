@@ -110,4 +110,4 @@ void write_trajectory_sd(const char *) {
   Router::println("Wrote trajectory!");
 }
 
-}
+} // namespace TrajectoryLoader

@@ -17,7 +17,6 @@ void begin() {
 }
 
 void reset_controller_state() {
-  t_constantsASTRA constantsASTRA;
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.2490;
   constantsASTRA.mag << -0.4512, 0, 0.8924;
@@ -51,12 +50,12 @@ void reset_controller_state() {
 
   ASTRAv2_Controller_reset();
 
-  last_call_time = millis();
+  last_call_time = micros();
 }
 
 Controller_Output get_controller_output(Controller_Input ci) {
-  unsigned long call_time = millis();
-  float dT = (call_time - last_call_time) / 1000.0;
+  unsigned long call_time = micros();
+  float dT = (call_time - last_call_time) / 1000000.0;
   last_call_time = call_time;
 
   Vector15 z;
