@@ -1,0 +1,32 @@
+{
+  "name": "ASTRA Flight Controller v1",
+  "vendor": "Custom PCB",
+  "url": "TODO - confluence link",
+  "frameworks": [
+    "arduino"
+  ],
+  "build": {
+    "core": "stm32",
+    "cpu": "cortex-m7",
+    "mcu": "stm32h747",
+    "variants_dir": "boards",
+    "variant": "ASTRA_FC_V1",
+    "extra_flags": [
+      "-DCORE_CM7",
+      "-DSTM32H747xx"
+    ]
+  },
+  "upload": {
+    "maximum_ram_size": 131072,
+    "maximum_size": 524288,
+    "protocol": "stlink",
+    "protocols": [
+      "stlink"
+    ]
+  },
+  "debug": {
+    "openocd_board": "stm32h7x7",
+    "openocd_target": "stm32h7x7x_flash",
+    "load_mode": "default"
+  }
+}
