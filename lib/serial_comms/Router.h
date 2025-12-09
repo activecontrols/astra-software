@@ -1,6 +1,6 @@
 #pragma once
 
-#include "portenta_pins.h"
+#include "fc_pins.h"
 #include <Arduino.h>
 #include <SD.h>
 #include <functional>

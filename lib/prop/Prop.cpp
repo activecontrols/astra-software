@@ -1,5 +1,5 @@
 #include "Servo.h"
-#include "portenta_pins.h"
+#include "fc_pins.h"
 #include <Prop.h>
 #include <Router.h>
 

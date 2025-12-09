@@ -1,7 +1,7 @@
 #include "gimbal_servos.h"
 #include "Router.h"
 #include "Servo.h"
-#include "portenta_pins.h"
+#include "fc_pins.h"
 
 namespace GimbalServos {
 

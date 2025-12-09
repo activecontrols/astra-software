@@ -7,7 +7,7 @@
 
 namespace Router {
 
-HardwareSerial radio_uart(RADIO_TX, RADIO_RX, NC, NC);
+HardwareSerial radio_uart(RADIO_TX, RADIO_RX);
 
 File comms_log_file;
 
