@@ -19,7 +19,7 @@ struct Data {
 
 struct SPI_Interface {
   int cs;
-  arduino::MbedSPI *spi;
+  SPIClass *spi;
 };
 
 int begin();
@@ -27,7 +27,7 @@ void calibrate_gyroscope();
 
 class Sensor {
 public:
-  Sensor(int cs, arduino::MbedSPI *spi);
+  Sensor(int cs, SPIClass *spi);
   ~Sensor();
   int init();
   void read_latest(Data *output);
