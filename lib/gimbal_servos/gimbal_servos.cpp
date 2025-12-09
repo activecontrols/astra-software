@@ -1,5 +1,6 @@
 #include "gimbal_servos.h"
 #include "Router.h"
+#include "Servo.h"
 #include "portenta_pins.h"
 
 namespace GimbalServos {
@@ -8,9 +9,8 @@ namespace GimbalServos {
 #define MIN_SERVO_MICROS 800
 #define MAX_SERVO_MICROS 2450
 
-// TODO - re-enable these
-// mbed::PwmOut bottom_servo(digitalPinToPinName(BOTTOM_SERVO_PIN));
-// mbed::PwmOut top_servo(digitalPinToPinName(TOP_SERVO_PIN));
+Servo bottom_servo;
+Servo top_servo;
 
 #define INTERPOLATION_TABLE_LENGTH 31 // max length of all tables - set to enable passing tables to functions
 
@@ -58,8 +58,8 @@ void setGimbalAngle(float bottom, float top) {
   // Router::printf("Outputted Bottom Angle: %.2f\n", servo_bottom_angle);
   // Router::printf("Outputted Top Angle: %.2f\n", servo_top_angle);
 
-  // bottom_servo.pulsewidth_us(calc_servo_pulsewidth(servo_bottom_angle));
-  // top_servo.pulsewidth_us(calc_servo_pulsewidth(servo_top_angle));
+  bottom_servo.writeMicroseconds(calc_servo_pulsewidth(servo_bottom_angle));
+  top_servo.writeMicroseconds(calc_servo_pulsewidth(servo_top_angle));
 }
 
 void centerGimbal() {
@@ -76,8 +76,8 @@ void setGimbalAngleCmd(const char *args) {
 }
 
 void begin() {
-  // bottom_servo.period_ms(20);
-  // top_servo.period_ms(20);
+  bottom_servo.attach(BOTTOM_SERVO_PIN);
+  top_servo.attach(TOP_SERVO_PIN);
   centerGimbal();
   Router::add({setGimbalAngleCmd, "gimbal_set_angle_bt"});
   Router::add({centerGimbal, "gimbal_center"});
