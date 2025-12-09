@@ -40,7 +40,7 @@ int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
 void begin_transaction(SPI_Interface *my_spi);
 void end_transaction(SPI_Interface *my_spi);
 
-Sensor::Sensor(int cs, arduino::MbedSPI *spi) {
+Sensor::Sensor(int cs, SPIClass *spi) {
   this->spi_interface.cs = cs;
   this->spi_interface.spi = spi;
 
