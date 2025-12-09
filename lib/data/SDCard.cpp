@@ -1,6 +1,6 @@
 #include "SDCard.h"
 #include "Router.h"
-#include "portenta_pins.h"
+#include "fc_pins.h"
 #include <SD.h>
 
 bool SDCard::begin() {

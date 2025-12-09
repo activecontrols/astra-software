@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#include "portenta_pins.h"
-
 #include "IMU.h"
 
 #include "./Invn/Drivers/Icm406xx/Icm406xxDriver_HL.h"
@@ -11,7 +9,7 @@
 
 #include "Router.h"
 #include "SDCard.h"
-#include "portenta_pins.h"
+#include "fc_pins.h"
 
 #define WRITE_FLAG (0)
 #define READ_FLAG (1 << 7)
