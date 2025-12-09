@@ -3,7 +3,6 @@
 #include <Router.h>
 
 #include <Arduino.h>
-#include <mbed.h>
 
 #define MIN_PULSE 1000
 #define MAX_PULSE 2000
@@ -11,8 +10,9 @@
 
 namespace Prop {
 
-mbed::PwmOut esc1(digitalPinToPinName(PROP1_PIN));
-mbed::PwmOut esc2(digitalPinToPinName(PROP2_PIN));
+// TODO - re-enable these
+// mbed::PwmOut esc1(digitalPinToPinName(PROP1_PIN));
+// mbed::PwmOut esc2(digitalPinToPinName(PROP2_PIN));
 
 int current_throttle_1 = MIN_PULSE;
 int current_throttle_2 = MIN_PULSE;
@@ -110,8 +110,8 @@ void set_throttle_micros(int prop1_us, int prop2_us) {
   current_throttle_1 = prop1_us;
   current_throttle_2 = prop2_us;
 
-  esc1.pulsewidth_us(prop1_us);
-  esc2.pulsewidth_us(prop2_us);
+  // esc1.pulsewidth_us(prop1_us);
+  // esc2.pulsewidth_us(prop2_us);
 }
 
 void set_throttle_roll(float overall_pct, float differential) {
@@ -133,8 +133,8 @@ void stop() {
 }
 
 void arm() {
-  esc1.pulsewidth_us(MIN_PULSE);
-  esc2.pulsewidth_us(MIN_PULSE);
+  // esc1.pulsewidth_us(MIN_PULSE);
+  // esc2.pulsewidth_us(MIN_PULSE);
   delay(ARM_TIME);
   armed = true;
 }
@@ -238,8 +238,8 @@ void cmd_contra_test() {
 // -----------------------------------------------------------------------------
 
 void begin() {
-  esc1.period_ms(20);
-  esc2.period_ms(20);
+  // esc1.period_ms(20);
+  // esc2.period_ms(20);
   set_throttle_micros(MIN_PULSE, MIN_PULSE); // this is pretty much arming assuming no commands are run for a couple seconds
 
   Router::add({cmd_arm, "prop_arm"});
