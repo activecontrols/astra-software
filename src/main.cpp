@@ -14,35 +14,59 @@ void ping(const char *args) {
   Router::println(args == nullptr ? "null" : args);
 }
 
-void characterize_grid() {
-  float deg_min = -7.5;
-  float deg_max = 7.5;
-  const float interp_time = 2;
+void characterize_grid(const char *args) {
+  bool flip = args[0] == 'r';
+  const float deg_limit = 10;
+  float deg_min = -deg_limit;
+  float deg_max = deg_limit;
+  const float interp_time = 1;
 
-  float a = -7.5;
+  const unsigned long delay_time = 3000000;
+
+  float a = deg_min;
+  float b = -deg_limit;
 
   IMU::Data last_packet;
 
-  Router::print("Angle A (deg), Angle B (deg), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (deg/s), Gyro Z (deg/s)\n");
+  Router::print("Time (s), Angle A (deg), Angle B (deg), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n");
 
-  for (float b = -7.5; b <= 7.5; b += 0.2) {
+  unsigned long initial_time = micros();
+
+  while (micros() - initial_time < delay_time) {
+    IMU::IMUs[0].read_latest(&last_packet);
+
+    unsigned long now_time = micros();
+    double t = (now_time - initial_time) / 1000000.0;
+
+    Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1],
+                   last_packet.gyro[2]);
+  }
+
+  GimbalServos::setGimbalAngle(a, b);
+  delay(1);
+
+  for (; b <= deg_limit && !Serial.available(); b += 0.5) {
     unsigned long start_time = micros();
 
     while (1) {
 
       IMU::IMUs[0].read_latest(&last_packet);
 
-      Router::printf("%.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1],
-                     last_packet.gyro[2]);
-
       unsigned long now_time = micros();
       double t = (now_time - start_time) / 1000000.0;
+      double t_since_start = (now_time - initial_time - delay_time) * 1e-6;
+
+      Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t_since_start, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
+                     last_packet.gyro[1], last_packet.gyro[2]);
       if (t > interp_time)
         break;
 
       a = (deg_max - deg_min) * (t / interp_time) + deg_min;
 
-      GimbalServos::setGimbalAngle(a, b);
+      if (flip)
+        GimbalServos::setGimbalAngle(b, a);
+      else
+        GimbalServos::setGimbalAngle(a, b);
       delay(1);
     }
 
@@ -50,13 +74,22 @@ void characterize_grid() {
     deg_min = deg_max;
     deg_max = temp;
   }
+
+  while (Serial.read() != '\n')
+    ;
 }
 
 void characterize_frequency(const char *param) {
 
+  bool axis_top = param[0] == 'r';
+  const double start_delay = 3; // 3 seconds
+
+  const float amplitude = 5;
   IMU::Data last_packet;
 
-  Router::print("Time (s), Frequency (Hz), Angle A (deg), Angle B (deg), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (deg/s), Gyro Z (deg/s)\n");
+  Router::printf("<<<Begin Frequency Test on axis %s >>>\n\n", axis_top ? "top" : "bottom");
+
+  Router::print("Time (s), Angle A (deg), Angle B (deg), Frequency (Hz), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n");
   float a = 0;
   float f = 0;
 
@@ -70,13 +103,22 @@ void characterize_frequency(const char *param) {
     double t = (now_time - start_time) * 1e-6;
     IMU::IMUs[0].read_latest(&last_packet);
 
-    Router::printf("%.5lf, %.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, f, a, 0, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
+    Router::printf("%.5lf, %.2f, %.2f, %.5lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, a, 0, f, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
                    last_packet.gyro[1], last_packet.gyro[2]);
 
-    a = sin(t * t);
+    if (t < start_delay) {
+      delay(1);
+      continue;
+    }
+
+    t -= start_delay * 1e-6;
+    a = amplitude * sin(t * t);
     f = t / PI;
 
-    GimbalServos::setGimbalAngle(a, 0);
+    if (axis_top)
+      GimbalServos::setGimbalAngle(0, a);
+    else
+      GimbalServos::setGimbalAngle(a, 0);
 
     delay(1);
   }
@@ -88,8 +130,23 @@ void characterize_frequency(const char *param) {
 void circle_test() {
   IMU::Data last_packet;
 
-  const double amplitude = 7.5;
-  const double period = 6; // seconds
+  // this should be how to paramaterize a circle???
+  // R = circle radius
+  // L = prop length
+  // a = angle a
+  // b = angle b
+
+  // x = Lsin a = Rcost
+  // y = Lsin b = Rsint
+
+  // a = arcsin(R/L cost)
+  // b = arcsin(R/L sint)
+
+  // k = R/L (must be |k| <= 1)
+
+  const double amplitude = 15;
+
+  const double k = sin(amplitude * PI / 180.0);
 
   float a = amplitude;
   float b = 0;
@@ -106,10 +163,52 @@ void circle_test() {
 
     Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1],
                    last_packet.gyro[2]);
+    a = asin(k * cos(2 * t)) * 180 / PI;
+    b = asin(k * sin(2 * t)) * 180 / PI;
 
-    a = amplitude * cos(t * 2 * PI / period);
-    b = amplitude * sin(t * 2 * PI / period);
     GimbalServos::setGimbalAngle(a, b);
+
+    delay(1);
+  }
+
+  while (Serial.read() != '\n')
+    ;
+}
+
+void step_test(const char *param) {
+  const double period = 3;
+  const float amplitude = 10;
+
+  float angle = 0;
+  const double delay_time = 3;
+
+  bool upper = param[0] == 'u';
+
+  Router::printf("<<<Begin step test on %s.>>>\n\n", upper ? "upper" : "lower");
+
+  Router::printf("Time (s), Angle %s (deg), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n", upper ? "upper" : "lower");
+
+  unsigned long start_time = micros();
+
+  IMU::Data last_packet;
+
+  while (!Serial.available()) {
+    unsigned long now_time = micros();
+    double t = (now_time - start_time) * 1e-6;
+
+    if (t > delay_time)
+      angle = fmod(t, 2 * period) < period ? amplitude : -amplitude;
+
+    if (upper) {
+      GimbalServos::setGimbalAngle(0, angle);
+    } else {
+      GimbalServos::setGimbalAngle(angle, 0);
+    }
+
+    IMU::IMUs[0].read_latest(&last_packet);
+
+    Router::printf("%.5lf, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, angle, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1],
+                   last_packet.gyro[2]);
 
     delay(1);
   }
@@ -138,6 +237,7 @@ void setup() {
   Router::add({characterize_grid, "grid"});
   Router::add({characterize_frequency, "frequency"});
   Router::add({circle_test, "circle"});
+  Router::add({step_test, "step"});
 }
 
 void loop() {
