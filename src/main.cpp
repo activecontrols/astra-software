@@ -54,7 +54,7 @@ void characterize_grid(const char *args) {
 
       unsigned long now_time = micros();
       double t = (now_time - start_time) / 1000000.0;
-      double t_since_start = (now_time - initial_time - delay_time) * 1e-6;
+      double t_since_start = (now_time - initial_time) * 1e-6;
 
       Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t_since_start, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
                      last_packet.gyro[1], last_packet.gyro[2]);
