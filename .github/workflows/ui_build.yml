@@ -32,4 +32,5 @@ jobs:
         with:
           name: astra-ui
           path: |
+            UI/imgui/misc/fonts/Cousine-Regular.ttf
             UI/app.exe
