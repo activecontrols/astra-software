@@ -343,8 +343,7 @@ void do_simple_calib() {
 
 void custom_calib() {
   Router::println("Enter hard iron offsets separated by spaces (x y z): ");
-  String line = Router::read(100);
-  line.trim();
+  char *line = Router::read();
 
   double vals[3];
   if (!Router::parse_doubles(line, vals, 3)) {
@@ -356,10 +355,9 @@ void custom_calib() {
   calib.hard_z = vals[2];
 
   Router::println("Enter soft iron correction matrix (or hit enter for identity): ");
-  String matline = Router::read(200);
-  matline.trim();
+  char *matline = Router::read();
 
-  if (matline.length() == 0) {
+  if (matline[0] == '\0') { // len is 0
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         calib.soft[i][j] = (i == j) ? 1.0 : 0.0;
@@ -457,8 +455,7 @@ void mag_record_test(const char *arg) {
     x = y = z = 0;
     mag.beginMeasurement();
     delay(1);
-    while (!mag.isMeasurementReady())
-    {
+    while (!mag.isMeasurementReady()) {
       delayMicroseconds(500);
     }
 

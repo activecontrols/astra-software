@@ -94,7 +94,7 @@ void send(char msg[], unsigned int len);
 void receive(char msg[], unsigned int len);
 
 // reads a message from the serial port into a string and returns it
-String read(unsigned int len);
+char *read();
 
 // add registers a new function to the router
 void add(func f);
@@ -108,7 +108,7 @@ void add(func_no_args fna);
 // for help function
 void print_all_cmds();
 // replacement for scanf
-bool parse_doubles(const String &str, double *vals, int count);
+bool parse_doubles(const char *, double *vals, int count);
 
 }; // namespace Router
 

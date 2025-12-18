@@ -169,10 +169,9 @@ int Sensor::write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val) {
 // loads three doubles from serial and stores them in dest
 int load_calibration_helper(double *dest) {
   char buf[3][100];
-  String line = Router::read(100);
-  line.trim();
+  char *line = Router::read();
   Router::println(line);
-  int read = sscanf(line.c_str(), "%99s %99s %99s", buf[0], buf[1], buf[2]);
+  int read = sscanf(line, "%99s %99s %99s", buf[0], buf[1], buf[2]);
   if (read != 3) {
     return read;
   }

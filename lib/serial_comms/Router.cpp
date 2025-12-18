@@ -5,16 +5,16 @@
 
 #define COMMAND_BUFFER_SIZE (200)
 
-// TODO: IG think about thread safety since args are global
-
 namespace Router {
 
 UART radio_uart(RADIO_TX, RADIO_RX, NC, NC);
 
 File comms_log_file;
 
-CString<COMMAND_BUFFER_SIZE> commandBuffer; // TODO: IG think about if this should be a raw char array? we don't use append or anything fancy
-char *argStart = nullptr;                   // points to the start of the arguments in commandBuffer, or is null if no args
+CString<COMMAND_BUFFER_SIZE> commandBuffer;
+CString<COMMAND_BUFFER_SIZE> readBuffer;
+
+char *argStart = nullptr; // points to the start of the arguments in commandBuffer, or is null if no args
 
 namespace { // private namespace
 vector<func> funcs;
@@ -73,17 +73,18 @@ void receive(char msg[], unsigned int len) {
   COMMS_SERIAL.readBytes(msg, len);
 }
 
-String read(unsigned int len) { // todo: move away from arduino String.
-  // String s = COMMS_SERIAL.readStringUntil('\n', len);
-  String s = COMMS_SERIAL.readStringUntil('\n'); // TODO: len no longer supported?
-  s.trim();                                      // remove leading/trailing whitespace or newline
+char *read() {
+  // read until newline char or 200 characters (hopefully none of our funcs have names that long lol)
+  size_t read_length = COMMS_SERIAL.readBytesUntil('\n', readBuffer.str, COMMAND_BUFFER_SIZE - 1);
+  readBuffer.str[read_length] = '\0'; // null terminate
+  readBuffer.trim();                  // remove leading/trailing whitespace or newline
 
   comms_log_file.print("<");
-  comms_log_file.print(s);
+  comms_log_file.print(readBuffer.str);
   comms_log_file.print(">\n");
   comms_log_file.flush();
 
-  return s;
+  return readBuffer.str;
 }
 
 void add(func f) {
@@ -125,18 +126,20 @@ void print_all_cmds() {
   }
 }
 
-bool parse_doubles(const String &str, double *vals, int count) { // sscanf doesnt handle doubles. 5 minutes of debugging resulted in that conclusion.
-  size_t pos = 0;
+bool parse_doubles(const char *str, double *vals, int count) { // sscanf doesnt handle doubles. 5 minutes of debugging resulted in that conclusion.
+  const char *p = str;
+
   for (int i = 0; i < count; i++) {
-    int next = str.indexOf(' ', pos);
-    if (next == -1)
-      next = str.length();
-    if (pos >= str.length())
+    char *end;
+    vals[i] = strtod(p, &end);
+
+    if (end == p)
       return false;
-    vals[i] = str.substring(pos, next).toDouble();
-    pos = next + 1;
+
+    p = end;
   }
+
   return true;
-};
+}
 
 } // namespace Router

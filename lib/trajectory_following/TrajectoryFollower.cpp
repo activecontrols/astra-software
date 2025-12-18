@@ -174,8 +174,8 @@ void arm(const char *) {
 
   // filenames use DOS 8.3 standard
   Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
-  String log_file_name = Router::read(50);
-  TrajectoryLogger::create_trajectory_log(log_file_name.c_str()); // lower case files have issues on teensy
+  char *log_file_name = Router::read();
+  TrajectoryLogger::create_trajectory_log(log_file_name); // lower case files have issues on teensy
 
   Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");
 

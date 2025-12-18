@@ -155,8 +155,7 @@ bool is_armed() {
 
 void cmd_set_both(const char *args) {
   double vals[2];
-  String argstr = String(args);
-  if (!Router::parse_doubles(argstr, vals, 2)) {
+  if (!Router::parse_doubles(args, vals, 2)) {
     Router::println("Usage: prop_set_both <prop1 %> <prop2 %>");
     return;
   }
@@ -167,9 +166,8 @@ void cmd_set_both(const char *args) {
 
 void cmd_set(const char *args) {
   double vals[2];
-  String argstr = String(args);
-  if (!Router::parse_doubles(argstr, vals, 2)) {
-    if (!Router::parse_doubles(argstr, vals, 1)) {
+  if (!Router::parse_doubles(args, vals, 2)) {
+    if (!Router::parse_doubles(args, vals, 1)) {
       Router::println("Usage: prop_set <throttle %> [<roll %>]");
       return;
     }

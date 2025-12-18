@@ -50,8 +50,7 @@ void SDCard::ls() {
 void SDCard::rm(const char *filename) {
   if (filename == nullptr || strlen(filename) == 0) {
     Router::print("Enter filename: ");
-    String fname = Router::read(50);
-    filename = (char *)fname.c_str();
+    filename = Router::read();
   }
   if (SD.remove(filename)) {
     Router::println("File removed.");
@@ -63,7 +62,7 @@ void SDCard::rm(const char *filename) {
 void SDCard::cat(const char *filename) { // okay technically this can only print one file at a time, so its not a real `cat`
   if (filename == nullptr || strlen(filename) == 0) {
     Router::print("Enter filename: ");
-    filename = Router::read(50).c_str();
+    filename = Router::read();
   }
   File f = SD.open(filename, FILE_READ);
   if (f) {
