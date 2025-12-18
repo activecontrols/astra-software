@@ -33,3 +33,26 @@ void cstring::trim(char *str) {
   memmove(str, start, end - start + 1);
   str[end - start + 1] = '\0';
 }
+
+// resolve a string containing backspaces to the user intent
+// ie: '\babcd\bef' -> 'abcef'
+void cstring::resolve_backspaces(char *str) {
+  int valid_idx = 0;
+  int current_idx = 0;
+  while (str[current_idx] != '\0') {
+    if (valid_idx != current_idx) {
+      printf("Update %d to %d\n", valid_idx, current_idx);
+      str[valid_idx] = str[current_idx];
+    }
+
+    if (str[current_idx] != '\b') { // backspace
+      valid_idx++;
+    } else {
+      if (valid_idx > 0) { // ignore backspaces at start of string
+        valid_idx--;
+      }
+    }
+    current_idx++;
+  }
+  str[valid_idx] = '\0';
+}

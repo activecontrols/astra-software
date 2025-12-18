@@ -24,6 +24,8 @@ int append(char *str, size_t bufferLen, double value, int precision);
 
 void trim(char *str);
 
+void resolve_backspaces(char *str);
+
 inline bool equals(const char *str1, const char *str2) {
   return strcmp(str1, str2) == 0;
 }
@@ -65,6 +67,12 @@ public:
   // trims leading and trialing whitespace and new lines, and null terminates the end of the trimmed string
   void trim() {
     cstring::trim(str);
+  }
+
+  // resolve a string containing backspaces to the user intent
+  // ie: '\babcd\bef' -> 'abcef'
+  void resolve_backspaces() {
+    cstring::resolve_backspaces(str);
   }
 
   bool equals(const char *src) {
@@ -120,6 +128,12 @@ public:
   // trims leading and trialing whitespace and new lines
   void trim() {
     cstring::trim(str);
+  }
+
+  // resolve a string containing backspaces to the user intent
+  // ie: '\babcd\bef' -> 'abcef'
+  void resolve_backspaces() {
+    cstring::resolve_backspaces(str);
   }
 
   bool equals(const char *src) {

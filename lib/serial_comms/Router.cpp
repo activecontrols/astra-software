@@ -24,6 +24,7 @@ void readCommand() {
   size_t cmd_length = COMMS_SERIAL.readBytesUntil('\n', commandBuffer.str, COMMAND_BUFFER_SIZE - 1);
   commandBuffer.str[cmd_length] = '\0'; // null terminate
   commandBuffer.trim();                 // remove leading/trailing whitespace or newline
+  commandBuffer.resolve_backspaces();
 
   // find first space to separate command from args
   argStart = strchr(commandBuffer.str, ' ');
@@ -78,6 +79,7 @@ char *read() {
   size_t read_length = COMMS_SERIAL.readBytesUntil('\n', readBuffer.str, COMMAND_BUFFER_SIZE - 1);
   readBuffer.str[read_length] = '\0'; // null terminate
   readBuffer.trim();                  // remove leading/trailing whitespace or newline
+  readBuffer.resolve_backspaces();
 
   comms_log_file.print("<");
   comms_log_file.print(readBuffer.str);
