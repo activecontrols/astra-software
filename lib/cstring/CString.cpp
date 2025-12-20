@@ -41,7 +41,6 @@ void cstring::resolve_backspaces(char *str) {
   int current_idx = 0;
   while (str[current_idx] != '\0') {
     if (valid_idx != current_idx) {
-      printf("Update %d to %d\n", valid_idx, current_idx);
       str[valid_idx] = str[current_idx];
     }
 
