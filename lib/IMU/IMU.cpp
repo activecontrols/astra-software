@@ -30,7 +30,7 @@ constexpr double GYRO_RESOLUTION = 1.0 / 16.4;
 
 using namespace IMU;
 
-Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &SPI)};
+Sensor IMU::IMUs[IMU_COUNT] = {Sensor(0, &SPI)};
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);

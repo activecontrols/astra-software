@@ -2,15 +2,17 @@
 
 #include <Router.h>
 #include <SDCard.h>
-#include <Wire.h>
+#include <SPI.h>
+
+#include "fc_pins.h"
 
 #include <SparkFun_MMC5983MA_Arduino_Library.h>
 
-const char *Mag::main_calib_name = "MCALIB.BIN";
-
-SFE_MMC5983MA mag;
+const char *Mag::CALIB_FMT = "MAG-%d";
 
 namespace Mag {
+
+SFE_MMC5983MA MAGs[MAG_COUNT];
 
 struct calibration {
   double hard_x;
@@ -19,11 +21,8 @@ struct calibration {
   double soft[3][3];
 };
 
-// these come from final.m in mag_calib/
-// calibration matlab_calib = {-1714.23, -2777.08, 1604.81, {{1.0656, 0.0175, -0.0067}, {0.0175, 0.9805, 0.0141}, {-0.0067, 0.0141, 1.0678}}};
-
 calibration identity_calib = {0.0, 0.0, 0.0, {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}};
-calibration calib = identity_calib; // start with identity calibration
+calibration calibs[MAG_COUNT]; // this is initialized in begin()
 
 void apply_calibration(double &x, double &y, double &z, const calibration &c) {
   x -= c.hard_x;
@@ -39,79 +38,124 @@ void apply_calibration(double &x, double &y, double &z, const calibration &c) {
   z = cal_z;
 }
 
-void apply_calibration(double &x, double &y, double &z) {
-  apply_calibration(x, y, z, calib);
+void apply_calibration(double &x, double &y, double &z, int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return;
+
+  apply_calibration(x, y, z, calibs[mag_index]);
 }
 
-bool get_centered_reading(int &mx, int &my, int &mz) {
+bool get_centered_reading(int m[3], int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return false;
+
   uint32_t rawValueX, rawValueY, rawValueZ;
-  if (!mag.measure(&rawValueX, &rawValueY, &rawValueZ)) {
+
+  if (!MAGs[mag_index].measure(&rawValueX, &rawValueY, &rawValueZ)) {
     return false;
   }
-  // mag.getMeasurementXYZ(&rawValueX, &rawValueY, &rawValueZ);
 
-  mx = (int)rawValueX - 131072;
-  my = (int)rawValueY - 131072;
-  mz = (int)rawValueZ - 131072;
+  m[0] = (int)rawValueX - 131072;
+  m[1] = (int)rawValueY - 131072;
+  m[2] = (int)rawValueZ - 131072;
   return true;
 }
 
+// check if all magnetometers are ready for measurement
 bool isMeasurementReady() {
-  return mag.isMeasurementReady();
+  for (int i = 0; i < MAG_COUNT; ++i) {
+    if (!MAGs[i].isMeasurementReady())
+      return false;
+  }
+  return true;
 }
 
-bool beginMeasurement() {
-  return mag.beginMeasurement();
+// begin measurement on all magnetometers
+void beginMeasurement() {
+  for (int i = 0; i < MAG_COUNT; ++i) {
+    MAGs[i].beginMeasurement();
+  }
+  return;
 }
 
-// do not use this function in time-critical code
-bool get_centered_reading_blocking(int &mx, int &my, int &mz) {
+// this function is REALLY slow btw !!
+bool get_centered_reading_blocking(int m[3], int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return false;
+
+  SFE_MMC5983MA &mag = MAGs[mag_index];
+
   mag.beginMeasurement();
   delay(1);
   while (!mag.isMeasurementReady()) {
     delay(1);
   }
-  return get_centered_reading(mx, my, mz);
+  return get_centered_reading(m, mag_index);
 }
 
-// values may be stale!!!
-bool read_xyz(double &mx, double &my, double &mz) {
-  int rx, ry, rz;
+// values may be stale!!! proper usage is to call beginMeasurement() and then isMeasurementReady() to make sure a new measurement is waiting to be read
+bool read_xyz(double m[3], int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return false;
 
-  if (!get_centered_reading(rx, ry, rz)) {
+  int r[3]; // store raw, centered readings
+
+  if (!get_centered_reading(r, mag_index)) {
     return false;
   }
-  mx = (double)rx;
-  my = (double)ry;
-  mz = (double)rz;
-  apply_calibration(mx, my, mz);
+  m[0] = (double)r[0];
+  m[1] = (double)r[1];
+  m[2] = (double)r[2];
+  apply_calibration(m[0], m[1], m[2], mag_index);
 
   double half = 131072.0; // all values after dividing are in +/- 1.0 range (sensor is 18 bit)
-  mx /= half;
-  my /= half;
-  mz /= half;
+  m[0] /= half;
+  m[1] /= half;
+  m[2] /= half;
   return true;
 }
 
-bool read_xyz_normalized(double &mx, double &my, double &mz) {
-  if (!read_xyz(mx, my, mz)) {
+bool read_xyz_all(double m[MAG_COUNT][3]) {
+  for (int i = 0; i < MAG_COUNT; ++i) {
+    if (!read_xyz(m[i], i))
+      return false;
+  }
+
+  return true;
+}
+
+bool read_xyz_normalized(double m[3], int mag_index) {
+  if (!read_xyz(m, mag_index)) {
     return false;
   }
 
-  double sqrt_ssq = sqrt(mx * mx + my * my + mz * mz);
-  mx /= sqrt_ssq;
-  my /= sqrt_ssq;
-  mz /= sqrt_ssq;
+  double sqrt_ssq = sqrt(m[0] * m[0] + m[1] * m[1] + m[2] * m[2]);
+  m[0] /= sqrt_ssq;
+  m[1] /= sqrt_ssq;
+  m[2] /= sqrt_ssq;
   return true;
 }
 
-double get_heading() {
-  double mx, my, mz;
-  if (!read_xyz(mx, my, mz)) {
+bool read_xyz_normalized_all(double m[MAG_COUNT][3]) {
+  for (int i = 0; i < MAG_COUNT; ++i) {
+    if (!read_xyz_normalized(m[i], i))
+      return false;
+  }
+
+  return true;
+}
+
+double get_heading(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT) {
+    return 0;
+  }
+
+  double m[3];
+  if (!read_xyz(m, mag_index)) {
     return 0.0;
   }
   // Magnetic north is oriented with the Y axis
-  double heading = atan2(mx, -my);
+  double heading = atan2(m[0], -m[1]);
   // atan2 returns a value between +PI and -PI
   // Convert to degrees
   heading /= PI;
@@ -146,20 +190,23 @@ double calc_sphere_fit_goodness(const double *xs, const double *ys, const double
 double read_x[1000], read_y[1000], read_z[1000];
 
 // populates read_x, read_y, read_z with 1000 samples
-void collect_samples() {
+void collect_samples(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return;
+
   Router::println("Collecting calibration data...");
   Router::println("Move the sensor around in all orientations until done. Waiting 5 seconds to start...");
   delay(5000);
   // record 1000 centered readings
   for (int i = 0; i < 1000; i++) {
-    int mx, my, mz;
-    if (!get_centered_reading_blocking(mx, my, mz)) {
+    int m[3];
+    if (!get_centered_reading_blocking(m, mag_index)) {
       Router::println("Mag read failed. collect_samples failed.");
       return;
     }
-    read_x[i] = (double)mx;
-    read_y[i] = (double)my;
-    read_z[i] = (double)mz;
+    read_x[i] = (double)m[0];
+    read_y[i] = (double)m[1];
+    read_z[i] = (double)m[2];
     delay(100);
     if (i % 10 == 0) { // every second, print progress
       Router::mprintln(i, " samples recorded ", i / 1000.0 * 100.0, "%");
@@ -168,7 +215,7 @@ void collect_samples() {
   Router::println("Done recording calibration data.");
   double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, identity_calib);
   Router::mprintln("Sphere fit goodness of raw data: ", goodness, "%");
-  goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, calib);
+  goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, calibs[mag_index]);
   Router::mprintln("Sphere fit goodness of current calibration: ", goodness, "%");
 }
 
@@ -179,29 +226,39 @@ void collect_samples() {
 //   Router::println(String(mx, 6) + "," + String(my, 6) + "," + String(mz, 6));
 // }
 
-void mag_heading() {
+void mag_heading(const char *arg) {
+  int mag_index = atoi(arg);
+
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    mag_index = 0;
+
+  Router::printf("Outputting mag heading measurement on mag %d. Press enter to continue...", mag_index);
   while (!Serial.available()) {
-    double heading = get_heading();
+    double heading = get_heading(mag_index);
     Router::println(heading);
   }
+
+  while (Serial.read() != '\n')
+    ;
 }
 
+// test read time for all three mags as if they are in the main control loop; only time the portion of the code where the mag is being interacted with
 void mag_test_read_time() {
   unsigned long read_time = 0;
 
   const int count = 5000;
   int count_non_stale = 0;
-  mag.beginMeasurement();
+  beginMeasurement();
   delay(1); // delay 1 ms to give the magnetometer time to measure before the first loop iteration
 
   unsigned long start_time = micros();
   for (int i = 0; i < count; ++i) {
     unsigned long read_start_micros = micros();
-    if (mag.isMeasurementReady()) {
-      double mx, my, mz;
-      read_xyz(mx, my, mz);
+    if (isMeasurementReady()) {
+      double m[MAG_COUNT][3];
+      read_xyz_all(m);
 
-      mag.beginMeasurement();
+      beginMeasurement();
 
       ++count_non_stale;
     }
@@ -217,12 +274,14 @@ void mag_test_read_time() {
   Router::printf("Test concluded.\nAverage loop time (ms): %lf\nAverage time spend reading per iteration (ms): %lf\nCount Reads: %d\n", average_ms, read_time / 1000.0 / count, count_non_stale);
 }
 
-void write_samples(const char *filename) {
-  if (filename == nullptr) {
-    Router::print("Call with filename to save to.\n");
+void write_samples(const char *args) {
+  static char filename[30];
+  int mag_index;
+  if (sscanf(args, "%d %s", &mag_index, filename) != 2) {
+    Router::print("Usage: mag_write_samples <mag_index> <filename>\n");
     return;
   }
-  collect_samples();
+  collect_samples(mag_index);
   // write raw data to file
   File f = SDCard::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
   if (!f) {
@@ -240,9 +299,13 @@ void write_samples(const char *filename) {
   Router::println("Use final.m in mag_calib/ to compute calibration parameters");
 }
 
-void print_calibration() {
-  Router::println("Current calibration:");
+void print_calibration(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    mag_index = 0;
+  Router::printf("Current calibration for mag %d:\n", mag_index);
   Router::println("Hard iron offsets:");
+
+  calibration &calib = calibs[mag_index];
 
   Router::printf("x: %.4f y: %.4f z: %.4f\n", calib.hard_x, calib.hard_y, calib.hard_z);
 
@@ -252,29 +315,40 @@ void print_calibration() {
   }
 }
 
+void print_calibration_cmd(const char *args) {
+  print_calibration(atoi(args));
+}
+
 void hard_reset() {
-  mag.performResetOperation();
+  for (int i = 0; i < MAG_COUNT; ++i) {
+    MAGs[i].performResetOperation();
+  }
   delay(100);
   Router::println("Magnetometer hard reset performed.");
 }
 
-void do_instant_calib() {
-  hard_reset();
+void do_instant_calib(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return;
+  Router::printf("Performing instant calibration on magnetometer %d\n", mag_index);
+
+  SFE_MMC5983MA &mag = MAGs[mag_index];
+  mag.performResetOperation();
   mag.performSetOperation();
-  int sX, sY, sZ;
-  bool success = get_centered_reading_blocking(sX, sY, sZ);
-  success = success && get_centered_reading_blocking(sX, sY, sZ); // for some reason the demo does it twice apparently to avoid noise (??)
+  int s[3];
+  bool success = get_centered_reading_blocking(s, mag_index);
+  success = success && get_centered_reading_blocking(s, mag_index); // for some reason the demo does it twice apparently to avoid noise (??)
   if (!success) {
     Router::println("Set operation failed.");
     return;
   }
   Router::println("Set operation done. Values:");
-  Router::mprintln(sX, ",", sY, ",", sZ);
+  Router::mprintln(s[0], ",", s[1], ",", s[2]);
 
   mag.performResetOperation();
-  int rX, rY, rZ;
-  success = get_centered_reading_blocking(rX, rY, rZ);
-  success = success && get_centered_reading_blocking(rX, rY, rZ);
+  int r[3];
+  success = get_centered_reading_blocking(r, mag_index);
+  success = success && get_centered_reading_blocking(r, mag_index);
 
   if (!success) {
     Router::println("Reset operation on mag failed. Instant calibration failed.");
@@ -282,30 +356,39 @@ void do_instant_calib() {
   }
 
   Router::println("Reset operation done. Values:");
-  Router::mprintln(rX, ",", rY, ",", rZ);
+  Router::mprintln(r[0], ",", r[1], ",", r[2]);
 
   // hard iron offset is average of set and reset
   calibration cnew;
-  cnew.hard_x = (sX + rX) / 2.0;
-  cnew.hard_y = (sY + rY) / 2.0;
-  cnew.hard_z = (sZ + rZ) / 2.0;
+  cnew.hard_x = (s[0] + r[0]) / 2.0;
+  cnew.hard_y = (s[1] + r[1]) / 2.0;
+  cnew.hard_z = (s[2] + r[2]) / 2.0;
   // no soft iron correction
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < 3; j++) {
       cnew.soft[i][j] = (i == j) ? 1.0 : 0.0; // identity matrix
     }
   }
-  calib = cnew; // set new calibration
+  calibs[mag_index] = cnew; // set new calibration
   Router::println("Instant calibration done.");
-  print_calibration();
+  print_calibration(mag_index);
 }
 
-void do_simple_calib() {
-  hard_reset();
+void do_instant_calib_cmd(const char *arg) {
+  do_instant_calib(atoi(arg));
+}
+
+void do_simple_calib(const char *args) {
+  int mag_index = atoi(args);
+
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    mag_index = 0;
+
+  MAGs[mag_index].performResetOperation();
 
   Router::println("Starting simple calibration.");
 
-  collect_samples();
+  collect_samples(mag_index);
   // compute hard iron offsets as average of min and max
   auto min_max = [](const double *data, int n, double &minv, double &maxv) {
     minv = data[0];
@@ -336,12 +419,18 @@ void do_simple_calib() {
   double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, cnew);
   Router::mprintln("Sphere fit goodness after simple calibration: ", goodness, "%");
 
-  calib = cnew; // set new calibration
+  calibs[mag_index] = cnew; // set new calibration
   Router::println("Simple calibration done.");
-  print_calibration();
+  print_calibration(mag_index);
 }
 
-void custom_calib() {
+void custom_calib(const char *args) {
+  int mag_index = atoi(args);
+
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    mag_index = 0;
+
+  Router::printf("Custom calib entry for mag %d\n", mag_index);
   Router::println("Enter hard iron offsets separated by spaces (x y z): ");
   char *line = Router::read();
 
@@ -350,6 +439,8 @@ void custom_calib() {
     Router::println("Error parsing input. Expected 3 numbers.");
     return;
   }
+
+  calibration &calib = calibs[mag_index];
   calib.hard_x = vals[0];
   calib.hard_y = vals[1];
   calib.hard_z = vals[2];
@@ -376,29 +467,38 @@ void custom_calib() {
     Router::println("Set soft iron correction matrix to input values.");
   }
 
-  print_calibration();
+  print_calibration(mag_index);
 }
 
-void show_centered_reading() {
+void show_centered_reading(const char *args) {
+  int mag_index = atoi(args);
+
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    mag_index = 0;
+
   for (int i = 0; i < 100; i++) {
-    int mx, my, mz;
-    if (!get_centered_reading_blocking(mx, my, mz)) {
+    int m[3];
+    if (!get_centered_reading_blocking(m, mag_index)) {
       Router::println("Get centered reading failed.");
       return;
     }
-    Router::mprintln(mx, ",", my, ",", mz);
+    Router::mprintln(m[0], ",", m[1], ",", m[2]);
     delay(100);
   }
 }
 
-void show_normalized_reading() {
-  mag.beginMeasurement();
-  delay(1);
+void show_normalized_reading(const char *args) {
+  int mag_index = atoi(args);
+
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    mag_index = 0;
+
+  SFE_MMC5983MA &mag = MAGs[mag_index];
   while (!Serial.available()) {
     if (mag.isMeasurementReady()) {
-      double mx, my, mz;
-      if (read_xyz_normalized(mx, my, mz)) {
-        Router::printf("%lf, %lf, %lf\n", mx, my, mz);
+      double m[3];
+      if (read_xyz_normalized(m, mag_index)) {
+        Router::printf("%lf, %lf, %lf\n", m[0], m[1], m[2]);
       }
       mag.beginMeasurement();
     }
@@ -409,33 +509,65 @@ void show_normalized_reading() {
     ;
 }
 
-void save_calib(const char *filename) {
-  if (filename == nullptr) {
-    filename = main_calib_name;
-  }
+void save_calib(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return;
+
+  char filename[30];
+
+  snprintf(filename, sizeof(filename), Mag::CALIB_FMT, mag_index);
   Router::mprintln("Saving calibration to ", filename);
-  SDCard::write_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
+  SDCard::write_bytes(filename, (uint8_t *)&calibs[mag_index], sizeof(calibration));
 }
 
-void load_calib(const char *filename) {
-  if (filename == nullptr) {
-    filename = main_calib_name;
-  }
+void save_calib_cmd(const char *arg) {
+  if (arg == nullptr)
+    return;
+  save_calib(atoi(arg));
+}
+
+void load_calib(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return;
+
+  char filename[30];
+
+  snprintf(filename, sizeof(filename), Mag::CALIB_FMT, mag_index);
+
   Router::mprintln("Loading calibration from ", filename);
-  SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
-  print_calibration();
+  SDCard::load_bytes(filename, (uint8_t *)&calibs[mag_index], sizeof(calibration));
+  print_calibration(mag_index);
 }
 
-void no_calib() {
-  calib = identity_calib;
-  Router::println("Calibration set to identity (no calibration).");
-  print_calibration();
+void load_calib_cmd(const char *arg) {
+  if (arg == nullptr)
+    return;
+  load_calib(atoi(arg));
+}
+
+void no_calib(int mag_index) {
+  if (mag_index < 0 || mag_index >= MAG_COUNT)
+    return;
+
+  calibs[mag_index] = identity_calib;
+  Router::printf("Mag %d calibration set to identity (no calibration).\n", mag_index);
+  print_calibration(mag_index);
+}
+
+void no_calib_cmd(const char *arg) {
+  no_calib(atoi(arg));
 }
 // -----------------------------------------------------------------------------
 
 void mag_record_test(const char *arg) {
+  int new_filter_bw;
+  int mag_index;
+  if (arg == nullptr || sscanf(arg, "%d %d", &mag_index, &new_filter_bw) != 2 || (mag_index < 0 || mag_index >= MAG_COUNT)) {
+    Router::print("Invalid command usage. Proper usage: mag_record_test <mag_index> <new_filter_bw>");
+  }
+
+  SFE_MMC5983MA &mag = MAGs[mag_index];
   int old_filter_bw = mag.getFilterBandwidth();
-  int new_filter_bw = atoi(arg);
   if (!new_filter_bw) {
     new_filter_bw = old_filter_bw;
   }
@@ -451,8 +583,7 @@ void mag_record_test(const char *arg) {
 
   while (!Serial.available()) {
 
-    double x, y, z;
-    x = y = z = 0;
+    double m[3];
     mag.beginMeasurement();
     delay(1);
     while (!mag.isMeasurementReady()) {
@@ -460,15 +591,13 @@ void mag_record_test(const char *arg) {
     }
 
     double t = (micros() - start_micros) / 1000000.0;
-    read_xyz_normalized(x, y, z);
+    read_xyz_normalized(m, mag_index);
 
     Router::print(t, 6);
-    Router::print(',');
-    Router::print(x, 8);
-    Router::print(',');
-    Router::print(y, 8);
-    Router::print(',');
-    Router::print(z, 8);
+    for (int i = 0; i < 3; ++i) {
+      Router::print(',');
+      Router::print(m[i], 8);
+    }
     Router::print('\n');
     delay(1);
   }
@@ -484,42 +613,48 @@ void mag_record_test(const char *arg) {
 }
 
 void begin() {
-  Wire.begin();
-  Wire.setClock(400000);
-  // Initialize the magnetometer
-  if (!mag.begin()) {
-    while (true) {
-      Router::println("Magnetometer not found, reboot once magnetometer connected...");
-      delay(1000);
+
+  // initialize each calibration and magnetometer sequentially
+  for (int i = 0; i < MAG_COUNT; ++i) {
+
+    calibs[i] = identity_calib; // set to identity calib for now, will be overwritten later when instant calib is done/or calib is loaded from file
+
+    MAGs[i] = SFE_MMC5983MA();
+    if (!MAGs[i].begin(MAG_CS[i], SPI)) {
+      while (true) {
+        Router::printf("Magnetometer %d not found, reboot once magnetometer connected...\n", i);
+        delay(1000);
+      }
     }
+
+    MAGs[i].softReset();
+
+    // mag.setFilterBandwidth(800); // 0.5ms measurement time
+    MAGs[i].setFilterBandwidth(400); // 2ms measurement time
+
+    // supposedly this will prevent sensor drift
+    MAGs[i].setPeriodicSetSamples(25);
+    MAGs[i].enablePeriodicSet();
+
+    do_instant_calib(i);
   }
-  mag.softReset();
-
-  // mag.setFilterBandwidth(800); // 0.5ms measurement time
-  mag.setFilterBandwidth(400); // 2ms measurement time
-
-  // supposedly this will prevent sensor drift
-  mag.setPeriodicSetSamples(25);
-  mag.enablePeriodicSet();
 
   // Router::add({mag_rawprint, "mag_raw"});
   Router::add({mag_heading, "mag_heading"});
 
-  Router::add({print_calibration, "mag_print_calib"});
+  Router::add({print_calibration_cmd, "mag_print_calib"});
   Router::add({show_normalized_reading, "mag_show_normalized_reading"});
   Router::add({mag_test_read_time, "mag_test_read_time"});
   Router::add({write_samples, "mag_write_samples"});
   Router::add({do_simple_calib, "mag_do_simple_calib"}); // todo: add a way to save samples to a file when doing simple calib
-  Router::add({do_instant_calib, "mag_do_instant_calib"});
+  Router::add({do_instant_calib_cmd, "mag_do_instant_calib"});
   Router::add({custom_calib, "mag_custom_calib"});
   Router::add({hard_reset, "mag_hard_reset"});
   Router::add({show_centered_reading, "mag_show_centered"});
-  Router::add({no_calib, "mag_no_calib"});
-  Router::add({save_calib, "mag_save_calib"});
-  Router::add({load_calib, "mag_load_calib"});
+  Router::add({no_calib_cmd, "mag_no_calib"});
+  Router::add({save_calib_cmd, "mag_save_calib"});
+  Router::add({load_calib_cmd, "mag_load_calib"});
   Router::add({mag_record_test, "mag_record_test"});
-
-  do_instant_calib();
 
   Router::println("Magnetometer initialized.");
 }
