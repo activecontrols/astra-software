@@ -16,6 +16,9 @@
 #define LOG_INTERVAL_US 5000
 #define COMMAND_INTERVAL_US 1000
 
+void _process_mag_data(double mag_raw[Mag::MAG_COUNT][3], double out[3]);
+// void _process_imu_data(double imu_raw[IMU::IMU_COUNT][3], double out[3]);
+
 namespace TrajectoryFollower {
 
 /**
@@ -82,13 +85,16 @@ void follow_trajectory() {
       has_left_ground = has_left_ground | (TrajectoryLoader::trajectory[i].up > 0);
 
       IMU::Data imu_reading;
-      double mx, my, mz;
+      double mag_measurement[3];
       IMU::IMUs[0].read_latest(&imu_reading);
 
       if (Mag::isMeasurementReady()) {
+        double m_raw[Mag::MAG_COUNT][3];
         ci.new_imu_packet = true;
-        Mag::read_xyz_normalized(mx, my, mz);
+        Mag::read_xyz_normalized_all(m_raw);
         Mag::beginMeasurement();
+
+        _process_mag_data(m_raw, mag_measurement);
       } else {
         ci.new_imu_packet = false;
       }
@@ -103,9 +109,9 @@ void follow_trajectory() {
       ci.gyro_yaw = imu_reading.gyro[0];
       ci.gyro_pitch = -imu_reading.gyro[2];
       ci.gyro_roll = imu_reading.gyro[1];
-      ci.mag_x = mx;
-      ci.mag_y = my;
-      ci.mag_z = -mz;
+      ci.mag_x = mag_measurement[0];
+      ci.mag_y = mag_measurement[1];
+      ci.mag_z = -mag_measurement[2];
       ci.gps_pos_north = gps_rel_pos.north;
       ci.gps_pos_west = gps_rel_pos.west;
       ci.gps_pos_up = gps_rel_pos.up;
@@ -186,3 +192,18 @@ void arm(const char *) {
 }
 
 } // namespace TrajectoryFollower
+
+void _process_mag_data(double mag_raw[Mag::MAG_COUNT][3], double out[3]) {
+
+  // a simple averaging function; can be upgraded later to remove outliers etc
+  for (int i = 0; i < 3; ++i) {
+    double sum = 0;
+
+    for (int j = 0; j < Mag::MAG_COUNT; ++j) {
+      sum += mag_raw[j][i];
+    }
+
+    out[i] = sum * (1.0 / 3.0);
+  }
+  return;
+}
