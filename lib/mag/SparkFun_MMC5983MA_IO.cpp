@@ -29,6 +29,8 @@ void SFE_MMC5983MA_IO::initSPISettings()
 {
     // CPOL = 1, CPHA = 1 : SPI Mode 3 according to datasheet
     //  In practice SPI_MODE0 is what worked.
+
+    // note: per the datasheet, we can actually push this to 10 MHz if we need
     _mmcSpiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0);
 }
 

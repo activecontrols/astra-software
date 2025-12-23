@@ -1,14 +1,22 @@
 #pragma once
+#include "fc_pins.h"
 
 namespace Mag {
 
-extern const char *main_calib_name; // defined in mag.cpp as "mag_calib.bin"
+extern const char *CALIB_FMT;
+
+const int MAG_COUNT = sizeof(MAG_CS) / sizeof(MAG_CS[0]);
 
 void begin();
-bool read_xyz(double &mx, double &my, double &mz);
-bool read_xyz_normalized(double &mx, double &my, double &mz);
-double get_heading();
+
+bool read_xyz(double m[3], int mag_index);
+bool read_xyz_all(double m[MAG_COUNT][3]);
+
+bool read_xyz_normalized(double m[3], int mag_index);
+bool read_xyz_normalized_all(double m[MAG_COUNT][3]);
+
+double get_heading(int mag_index);
 
 bool isMeasurementReady();
-bool beginMeasurement();
+void beginMeasurement();
 } // namespace Mag
