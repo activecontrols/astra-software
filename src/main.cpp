@@ -1,3 +1,4 @@
+#include "Coder.h"
 #include "GPS.h"
 #include "IMU.h"
 #include "Mag.h"
@@ -12,6 +13,14 @@ void ping(const char *args) {
   Router::println("pong");
   Router::print("args: ");
   Router::println(args == nullptr ? "null" : args);
+}
+
+void test_coder() {
+  if (Coder::test()) {
+    Router::println("Coder test passed.");
+  } else {
+    Router::println("Coder test failed.");
+  }
 }
 
 void setup() {
@@ -30,6 +39,7 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
+  Router::add({test_coder, "test_coder"});
 }
 
 void loop() {
