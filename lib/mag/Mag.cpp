@@ -22,7 +22,7 @@ struct calibration {
 };
 
 calibration identity_calib = {0.0, 0.0, 0.0, {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}}};
-calibration calibs[MAG_COUNT]; // this is initialized in begin()
+calibration calibs[MAG_COUNT]{};
 
 void apply_calibration(double &x, double &y, double &z, const calibration &c) {
   x -= c.hard_x;
@@ -619,7 +619,6 @@ void begin() {
 
     calibs[i] = identity_calib; // set to identity calib for now, will be overwritten later when instant calib is done/or calib is loaded from file
 
-    MAGs[i] = SFE_MMC5983MA();
     if (!MAGs[i].begin(MAG_CS[i], SPI)) {
       while (true) {
         Router::printf("Magnetometer %d not found, reboot once magnetometer connected...\n", i);

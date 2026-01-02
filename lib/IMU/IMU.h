@@ -2,36 +2,50 @@
 #include "./Invn/Drivers/Icm406xx/Sensor_Event.h"
 #include <SPI.h>
 
-#define IMU_COUNT 1
+#include "fc_pins.h"
 
-namespace IMU {
-
-struct Calib {
-  double gyro_bias[3];
-  double accel_correction_bias[3];
-  double accel_correction_gain[3];
-};
-
-struct Data {
-  double acc[3];  // units are function dependent
-  double gyro[3]; // units are function dependent
-};
-
-struct SPI_Interface {
-  int cs;
-  SPIClass *spi;
-};
-
-int begin();
-void calibrate_gyroscope();
-
-class Sensor {
+class IMU {
 public:
-  Sensor(int cs, SPIClass *spi);
-  ~Sensor();
-  int init();
-  void read_latest(Data *output);
-  void read_latest_no_calib(Data *output);
+  struct Measurement {
+    double acc[3];  // units are function dependent
+    double gyro[3]; // units are function dependent
+  };
+
+  static const int IMU_COUNT = sizeof(IMU_CS) / sizeof(IMU_CS[0]);
+
+  IMU();
+  ~IMU();
+
+  static void begin();
+  static void calibrate_gyroscope_all();
+  static void read_latest_all(Measurement output[IMU_COUNT]);
+
+private:
+  struct SPI_Interface {
+    int cs;
+    SPIClass *spi;
+  };
+
+  struct Calib {
+    double gyro_bias[3];             // deg/s
+    double accel_correction_bias[3]; // g's
+    double accel_correction_gain[3];
+  };
+
+  void read_latest(Measurement *output);
+  void read_latest_no_calib(Measurement *output);
+
+  void load_calib(const char *);
+  void write_calib(const char *);
+
+  void clear_calib();
+  void load_custom_calib();
+
+  static IMU IMUs[IMU_COUNT];
+
+  Calib calib;
+
+  int init(int cs, SPIClass *spi);
 
   int enable_accel();
   int enable_gyro();
@@ -41,17 +55,6 @@ public:
 
   int read_accel_config(uint8_t *value);
 
-  void calibrate_gyro();
-
-  void load_calib(const char *);
-  void write_calib(const char *);
-
-  void clear_calib();
-  void load_custom_calib();
-
-  Calib calib;
-
-private:
   void read_latest_accel_raw(int16_t *);
   void read_latest_gyro_raw(int16_t *);
 
@@ -60,7 +63,20 @@ private:
   SPI_Interface spi_interface;
 
   void *inv_icm;
-};
 
-extern Sensor IMUs[IMU_COUNT];
-} // namespace IMU
+  static void begin_transaction(SPI_Interface *);
+  static void end_transaction(SPI_Interface *);
+
+  static int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
+  static int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
+
+  // router command declarations
+  static void cmd_calibrate_gyro();
+  static void cmd_log_accel_for_calibration(const char *param);
+  static void cmd_imu_log();
+  static void cmd_load_custom_calib(const char *arg);
+  static void cmd_load_calib(const char *arg);
+  static void cmd_write_calib(const char *arg);
+  static void cmd_output_calib(const char *arg);
+  static void cmd_imu_speed_test();
+};
