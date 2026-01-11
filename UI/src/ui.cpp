@@ -259,21 +259,80 @@ void livedoc_panel() {
   ImGui::EndDisabled();
 }
 
-bool thrusterBool = false;
+bool valveBool[] = [ false, false, false, false, false, false, false, false, true, false, false, false, false, true, false, false, false, false ];
+void copv_panel() {
+  if (ImGui::BeginTable("copv_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("BV-N2-01", &(valveBool[0]));
+    ImGui::Checkbox("BV-N2-02", &(valveBool[1]));
+    ImGui::EndTable();
+  }
+}
+
+void tank_rcs_panel() {
+  if (ImGui::BeginTable("tank_rcs_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("SV-N2-01", &(valveBool[2]));
+    ImGui::Checkbox("SV-N2-02", &(valveBool[3]));
+    ImGui::Checkbox("BV-N2-03", &(valveBool[4]));
+    ImGui::EndTable();
+  }
+}
+
+void purge_circuit_panel() {
+  if (ImGui::BeginTable("purge_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("SV-N2-03", &(valveBool[5]));
+    ImGui::Checkbox("SV-N2-04", &(valveBool[6]));
+    ImGui::Checkbox("SV-N2-05", &(valveBool[7]));
+    ImGui::EndTable();
+  }
+}
+
+void lox_tank_panel() {
+  if (ImGui::BeginTable("lox_tank_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("BV-O2-01", &(valveBool[8]));
+    ImGui::Checkbox("BV-O2-02", &(valveBool[9]));
+    ImGui::EndTable();
+  }
+}
+
+void lox_piping_panel() {
+  if (ImGui::BeginTable("lox_piping_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("BV-O2-03", &(valveBool[10]));
+    ImGui::Checkbox("BV-O2-04", &(valveBool[11]));
+    ImGui::Checkbox("SV-O2-01", &(valveBool[12]));
+    ImGui::EndTable();
+  }
+}
+
+void ipa_tank_panel() {
+  if (ImGui::BeginTable("ipa_tank_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("BV-FU-01", &(valveBool[13]));
+    ImGui::Checkbox("BV-FU-02", &(valveBool[14]));
+    ImGui::EndTable();
+  }
+}
+
+void ipa_piping_panel() {
+  if (ImGui::BeginTable("ipa_piping_table", 1, ImGuiTableFlags_Resizable)) {
+    ImGui::TableNextColumn();
+    ImGui::Checkbox("BV-FU-03", &(valveBool[15]));
+    ImGui::Checkbox("BV-FU-04", &(valveBool[16]));
+    ImGui::Checkbox("SV-FU-01", &(valveBool[17]));
+    ImGui::EndTable();
+  }
+}
 
 void ground_control_panel() {
   if (ImGui::BeginTable("controls_table", 4, ImGuiTableFlags_Resizable)) {
     ImU32 activeCol = ImGui::ColorConvertFloat4ToU32(ImVec4(8.0 / 255.0, 255.0 / 255.0, 156.0 / 255.0, 1.0f));
     ImU32 deactiveCol = ImGui::ColorConvertFloat4ToU32(ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f));
 
-    ImGui::TableNextColumn();
-    ImGui::BeginChild("COPV_Manifold_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("COPV Manifold");
-    ImGui::Checkbox("Open Valve 1 ", &thrusterBool);
-    ImGui::PopFont();
-
-    ImGui::EndChild();
+    panel("COPV Panel", ImVec2(0, 0), copv_panel);
 
     ImGui::BeginChild("low_pressure_subpanel", ImVec2(0, 300), true);
     ImGui::PushFont(panel_header_font);
@@ -283,31 +342,19 @@ void ground_control_panel() {
 
     ImGui::TableNextColumn();
 
-    ImGui::BeginChild("tank_rcs_subpanel", ImVec2(0, 300), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Tank set & RCS Circuit");
-    ImGui::PopFont();
-    ImGui::EndChild();
+    panel("Tank set & RCS circuit", ImVec2(0, 300), tank_rcs_panel);
 
-    ImGui::BeginChild("purge_circuit_subpanel", ImVec2(0, 300), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Purge Circuit");
-    ImGui::PopFont();
-    ImGui::EndChild();
+    panel("Purge Circuit", ImVec2(0, 300), purge_circuit_panel);
 
     ImGui::TableNextColumn();
-    ImGui::BeginChild("liquid_oxygen_subpanel", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Liquid Oxygen Tank");
-    ImGui::PopFont();
-    ImGui::EndChild();
+    panel("Liquid Oxygen Tank", ImVec2(0, 300), lox_tank_panel);
+
+    panel("Liquid Oxygen Piping", ImVec2(0, 300), lox_piping_panel);
 
     ImGui::TableNextColumn();
-    ImGui::BeginChild("Isopropyl Alcohol Tank", ImVec2(0, 0), true);
-    ImGui::PushFont(panel_header_font);
-    ImGui::SeparatorText("Isopropyl Alcohol Tank");
-    ImGui::PopFont();
-    ImGui::EndChild();
+    panel("Isopropyl Alcohol Tank", ImVec2(0, 300), ipa_tank_panel);
+
+    panel("Isopropyl Alcohol Piping", ImVec2(0, 300), ipa_piping_panel);
 
     ImGui::EndTable();
   }
