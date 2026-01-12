@@ -11,6 +11,7 @@ public:
     double gyro[3]; // units are function dependent
   };
 
+  // IMU count depends on the number of CS pins defined in fc_pins.h
   static const int IMU_COUNT = sizeof(IMU_CS) / sizeof(IMU_CS[0]);
 
   IMU();

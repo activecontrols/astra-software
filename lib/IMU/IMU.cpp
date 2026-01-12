@@ -20,6 +20,7 @@
 
 #define G_TO_MS2 9.80145
 
+// define array to hold all IMU objects needed
 IMU IMU::IMUs[IMU_COUNT]{};
 
 // g / LSB (this is for +-8g fsr)
@@ -160,10 +161,13 @@ int IMU::write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val) {
   uint8_t new_val;
   int status = 0;
 
+  // read register value
   status |= read_reg(&this->spi_interface, addr, &og_val, 1);
 
+  // modify bits selected with the mask
   new_val = (og_val & ~mask) | (val & mask);
 
+  // write new value
   status |= write_reg(&this->spi_interface, addr, &new_val, 1);
 
   return status;
