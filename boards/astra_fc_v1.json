@@ -25,8 +25,7 @@
     ]
   },
   "debug": {
-    "openocd_board": "stm32h7x7",
-    "openocd_target": "stm32h7x7x_flash",
+    "openocd_target": "stm32h7x_dual_bank",
     "load_mode": "default"
   }
 }
