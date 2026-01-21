@@ -19,18 +19,6 @@ Matrix4_4 HamiltonianProd(Vector4 q) {
   return M;
 }
 
-Matrix12_12 StateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2i) {
-  // Remove angular rates from error-state. Make safety copies of all relevant
-  // files into Archive
-  Matrix12_12 F = Matrix12_12::Zero();
-  F.block<3, 3>(0, 0) = -zetaCross(gyro);
-  F.block<3, 3>(0, 9) = -Matrix3_3::Identity();
-  F.block<3, 3>(3, 6) = Matrix3_3::Identity();
-  F.block<3, 3>(6, 0) = -R_b2i * zetaCross(accel);
-
-  return F;
-}
-
 Matrix12_12 matrixExpPade6(Matrix12_12 A) {
   using Scalar = typename Matrix12_12::Scalar;
   const Scalar b[] = {1.0, 0.5, 0.12, 0.0183333333333, 0.00199275362319, 0.000160590438368, 0.00000939085239292};
