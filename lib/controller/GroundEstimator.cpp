@@ -82,7 +82,7 @@ Vector13 GroundEstimator(Vector13 x_est, constantsASTRA_t constantsASTRA, Vector
     // Measurement Covariance Matrix
     float gps_pos_covar = 1 * RTK + 130 * (1 - RTK);
     float gps_vel_covar = gps_pos_covar * 0.1;
-    R = ((Vector6() << pow(gps_pos_covar, 2) * Vector3::Ones(), pow(gps_vel_covar, 2) * Vector3::Ones()).finished()).asDiagonal();
+    R = (Vector6() << pow(gps_pos_covar, 2) * Vector3::Ones(), pow(gps_vel_covar, 2) * Vector3::Ones()).finished().asDiagonal();
 
     // A priori covariance and Kalman gain
     Matrix18_6 L = P * H.transpose() * (H * P * H.transpose() + R).inverse();
