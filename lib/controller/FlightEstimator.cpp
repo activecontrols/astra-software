@@ -2,7 +2,7 @@
 
 #define RTK 1
 
-Matrix9_9 StateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2i) {
+Matrix9_9 FlightStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2i) {
   // Remove angular rates from error-state. Make safety copies of all relevant
   // files into Archive
   Matrix9_9 F = Matrix9_9::Zero();
@@ -31,14 +31,14 @@ Vector13 FlightEstimator(Vector13 x_est, constantsASTRA_t constantsASTRA, Vector
   Matrix3_3 R_b2i = quatRot(q).transpose();
 
   // State Transition Matrix
-  Matrix9_9 F = StateTransitionMat(z.segment<3>(0), z.segment<3>(3), R_b2i);
+  Matrix9_9 F = FlightStateTransitionMat(z.segment<3>(0), z.segment<3>(3), R_b2i);
 
   // Propagate rest of state using IMU
   x_est.segment<3>(7) = x_est.segment<3>(7) + (R_b2i * z.segment<3>(0) - (Vector3() << 0, 0, constantsASTRA.g).finished()) * dT;
   x_est.segment<3>(4) = x_est.segment<3>(4) + x_est.segment<3>(7) * dT;
 
   // Discrete STM
-  Matrix9_9 Phi = matrixExpPade6(F * dT);
+  Matrix9_9 Phi = matrixExpPade6<Matrix9_9>(F * dT);
 
   // Extract Matrices
   Matrix9_9 Q = constantsASTRA.Q.block<9, 9>(0, 0);

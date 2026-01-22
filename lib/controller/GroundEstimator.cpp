@@ -2,7 +2,7 @@
 
 #define RTK 1
 
-Matrix18_18 StateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2i) {
+Matrix18_18 GroundStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2i) {
   // Remove angular rates from error-state. Make safety copies of all relevant
   // files into Archive
   Matrix18_18 F = Matrix18_18::Zero();
@@ -33,14 +33,14 @@ Vector13 GroundEstimator(Vector13 x_est, constantsASTRA_t constantsASTRA, Vector
   Matrix3_3 R_b2i = quatRot(q).transpose();
 
   // State Transition Matrix (CHANGE!!)
-  Matrix18_18 F = StateTransitionMat(z.segment<3>(0), z.segment<3>(3), R_b2i);
+  Matrix18_18 F = GroundStateTransitionMat(z.segment<3>(0), z.segment<3>(3), R_b2i);
 
   // Propagate rest of state using IMU
   x_est.segment<3>(7) = x_est.segment<3>(7) + (R_b2i * z.segment<3>(0) - (Vector3() << 0, 0, constantsASTRA.g).finished()) * dT;
   x_est.segment<3>(4) = x_est.segment<3>(4) + x_est.segment<3>(7) * dT;
 
   // Discrete STM
-  Matrix18_18 Phi = matrixExpPade6(F * dT);
+  Matrix18_18 Phi = matrixExpPade6<Matrix18_18>(F * dT);
 
   // Extract Matrices
   Matrix18_18 Q = constantsASTRA.Q;
