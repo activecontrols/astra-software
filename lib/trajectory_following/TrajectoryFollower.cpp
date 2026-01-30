@@ -124,11 +124,7 @@ void follow_trajectory() {
         ci.new_gps_packet = false;
       }
 
-      if (has_left_ground) {
-        ci.GND_val = 0.0;
-      } else {
-        ci.GND_val = 1.0;
-      }
+      ci.GND_val = !has_left_ground;
 
       Controller_Output co = Controller::get_controller_output(ci);
       float thrust_perc;
