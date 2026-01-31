@@ -29,9 +29,25 @@ void characterize_grid(const char *args) {
 
   IMU::Data last_packet;
 
-  Router::print("Time (s), Angle A (deg), Angle B (deg), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n");
+  GimbalServos::centerGimbal();
+  delay(500);
+
+  Router::printf("<<< LOG BEGIN >>>\n");
+
+  Router::print("_grid_.csv\n");
+  Router::print("Time (s),Angle A (deg),Angle B (deg),Accel X (m/s^2),Accel Y (m/s^2),Accel Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
 
   unsigned long test_start_time = micros();
+
+  while (micros() - test_start_time < delay_time)
+  {
+    IMU::IMUs[0].read_latest(&last_packet);
+
+    double t = (micros() - test_start_time) * 1e-6;
+
+    Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
+                   last_packet.gyro[1], last_packet.gyro[2]);
+  }
 
   for (; b <= deg_limit && !Serial.available(); b += step_size) {
     unsigned long start_time = micros();
@@ -42,18 +58,11 @@ void characterize_grid(const char *args) {
 
       unsigned long now_time = micros();
       double t = (now_time - start_time) * 1e-6;
-      double t_since_begin_motion = (now_time - test_start_time - delay_time) * 1e-6;
 
-      Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t_since_begin_motion, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
+      Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", (now_time - test_start_time) * 1e-6, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
                      last_packet.gyro[1], last_packet.gyro[2]);
 
-      if (t_since_begin_motion < 0) // wait for initial delay to complete before moving
-      {
-        delay(1);
-        continue;
-      }
-
-      if (t > t_since_begin_motion)
+      if (t > interp_time)
         break;
 
       a = (deg_max - deg_min) * (t / interp_time) + deg_min;
@@ -71,21 +80,28 @@ void characterize_grid(const char *args) {
     deg_max = temp;
   }
 
-  while (Serial.read() != '\n')
-    ;
+  while (1)
+  {
+    int a = Serial.read();
+    if (a == '\n' || a == -1) break;
+  }
+
+  Router::printf("<<< LOG END >>>\n");
 }
 
 void characterize_frequency(const char *param) {
 
-  bool axis_top = param[0] == 'r';
+  bool axis_top = param[0] == 'u';
   const double start_delay = 3; // 3 seconds
 
   const float amplitude = 5;
   IMU::Data last_packet;
 
-  Router::printf("<<<Begin Frequency Test on axis %s >>>\n\n", axis_top ? "top" : "bottom");
+  Router::printf("<<< LOG BEGIN >>>\n");
 
-  Router::print("Time (s), Angle A (deg), Angle B (deg), Frequency (Hz), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n");
+  Router::printf("_frequency_%s.csv\n", axis_top ? "top" : "bottom");
+
+  Router::print("Time (s),Angle A (deg),Angle B (deg),Frequency (Hz),Accel X (m/s^2),Accel Y (m/s^2),Accel Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
   float a = 0;
   float f = 0;
 
@@ -120,6 +136,8 @@ void characterize_frequency(const char *param) {
 
   while (Serial.read() != '\n')
     ;
+
+  Router::print("\n\n<<< LOG END >>>\n");
 }
 
 void circle_test() {
@@ -139,7 +157,7 @@ void circle_test() {
 
   // k = R/L (must be |k| <= 1)
 
-  const double amplitude = 15;
+  const double amplitude = 10;
 
   const double k = sin(amplitude * PI / 180.0);
 
@@ -147,6 +165,12 @@ void circle_test() {
   float b = 0;
 
   GimbalServos::setGimbalAngle(a, b);
+
+  Router::printf("<<< LOG BEGIN >>>\n");
+
+  Router::printf("_circle_test.csv\n");
+
+  Router::print("Time (s),Angle A (deg),Angle B (deg),Accel X (m/s^2),Accel Y (m/s^2),Accel Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
   delay(1000);
 
   unsigned long start_time = micros();
@@ -158,8 +182,8 @@ void circle_test() {
 
     Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1],
                    last_packet.gyro[2]);
-    a = asin(k * cos(2 * t)) * 180 / PI;
-    b = asin(k * sin(2 * t)) * 180 / PI;
+    a = asin(k * cos(8 * t)) * 180 / PI;
+    b = asin(k * sin(8 * t)) * 180 / PI;
 
     GimbalServos::setGimbalAngle(a, b);
 
@@ -168,6 +192,8 @@ void circle_test() {
 
   while (Serial.read() != '\n')
     ;
+
+  Router::print("\n\n<<< LOG END >>>\n");
 }
 
 void step_test(const char *param) {
@@ -179,9 +205,11 @@ void step_test(const char *param) {
 
   bool upper = param[0] == 'u';
 
-  Router::printf("<<<Begin step test on %s>>>\n\n", upper ? "upper" : "lower");
+  Router::printf("<<< LOG BEGIN >>>\n");
 
-  Router::printf("Time (s), Angle %s (deg), Accel X (m/s^2), Accel Y (m/s^2), Accel Z (m/s^2), Gyro X (rad/s), Gyro Y (rad/s), Gyro Z (rad/s)\n", upper ? "upper" : "lower");
+  Router::printf("_step_%s.csv\n", upper ? "top" : "bottom");
+
+  Router::printf("Time (s),Angle %s (deg),Accel X (m/s^2),Accel Y (m/s^2),Accel Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n", upper ? "upper" : "lower");
 
   unsigned long start_time = micros();
 
@@ -210,6 +238,8 @@ void step_test(const char *param) {
 
   while (Serial.read() != '\n')
     ;
+
+  Router::print("\n\n<<< LOG END >>>\n");
 }
 
 void setup() {
