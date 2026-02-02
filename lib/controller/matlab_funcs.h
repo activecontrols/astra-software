@@ -1,7 +1,7 @@
 #pragma once
 #include <ArduinoEigenDense.h>
 
-// Note - using matlab funcs based off of ASTRA simulation: e5e0557ebb837f220d9740cd96e1020724bceb48
+// Note - using matlab funcs based off of ASTRA simulation: 3a2af9e756f0981da411d93f59ee6b421d5fa234
 // TODO - update matlab func commit
 
 using Vector3 = Eigen::Matrix<float, 3, 1>;
