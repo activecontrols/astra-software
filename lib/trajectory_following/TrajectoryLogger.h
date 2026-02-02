@@ -1,6 +1,6 @@
 #pragma once
 
-#include "controller.h"
+#include "controller_and_estimator.h"
 
 namespace TrajectoryLogger {
 void create_trajectory_log(const char *filename);

@@ -9,7 +9,7 @@
 #include "SDCard.h"
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
-#include "controller.h"
+#include "controller_and_estimator.h"
 #include "elapsedMillis.h"
 #include "gimbal_servos.h"
 
@@ -33,7 +33,7 @@ void follow_trajectory() {
   Mag::beginMeasurement();
 
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
-  Controller::reset_controller_state();
+  ControllerAndEstimator::init_controller_and_estimator_constants();
 
   while (!Mag::isMeasurementReady()) {
     Router::println("Waiting on mag...");
@@ -126,7 +126,7 @@ void follow_trajectory() {
 
       ci.GND_val = !has_left_ground;
 
-      Controller_Output co = Controller::get_controller_output(ci);
+      Controller_Output co = ControllerAndEstimator::get_controller_output(ci);
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);

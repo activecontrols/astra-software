@@ -1,11 +1,11 @@
-#include "controller.h"
+#include "controller_and_estimator.h"
 #include "matlab_funcs.h"
 
-namespace Controller {
+namespace ControllerAndEstimator {
 constantsASTRA_t constantsASTRA;
 Matrix18_18 P;
 Matrix9_9 Flight_P;
-Vector13 x_est;
+Vector19 x_est;
 Vector3 lastEMA;
 Matrix9_4 dnf_X;
 Matrix9_4 dnf_Y;
@@ -14,17 +14,13 @@ bool last_GND;
 
 unsigned long last_call_time; // ms
 
-void begin() {
-  reset_controller_state();
-}
-
-void reset_controller_state() {
+void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.2490;
   constantsASTRA.mag << -0.4512, 0, 0.8924;
-  constantsASTRA.Q << 2.500083e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0, 0, 0, //
-      0, 2.500083e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0, 0,                 //
-      0, 0, 2.500083e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0,                 //
+  constantsASTRA.Q << 1.000017e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0, 0, 0, //
+      0, 1.000017e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0, 0,                 //
+      0, 0, 1.000017e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0,                 //
       0, 0, 0, 2.083349e-09, 0, 0, 6.250078e-07, 0, 0, 0, 0, 0, -2.083333e-09, 0, 0, 0, 0, 0,      //
       0, 0, 0, 0, 2.083349e-09, 0, 0, 6.250078e-07, 0, 0, 0, 0, 0, -2.083333e-09, 0, 0, 0, 0,      //
       0, 0, 0, 0, 0, 2.083349e-09, 0, 0, 6.250078e-07, 0, 0, 0, 0, 0, -2.083333e-09, 0, 0, 0,      //
@@ -45,13 +41,12 @@ void reset_controller_state() {
   constantsASTRA.R.block<3, 3>(0, 0) = Matrix3_3::Identity() * 0.100;
   constantsASTRA.R.block<3, 3>(3, 3) = Matrix3_3::Identity() * 0.100;
 
-  constantsASTRA.K_Att << 1.341480e+00, -4.423127e-16, -2.263115e-17, 1.949556e-01, -3.652184e-17, -5.666956e-17, -6.582806e-01, 5.461372e-16, -2.780114e-16, //
-      4.924545e-16, 1.341480e+00, -3.901911e-16, 5.099383e-17, 1.949556e-01, -3.192517e-16, -2.775558e-16, -6.582806e-01, -2.514962e-16,                      //
-      -4.006925e-16, 5.609321e-16, 4.035990e+00, -5.718917e-17, 1.014174e-16, 2.059154e+00, 3.453548e-16, -4.435380e-16, -1.581139e+00;                       //
-                                                                                                                                                              //
+  constantsASTRA.K_Att << 8.722500e-01, -1.643694e-16, -8.894669e-16, 1.345039e-01, 7.189700e-19, -7.736332e-17, -4.787136e-01, 3.300943e-16, 4.539530e-16, //
+      6.198463e-16, 8.722500e-01, -1.023859e-15, 4.915936e-17, 1.345039e-01, -2.388831e-16, -1.440612e-15, -4.787136e-01, 3.240570e-16,                     //
+      -9.959333e-17, 7.261800e-16, 4.035990e+00, -9.370403e-17, 2.685714e-17, 2.059154e+00, 7.242069e-16, 2.974059e-16, -1.581139e+00;                      //
 
   P = 1 * Matrix18_18::Identity();
-  x_est = Vector13::Zero();
+  x_est = Vector19::Zero();
   x_est[0] = 1;
   lastEMA = Vector3::Zero();
   dnf_X = Matrix9_4::Ones();
@@ -84,6 +79,7 @@ Controller_Output get_controller_output(Controller_Input ci) {
 
   if (!ci.GND_val && last_GND) { // we left GND this frame
     Flight_P = P.block<9, 9>(0, 0);
+    ASTRAv2_Controller_reset(); // reset integral gains in the controller itself
   }
 
   if (ci.GND_val) {
@@ -92,8 +88,7 @@ Controller_Output get_controller_output(Controller_Input ci) {
     x_est = FlightEstimator(x_est, constantsASTRA, z, dT, Flight_P, ci.new_gps_packet);
   }
 
-  Vector3 EMA_G = EMA_Gyros(z, lastEMA);
-  Vector16 X = StateAUG(x_est, EMA_G);
+  Vector16 X = StateAUG(x_est.segment<13>(0), z.segment<3>(3));
   Vector3 TargetPos;
   TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
   Vector4 raw_co = ASTRAv2_Controller(TargetPos, X, constantsASTRA, dT);

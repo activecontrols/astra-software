@@ -19,23 +19,6 @@ Matrix4_4 HamiltonianProd(Vector4 q) {
   return M;
 }
 
-// Basic Exponential Moving Average Implementation to pre - process % measurements.
-Vector3 ExpMovingAvg(Vector3 Input, Vector3 Last, float Alpha) {
-  // Filter difference equation
-  return Alpha * Input + (1 - Alpha) * Last;
-}
-
-Vector3 EMA_Gyros(Vector15 Y, Vector3 &lastEMA) {
-
-  // Extract Gyros
-  Vector3 gyros = Y.segment<3>(3);
-
-  // Exponential Moving Avg Step
-  Vector3 EMA_G = ExpMovingAvg(gyros, lastEMA, 0.3);
-  lastEMA = EMA_G;
-  return EMA_G;
-}
-
 Vector16 StateAUG(Vector13 XKF, Vector3 G) {
   // Change Filter State to Controls State
   Vector16 X;

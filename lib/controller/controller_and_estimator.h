@@ -35,8 +35,7 @@ struct Controller_Input {
   float target_pos_up;
 };
 
-namespace Controller {
-void begin();
-void reset_controller_state();
+namespace ControllerAndEstimator {
+void init_controller_and_estimator_constants();
 Controller_Output get_controller_output(Controller_Input ci);
-}; // namespace Controller
+}; // namespace ControllerAndEstimator
