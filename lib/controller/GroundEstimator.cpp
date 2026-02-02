@@ -14,7 +14,7 @@ Matrix18_18 GroundStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2
   return F;
 }
 
-Vector13 GroundEstimator(Vector13 x_est, constantsASTRA_t constantsASTRA, Vector15 z, float dT, Matrix18_18 &P, bool new_imu_packet, bool new_gps_packet) {
+Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector15 z, float dT, Matrix18_18 &P, bool new_imu_packet, bool new_gps_packet) {
   // M-EKF Implementation
   // Remove bias from IMU
   z.segment<3>(0) = z.segment<3>(0) - x_est.segment<3>(13);
@@ -32,7 +32,11 @@ Vector13 GroundEstimator(Vector13 x_est, constantsASTRA_t constantsASTRA, Vector
   q.normalize();
   Matrix3_3 R_b2i = quatRot(q).transpose();
 
-  // State Transition Matrix (CHANGE!!)
+  // GPS Gyroscopic Correction
+  Vector3 rGPS = (Vector3() << 0, 0, 0.31).finished();
+  z.segment<3>(12) = z.segment<3>(12) - R_b2i * z.segment<3>(3).cross(rGPS);
+
+  // State Transition Matrix
   Matrix18_18 F = GroundStateTransitionMat(z.segment<3>(0), z.segment<3>(3), R_b2i);
 
   // Propagate rest of state using IMU
