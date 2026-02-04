@@ -47,6 +47,8 @@ void characterize_grid(const char *args) {
 
     Router::printf("%.5lf, %.2f, %.2f, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf\n", t, a, b, last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0],
                    last_packet.gyro[1], last_packet.gyro[2]);
+
+    delay(1);
   }
 
   for (; b <= deg_limit && !Serial.available(); b += step_size) {
