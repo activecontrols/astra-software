@@ -14,6 +14,13 @@ void ping(const char *args) {
   Router::println(args == nullptr ? "null" : args);
 }
 
+struct my_sample_packet {
+  float a;
+  float b;
+  int c;
+  char msg[3];
+};
+
 void setup() {
   delay(3000);
   SPI.begin(); // spi is a shared interface, so we always begin here
@@ -30,6 +37,15 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
+
+  my_sample_packet tx = {}; // ensure any padding bytes get init to 0
+  tx.a = 5.3;
+  tx.b = 6.3;
+  tx.c = 7;
+  tx.msg[0] = 'a';
+  tx.msg[1] = 'b';
+  tx.msg[2] = '\0';
+  Router::print_compressed("#a>", tx);
 }
 
 void loop() {

@@ -89,6 +89,8 @@ char *read() {
   return readBuffer.str;
 }
 
+char compressed_data[MAX_PACKET_SIZE];
+
 void add(func f) {
   funcs.push_back(f);
 }
