@@ -16,9 +16,6 @@
 #define LOG_INTERVAL_US 5000
 #define COMMAND_INTERVAL_US 1000
 
-void _process_mag_data(double mag_raw[Mag::MAG_COUNT][3], double out[3]);
-void _process_imu_data(IMU::Measurement imu_raw[IMU::IMU_COUNT], IMU::Measurement &out);
-
 namespace TrajectoryFollower {
 
 /**
@@ -87,28 +84,16 @@ void follow_trajectory() {
       IMU::Measurement imu_reading;
       double mag_measurement[3];
 
-      {
-        IMU::Measurement imu_readings[IMU::IMU_COUNT];
-
-        // read all IMUs
-        IMU::read_latest_all(imu_readings);
-
-        // reduce IMU readings into a single measurement
-        _process_imu_data(imu_readings, imu_reading);
-      }
+      IMU::read_latest_fused(&imu_reading);
 
       if (Mag::isMeasurementReady()) {
-        double m_raw[Mag::MAG_COUNT][3];
         ci.new_imu_packet = true;
 
         // read all magnetometers
-        Mag::read_xyz_normalized_all(m_raw);
+        Mag::read_normalized_fused(mag_measurement);
 
         // start new measurement that will be ready in a few ms (prepare for future loop cycle)
         Mag::beginMeasurement();
-
-        // reduce MAG readings into a single measurement
-        _process_mag_data(m_raw, mag_measurement);
       } else {
         ci.new_imu_packet = false;
       }
@@ -206,27 +191,3 @@ void arm(const char *) {
 }
 
 } // namespace TrajectoryFollower
-
-void _process_mag_data(double mag_raw[Mag::MAG_COUNT][3], double out[3]) {
-
-  // a simple averaging function; can be upgraded later to remove outliers etc
-  for (int i = 0; i < 3; ++i) {
-    double sum = 0;
-
-    for (int j = 0; j < Mag::MAG_COUNT; ++j) {
-      sum += mag_raw[j][i];
-    }
-
-    out[i] = sum / Mag::MAG_COUNT;
-  }
-  return;
-}
-
-void _process_imu_data(IMU::Measurement imu_raw[IMU::IMU_COUNT], IMU::Measurement &out) {
-  /* TODO: the imu data will need some transformation to be carried out on a per-sensor basis to convert
-     from the local frame of each sensor to that of a single point on astra */
-
-  out = imu_raw[0];
-
-  return;
-}

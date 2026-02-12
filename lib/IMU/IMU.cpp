@@ -360,6 +360,37 @@ void IMU::read_latest_all(IMU::Measurement output[IMU_COUNT]) {
   return;
 }
 
+// this function returns IMU acceleration (in m/s^2) and IMU gyroscope (in rad/s) sensor readings
+void IMU::read_latest_fused(IMU::Measurement *output) {
+  Measurement measurements[IMU_COUNT];
+
+  IMU::read_latest_all(measurements);
+
+  // average gyros
+  for (int i = 0; i < 3; ++i) {
+    double accumulator = 0;
+
+    for (int j = 0; j < IMU_COUNT; ++j) {
+      accumulator += measurements[j].gyro[i];
+    }
+
+    output->gyro[i] = accumulator / IMU_COUNT;
+  }
+
+  // average acceleration - TODO upgrade this with better logic to subtract out centripetal force
+  for (int i = 0; i < 3; ++i) {
+    double accumulator = 0;
+
+    for (int j = 0; j < IMU_COUNT; ++j) {
+      accumulator += measurements[j].acc[i];
+    }
+
+    output->acc[i] = accumulator / IMU_COUNT;
+  }
+
+  return;
+}
+
 void IMU::calibrate_gyroscope_all() {
   const unsigned long delay_millis = 20000; // 20 seconds
 
@@ -539,11 +570,50 @@ void IMU::cmd_imu_speed_test() {
   unsigned int begin_time = micros();
 
   for (int i = 0; i < transaction_count; ++i) {
-    IMU::IMUs[0].read_latest(&last_data);
+    read_latest_fused(&last_data);
   }
 
   double delta_ms = (micros() - begin_time) / 1000.0;
   Router::printf("IMU Speed Test Finished\nTransactions: %d\nAverage transaction time (ms): %lf\n", transaction_count, delta_ms / transaction_count);
+}
+
+void IMU::cmd_imu_log_fused() {
+  Measurement last_measurement;
+
+  unsigned long start_micros = micros();
+
+  Serial.print("\n\nTime (s)\tAccel X (m/s^2)\tAccel Y (m/s^2)\tAccel Z (m/s^2)\tGyro X (rad/s)\tGyro Y (rad/s)\tGyro Z (rad/s)\n");
+
+  while (1) {
+    if (Serial.available()) {
+      break;
+    }
+
+    double t = (micros() - start_micros) * 1e-6;
+
+    Serial.print(t, 3);
+
+    read_latest_fused(&last_measurement);
+
+    for (int i = 0; i < 3; ++i) {
+      Serial.print('\t');
+      Serial.print(last_measurement.acc[i], 4);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+      Serial.print('\t');
+      Serial.print(last_measurement.gyro[i], 4);
+    }
+
+    Serial.print('\n');
+
+    delay(5);
+  }
+
+  while (Serial.read() != '\n')
+    ;
+
+  return;
 }
 
 void IMU::begin() {
@@ -564,6 +634,7 @@ void IMU::begin() {
   Router::add({cmd_output_calib, "imu_print_calib"});
   Router::add({cmd_log_accel_for_calibration, "imu_log_accel_for_calib"});
   Router::add({cmd_imu_speed_test, "imu_speed_test"});
+  Router::add({cmd_imu_log_fused, "imu_log_fused"});
 
   return;
 }

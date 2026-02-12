@@ -124,6 +124,27 @@ bool read_xyz_all(double m[MAG_COUNT][3]) {
   return true;
 }
 
+// this function reads all magnetometers, normalizes their readings, and converts their readings into a single reading for each axis
+bool read_normalized_fused(double m[3]) {
+  double measurements[MAG_COUNT][3];
+
+  if (!read_xyz_normalized_all(measurements)) {
+    return false;
+  }
+
+  // average together the readings for each axis
+  for (int i = 0; i < 3; ++i) {
+    double accumulator = 0;
+    for (int j = 0; j < MAG_COUNT; ++j) {
+      accumulator += measurements[j][i];
+    }
+
+    m[i] = accumulator / MAG_COUNT;
+  }
+
+  return true;
+}
+
 bool read_xyz_normalized(double m[3], int mag_index) {
   if (!read_xyz(m, mag_index)) {
     return false;
@@ -610,6 +631,11 @@ void mag_record_test(const char *arg) {
   Serial.println("<<< CSV END >>>");
 
   mag.setFilterBandwidth(old_filter_bw);
+}
+
+void cmd_log_fused()
+{
+
 }
 
 void begin() {

@@ -11,6 +11,7 @@ void begin();
 
 bool read_xyz(double m[3], int mag_index);
 bool read_xyz_all(double m[MAG_COUNT][3]);
+bool read_normalized_fused(double m[3]);
 
 bool read_xyz_normalized(double m[3], int mag_index);
 bool read_xyz_normalized_all(double m[MAG_COUNT][3]);

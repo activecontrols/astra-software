@@ -20,6 +20,7 @@ public:
   static void begin();
   static void calibrate_gyroscope_all();
   static void read_latest_all(Measurement output[IMU_COUNT]);
+  static void read_latest_fused(Measurement *output);
 
 private:
   struct SPI_Interface {
@@ -80,4 +81,5 @@ private:
   static void cmd_write_calib(const char *arg);
   static void cmd_output_calib(const char *arg);
   static void cmd_imu_speed_test();
+  static void cmd_imu_log_fused();
 };
