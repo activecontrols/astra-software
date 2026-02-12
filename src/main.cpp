@@ -35,13 +35,15 @@ void setup() {
   digitalWrite(PE7, HIGH);
   digitalWrite(PE4, HIGH);
 
-  Prop::begin();
-  // Mag::begin();
-  GPS::begin();
-  IMU::begin();
-  GimbalServos::begin();
-  TrajectoryLoader::begin();
-  TrajectoryFollower::begin();
+  // Prop::begin();
+  // // Mag::begin();
+  // GPS::begin();
+  // IMU::begin();
+  // GimbalServos::begin();
+  // TrajectoryLoader::begin();
+  // TrajectoryFollower::begin();
+
+  Flash::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
