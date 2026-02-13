@@ -16,7 +16,7 @@
 
 // Unit: Hz
 // !!! DO NOT EXCEED 24MHz !!!
-#define SPI_RATE (24 * 1000000)
+#define SPI_RATE (1 * 1000000) // TODO - 24 used to work, check on a scope
 
 #define G_TO_MS2 9.80145
 
@@ -30,7 +30,8 @@ constexpr double GYRO_RESOLUTION = 1.0 / 16.4;
 
 using namespace IMU;
 
-Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &SPI)};
+SPIClass imu_spi(IMU_MOSI, IMU_MISO, IMU_SCK);
+Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &imu_spi)};
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
@@ -530,6 +531,7 @@ void imu_speed_test() {
 }
 
 int IMU::begin() {
+  imu_spi.begin();
 
   int error = 0;
   error |= IMUs[0].init();

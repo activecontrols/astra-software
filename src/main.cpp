@@ -77,12 +77,28 @@ void ping(const char *args) {
 
 void setup() {
   delay(3000);
-  SPI.begin(); // spi is a shared interface, so we always begin here
+  // TODO - handle SPI stuff in multisensor
+  // SPI.begin(); // spi is a shared interface, so we always begin here
   Router::begin();
   Router::println("Controller started.");
 
+  // TODO - configure CS somewhere else!
+  pinMode(PB7, OUTPUT);
+  pinMode(PB3, OUTPUT);
+  pinMode(PB5, OUTPUT);
+  pinMode(PC12, OUTPUT);
+  pinMode(PE7, OUTPUT);
+  pinMode(PE4, OUTPUT);
+
+  digitalWrite(PB7, HIGH);
+  digitalWrite(PB3, HIGH);
+  digitalWrite(PB5, HIGH);
+  digitalWrite(PC12, HIGH);
+  digitalWrite(PE7, HIGH);
+  digitalWrite(PE4, HIGH);
+
   Prop::begin();
-  Mag::begin();
+  // Mag::begin();
   GPS::begin();
   IMU::begin();
   GimbalServos::begin();
