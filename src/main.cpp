@@ -9,6 +9,9 @@
 #include "gimbal_servos.h"
 #include <Arduino.h>
 
+#define RADIO_SERIAL Serial1
+#define RADIO_RATE 57600
+
 void ping(const char *args) {
   Router::println("pong");
   Router::print("args: ");
@@ -29,17 +32,22 @@ void setup() {
   Router::begin();
   Router::println("Controller started.");
 
-  Prop::begin();
-  Mag::begin();
-  GPS::begin();
-  IMU::begin();
-  GimbalServos::begin();
-  TrajectoryLoader::begin();
-  TrajectoryFollower::begin();
+  // Prop::begin();
+  // Mag::begin();
+  // GPS::begin();
+  // IMU::begin();
+  // GimbalServos::init();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
-  Router::add({test_coder, "test_coder"});
+
+  RADIO_SERIAL.begin(RADIO_RATE);
+  Router::println("Radio serial started.");
+  while (true) {
+    // Router::println("Radio serial started.");
+    RADIO_SERIAL.println("Hello radio.");
+    // delay(1000);
+  }
 }
 
 void loop() {

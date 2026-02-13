@@ -1,72 +1,221 @@
 #pragma once
 
-#include <cstring> // for memcpy
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 
-typedef struct {
-  float f1;
-  float f2;
-  float f3;
-  char c1;
-} placeholder;
+// can change checksum type for different length reliability tradeoffs.
 
-// easy to change which struct is being encoded/decoded
-#define CODE_T placeholder
-
-// can change to char, short, int, long etc for different reliability/length tradeoffs
-#define CSUM_T int
-
-namespace Coder {
-int get_packet_size() { // todo: when i tried size_t for ret type it told me i needed to include stddef.h
-  return sizeof(CODE_T) + sizeof(CSUM_T);
-}
-
-// encodes into buffer. buffer should be get_packet_size() bytes long.
-void encode_packet(const CODE_T &data, char *buffer) {
-  memcpy(buffer, &data, sizeof(CODE_T));
-
-  CSUM_T csum = 0;
-  const char *data_bytes = (const char *)&data;
-  for (size_t i = 0; i < sizeof(CODE_T); i++) {
-    csum += data_bytes[i];
+template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', uint8_t ESC = '\\', uint8_t R = 0x5A> struct PacketCodec {
+  static constexpr size_t payload_size() {
+    return sizeof(T);
+  }
+  static constexpr size_t csum_packet_size() {
+    return sizeof(T) + sizeof(CsumT);
+  }
+  static constexpr size_t max_delimited_size() {
+    return 2 * csum_packet_size() + 2;
   }
 
-  memcpy(buffer + sizeof(CODE_T), &csum, sizeof(CSUM_T));
-}
+  // checksum stuff
 
-// decodes into data. buffer should be get_packet_size() bytes long.
-bool decode_packet(const char *buffer, CODE_T &data) {
-  CSUM_T received_csum;
-  memcpy(&received_csum, buffer + sizeof(CODE_T), sizeof(CSUM_T));
+  static inline void csum_encode(const T &data, uint8_t *raw) {
+    std::memcpy(raw, &data, sizeof(T));
 
-  memcpy(&data, buffer, sizeof(CODE_T));
+    CsumT csum = 0;
+    const uint8_t *bytes = reinterpret_cast<const uint8_t *>(&data);
+    for (size_t i = 0; i < sizeof(T); i++)
+      csum = static_cast<CsumT>(csum + bytes[i]);
 
-  CSUM_T csum = 0;
-  const char *data_bytes = (const char *)&data;
-  for (size_t i = 0; i < sizeof(CODE_T); i++) {
-    csum += data_bytes[i];
+    std::memcpy(raw + sizeof(T), &csum, sizeof(CsumT));
   }
 
-  return received_csum == csum;
-}
+  static inline bool csum_decode(const uint8_t *raw, T &out) {
+    std::memcpy(&out, raw, sizeof(T));
 
-bool test() {
-  CODE_T original;
-  original.f1 = 1.23f;
-  original.f2 = 4.56f;
-  original.f3 = 7.89f;
-  original.c1 = 'A';
+    CsumT received;
+    std::memcpy(&received, raw + sizeof(T), sizeof(CsumT));
 
-  const int packet_size = get_packet_size();
-  char *buffer = new char[packet_size];
+    CsumT csum = 0;
+    const uint8_t *bytes = reinterpret_cast<const uint8_t *>(&out);
+    for (size_t i = 0; i < sizeof(T); i++)
+      csum = static_cast<CsumT>(csum + bytes[i]);
 
-  encode_packet(original, buffer);
+    return received == csum;
+  }
 
-  CODE_T decoded;
-  bool success = decode_packet(buffer, decoded) && (original.f1 == decoded.f1) && (original.f2 == decoded.f2) && (original.f3 == decoded.f3) && (original.c1 == decoded.c1);
+  // packet framing stuff
 
-  buffer[3]++; // corrupt.
-  bool fail_detected = !decode_packet(buffer, decoded);
-  return success && fail_detected;
-}
+  static inline size_t escape_delimit(const uint8_t *raw, uint8_t *framed) {
+    size_t out = 0;
+    framed[out++] = DS;
 
-} // namespace Coder
+    for (size_t i = 0; i < csum_packet_size(); i++) {
+      uint8_t b = raw[i];
+      if (b == DS || b == DE || b == ESC) {
+        framed[out++] = ESC;
+        framed[out++] = static_cast<uint8_t>(b ^ R);
+      } else {
+        framed[out++] = b;
+      }
+    }
+
+    framed[out++] = DE;
+    return out;
+  }
+
+  static inline size_t encode_framed(const T &data, uint8_t *framed) {
+    uint8_t raw[csum_packet_size()];
+    csum_encode(data, raw);
+    return escape_delimit(raw, framed);
+  }
+
+  // decode for when full framed packet is available.
+  // framed[0] == DS and framed[-1] == DE required
+  static inline bool decode_framed(const uint8_t *framed, size_t framed_len, T &out) {
+    if (framed_len < 2)
+      return false;
+    if (framed[0] != DS)
+      return false;
+    if (framed[framed_len - 1] != DE)
+      return false;
+
+    uint8_t raw[csum_packet_size()];
+    size_t raw_i = 0;
+
+    for (size_t i = 1; i + 1 < framed_len; i++) {
+      uint8_t b = framed[i];
+
+      if (b == ESC) {
+        if ((i + 1) + 1 >= framed_len)
+          return false; // dangling escape
+
+        b = framed[++i] ^ R; // next byte xored.
+      } else if (b == DS || b == DE) {
+        return false; // DS and DE should never appear unescaped in a valid packet
+      }
+
+      if (raw_i >= csum_packet_size())
+        return false;
+      raw[raw_i++] = b;
+    }
+
+    if (raw_i != csum_packet_size())
+      return false;
+    return csum_decode(raw, out);
+  }
+
+  // decode when we have one byte at a time (like in reality)
+  struct Decoder {
+    enum class state : uint8_t { hunt, in_frame, escaped };
+
+    uint8_t raw[csum_packet_size()];
+    size_t raw_i = 0;
+    state st = state::hunt;
+
+    void reset() {
+      st = state::hunt;
+      raw_i = 0;
+    }
+
+    // push one raw byte into buffer; overflow => reset. returns true on successful push.
+    bool push_or_reset(uint8_t b) {
+      if (raw_i >= csum_packet_size()) {
+        reset();
+        return false;
+      }
+      raw[raw_i++] = b;
+      return true;
+    }
+
+    // feed one byte. returns true if a full valid packet was decoded into out.
+    bool feed(uint8_t b, T &out) {
+      switch (st) {
+
+      case state::hunt:
+        if (b == DS)
+          st = state::in_frame;
+        return false;
+
+      case state::in_frame:
+        if (b == DS) { // DS cannot appear unescaped, let's pretend this is the new start.
+          st = state::in_frame;
+          return false;
+        }
+        if (b == DE) { // end of frame
+          bool ok = (raw_i == csum_packet_size()) && csum_decode(raw, out);
+          reset();
+          return ok;
+        }
+        if (b == ESC) { // next byte is escaped
+          st = state::escaped;
+          return false;
+        }
+        push_or_reset(b);
+        return false;
+
+      case state::escaped:
+        if (push_or_reset(b ^ R)) // decode escaped byte
+          st = state::in_frame;   // if successfully pushed (no reset), return to in_frame.
+        return false;
+      }
+      return false; // unreachable, but keeps compilers happy
+    }
+  };
+
+  // // decode when we have one byte at a time (like in reality)
+  // struct Decoder {
+  //   uint8_t raw[csum_packet_size()];
+  //   size_t raw_i = 0;
+  //   bool in_frame = false;
+  //   bool esc_pending = false;
+
+  //   // feed one byte. returns true if a full valid packet was decoded into out.
+  //   bool feed(uint8_t b, T &out) {
+  //     if (!in_frame) { // wait until in the frame
+  //       if (b == DS) {
+  //         in_frame = true;
+  //         esc_pending = false;
+  //         raw_i = 0;
+  //       }
+  //       return false;
+  //     }
+
+  //     // now we are in frame
+
+  //     if (!esc_pending && (b == DS || b == DE)) { // unescaped DS, DE is bad.
+  //       raw_i = 0;
+  //       esc_pending = false;
+  //       return false;
+  //     }
+
+  //     if (esc_pending) {
+  //       if (raw_i >= csum_packet_size()) {
+  //         in_frame = false;
+  //         return false;
+  //       }
+  //       raw[raw_i++] = b ^ R;
+  //       esc_pending = false;
+  //       return false;
+  //     }
+
+  //     if (b == ESC) {
+  //       esc_pending = true;
+  //       return false;
+  //     }
+
+  //     if (b == DE) {
+  //       bool ok = (!esc_pending && raw_i == csum_packet_size() && csum_decode(raw, out));
+  //       in_frame = false;
+  //       return ok;
+  //     }
+
+  //     if (raw_i >= csum_packet_size()) {
+  //       in_frame = false;
+  //       return false;
+  //     }
+  //     raw[raw_i++] = b;
+  //     return false;
+  //   }
+  // };
+};

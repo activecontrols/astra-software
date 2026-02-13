@@ -10,6 +10,8 @@ const char *Mag::main_calib_name = "MCALIB.BIN";
 
 SFE_MMC5983MA mag;
 
+#define DATA_POINTS 1000
+
 namespace Mag {
 
 struct calibration {
@@ -126,6 +128,7 @@ double calc_sphere_fit_goodness(const double *xs, const double *ys, const double
   for (int i = 0; i < n; i++) {
     double x = xs[i], y = ys[i], z = zs[i];
     apply_calibration(x, y, z, c);
+    Router::printf("%.4f, %.4f, %.4f\n", x, y, z);
     avg_magnitude += sqrt(x * x + y * y + z * z);
   }
   avg_magnitude /= n;
@@ -143,15 +146,15 @@ double calc_sphere_fit_goodness(const double *xs, const double *ys, const double
   return 100 * (1 - stdev / avg_magnitude); // relative standard deviation
 }
 
-double read_x[1000], read_y[1000], read_z[1000];
+double read_x[DATA_POINTS], read_y[DATA_POINTS], read_z[DATA_POINTS];
 
-// populates read_x, read_y, read_z with 1000 samples
+// populates read_x, read_y, read_z with DATA_POINTS samples
 void collect_samples() {
   Router::println("Collecting calibration data...");
   Router::println("Move the sensor around in all orientations until done. Waiting 5 seconds to start...");
   delay(5000);
-  // record 1000 centered readings
-  for (int i = 0; i < 1000; i++) {
+  // record DATA_POINTS centered readings
+  for (int i = 0; i < DATA_POINTS; i++) {
     int mx, my, mz;
     if (!get_centered_reading_blocking(mx, my, mz)) {
       Router::println("Mag read failed. collect_samples failed.");
@@ -162,13 +165,13 @@ void collect_samples() {
     read_z[i] = (double)mz;
     delay(100);
     if (i % 10 == 0) { // every second, print progress
-      Router::mprintln(i, " samples recorded ", i / 1000.0 * 100.0, "%");
+      Router::mprintln(i, " samples recorded ", i * 100.0 / DATA_POINTS, "%");
     }
   }
   Router::println("Done recording calibration data.");
-  double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, identity_calib);
+  double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, DATA_POINTS, identity_calib);
   Router::mprintln("Sphere fit goodness of raw data: ", goodness, "%");
-  goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, calib);
+  goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, DATA_POINTS, calib);
   Router::mprintln("Sphere fit goodness of current calibration: ", goodness, "%");
 }
 
@@ -228,7 +231,7 @@ void write_samples(const char *filename) {
   if (!f) {
     return;
   }
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < DATA_POINTS; i++) {
     f.print(read_x[i]);
     f.print(",");
     f.print(read_y[i]);
@@ -318,9 +321,9 @@ void do_simple_calib() {
     }
   };
   double min_x, min_y, min_z, max_x, max_y, max_z;
-  min_max(read_x, 1000, min_x, max_x);
-  min_max(read_y, 1000, min_y, max_y);
-  min_max(read_z, 1000, min_z, max_z);
+  min_max(read_x, DATA_POINTS, min_x, max_x);
+  min_max(read_y, DATA_POINTS, min_y, max_y);
+  min_max(read_z, DATA_POINTS, min_z, max_z);
 
   calibration cnew; // new calibration
   cnew.hard_x = (min_x + max_x) / 2.0;
@@ -333,7 +336,7 @@ void do_simple_calib() {
     }
   }
 
-  double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, cnew);
+  double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, DATA_POINTS, cnew);
   Router::mprintln("Sphere fit goodness after simple calibration: ", goodness, "%");
 
   calib = cnew; // set new calibration
