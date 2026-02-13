@@ -301,10 +301,21 @@ template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', 
 
     // 5) Dangling escape in framed buffer should be rejected by decode_framed.
     {
-      uint8_t framed[4] = {DS, ESC, DE, DE}; // ESC immediately before DE => dangling in interior
+      T in{};
+      uint8_t *in_bytes = reinterpret_cast<uint8_t *>(&in);
+      for (size_t i = 0; i < sizeof(T); i++)
+        in_bytes[i] = (uint8_t)(0x42 + i);
+
+      uint8_t framed[max_framed_size()];
+      size_t n = encode_framed(in, framed);
+
+      // Force "dangling escape": make the last interior byte ESC.
+      // framed[n-1] is DE, so framed[n-2] is last interior byte.
+      framed[n - 2] = ESC;
+
       T out{};
-      if (decode_framed(framed, 3, out))
-        return false; // DS,ESC,DE is invalid
+      if (decode_framed(framed, n, out))
+        return false;
     }
 
     return true;

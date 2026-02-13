@@ -35,8 +35,8 @@ void readCommand() {
 
   // wait until a command is decoded.
   while (true) {
-    // COMMS_SERIAL.readBytes((char *)&rx_byte, 1); // read 1 byte (blocking, since timeout is "never")
-    rx_byte = COMMS_SERIAL.read();
+    COMMS_SERIAL.readBytes((char *)&rx_byte, 1); // read 1 byte (blocking, since timeout is "never")
+    // rx_byte = COMMS_SERIAL.read();
     if (dec.feed(rx_byte, cmd_packet))
       break; // got a packet
   }

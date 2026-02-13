@@ -41,13 +41,13 @@ void setup() {
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
 
-  RADIO_SERIAL.begin(RADIO_RATE);
-  Router::println("Radio serial started.");
-  while (true) {
-    // Router::println("Radio serial started.");
-    RADIO_SERIAL.println("Hello radio.");
-    // delay(1000);
-  }
+  // RADIO_SERIAL.begin(RADIO_RATE);
+  // Router::println("Radio serial started.");
+  // while (true) {
+  //   // Router::println("Radio serial started.");
+  //   RADIO_SERIAL.println("Hello radio.");
+  //   // delay(1000);
+  // }
 }
 
 void loop() {
