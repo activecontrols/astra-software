@@ -85,6 +85,7 @@ void begin() {
     //   delay(1000);
     // }
   }
+  Router::mprintln("codec self test: ", Codec::self_test());
 }
 
 void send(char msg[], unsigned int len) {

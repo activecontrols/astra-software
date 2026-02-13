@@ -167,4 +167,146 @@ template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', 
       return false; // unreachable, but keeps compilers happy
     }
   };
+
+  // thank u llm.
+  // ------------------------------------------------------------
+  // Self-test: exercises encode/decode and streaming decoder.
+  // Returns true iff all checks pass.
+  // ------------------------------------------------------------
+  static inline bool self_test() { // confirmed to return true on feb 12 8 pm EST.
+    auto memeq = [](const uint8_t *a, const uint8_t *b, size_t n) -> bool {
+      for (size_t i = 0; i < n; i++)
+        if (a[i] != b[i])
+          return false;
+      return true;
+    };
+
+    // 1) Roundtrip (full-frame decode) for several patterns
+    const uint8_t patterns[][3] = {
+        {0x00, 0x00, 0x00}, {0xFF, 0xFF, 0xFF}, {DS, DE, ESC}, // force escaping
+        {ESC, DS, DE},      {0x12, 0x34, 0x56}, {0xA5, 0x5A, 0xC3},
+    };
+
+    for (size_t p = 0; p < sizeof(patterns) / sizeof(patterns[0]); p++) {
+      T in{};
+      uint8_t *in_bytes = reinterpret_cast<uint8_t *>(&in);
+      // Fill struct bytes deterministically; repeats the 3-byte pattern.
+      for (size_t i = 0; i < sizeof(T); i++)
+        in_bytes[i] = patterns[p][i % 3];
+
+      uint8_t framed[max_framed_size()];
+      size_t n = encode_framed(in, framed);
+
+      if (n < 2)
+        return false;
+      if (framed[0] != DS)
+        return false;
+      if (framed[n - 1] != DE)
+        return false;
+
+      T out{};
+      if (!decode_framed(framed, n, out))
+        return false;
+      if (!memeq(reinterpret_cast<const uint8_t *>(&in), reinterpret_cast<const uint8_t *>(&out), sizeof(T)))
+        return false;
+    }
+
+    // 2) Streaming decoder: same framed bytes, fed byte-by-byte, should yield one packet.
+    {
+      T in{};
+      uint8_t *in_bytes = reinterpret_cast<uint8_t *>(&in);
+      for (size_t i = 0; i < sizeof(T); i++)
+        in_bytes[i] = (uint8_t)(i * 131u + 7u); // deterministic
+
+      uint8_t framed[max_framed_size()];
+      size_t n = encode_framed(in, framed);
+
+      Decoder dec;
+      T out{};
+      bool got = false;
+
+      for (size_t i = 0; i < n; i++) {
+        if (dec.feed(framed[i], out)) {
+          if (got)
+            return false; // should not produce twice for one frame
+          got = true;
+        }
+      }
+      if (!got)
+        return false;
+      if (!memeq(reinterpret_cast<const uint8_t *>(&in), reinterpret_cast<const uint8_t *>(&out), sizeof(T)))
+        return false;
+    }
+
+    // 3) Corruption test: flip one interior byte => checksum should fail (both decode paths).
+    {
+      T in{};
+      uint8_t *in_bytes = reinterpret_cast<uint8_t *>(&in);
+      for (size_t i = 0; i < sizeof(T); i++)
+        in_bytes[i] = (uint8_t)(0x3C + i);
+
+      uint8_t framed[max_framed_size()];
+      size_t n = encode_framed(in, framed);
+
+      if (n < 4)
+        return false;    // need an interior byte to flip
+      framed[1] ^= 0x01; // flip a bit (may land on ESC sometimes; still should fail or desync)
+
+      T out{};
+      if (decode_framed(framed, n, out))
+        return false;
+
+      Decoder dec;
+      bool got = false;
+      for (size_t i = 0; i < n; i++) {
+        if (dec.feed(framed[i], out))
+          got = true;
+      }
+      if (got)
+        return false;
+    }
+
+    // 4) Resync test: noise + DS mid-stream should restart cleanly and decode the later good frame.
+    {
+      T in{};
+      uint8_t *in_bytes = reinterpret_cast<uint8_t *>(&in);
+      for (size_t i = 0; i < sizeof(T); i++)
+        in_bytes[i] = (uint8_t)(0x90 ^ (uint8_t)i);
+
+      uint8_t framed[max_framed_size()];
+      size_t n = encode_framed(in, framed);
+
+      Decoder dec;
+      T out{};
+      bool got = false;
+
+      // feed some garbage (including an unescaped DS to force a restart)
+      const uint8_t noise[] = {0x11, 0x22, DS, 0x33, 0x44, 0x55};
+      for (size_t i = 0; i < sizeof(noise); i++)
+        dec.feed(noise[i], out);
+
+      // then feed a clean frame
+      for (size_t i = 0; i < n; i++) {
+        if (dec.feed(framed[i], out)) {
+          got = true;
+          break;
+        }
+      }
+
+      if (!got)
+        return false;
+      if (!memeq(reinterpret_cast<const uint8_t *>(&in), reinterpret_cast<const uint8_t *>(&out), sizeof(T)))
+        return false;
+    }
+
+    // 5) Dangling escape in framed buffer should be rejected by decode_framed.
+    {
+      uint8_t framed[4] = {DS, ESC, DE, DE}; // ESC immediately before DE => dangling in interior
+      T out{};
+      if (decode_framed(framed, 3, out))
+        return false; // DS,ESC,DE is invalid
+    }
+
+    return true;
+  }
 };
