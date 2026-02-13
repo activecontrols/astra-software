@@ -3,14 +3,25 @@
 #include "CString.h"
 #include "SDCard.h"
 
+#include "Coder.h"
+
 #define COMMAND_BUFFER_SIZE (200)
 
+struct CMDPacket {
+  char command[COMMAND_BUFFER_SIZE];
+};
+
 namespace Router {
+
+using Codec = PacketCodec<CMDPacket>;
+static Codec::Decoder dec;
+static uint8_t rx_byte;
 
 UART radio_uart(RADIO_TX, RADIO_RX, NC, NC);
 
 File comms_log_file;
 
+// todo: get rid of these.
 CString<COMMAND_BUFFER_SIZE> commandBuffer;
 CString<COMMAND_BUFFER_SIZE> readBuffer;
 
@@ -20,10 +31,20 @@ namespace { // private namespace
 vector<func> funcs;
 
 void readCommand() {
-  // read until newline char or 200 characters (hopefully none of our funcs have names that long lol)
-  size_t cmd_length = COMMS_SERIAL.readBytesUntil('\n', commandBuffer.str, COMMAND_BUFFER_SIZE - 1);
-  commandBuffer.str[cmd_length] = '\0'; // null terminate
-  commandBuffer.trim();                 // remove leading/trailing whitespace or newline
+  CMDPacket cmd_packet;
+
+  // wait until a command is decoded.
+  while (true) {
+    // COMMS_SERIAL.readBytes((char *)&rx_byte, 1); // read 1 byte (blocking, since timeout is "never")
+    rx_byte = COMMS_SERIAL.read();
+    if (dec.feed(rx_byte, cmd_packet))
+      break; // got a packet
+  }
+
+  memcpy(commandBuffer.str, cmd_packet.command, COMMAND_BUFFER_SIZE); // todo: just use cmd_packet.command directly.
+
+  commandBuffer.str[sizeof(cmd_packet.command) - 1] = '\0'; // null terminate
+  commandBuffer.trim();                                     // remove leading/trailing whitespace or newline
   commandBuffer.resolve_backspaces();
 
   // find first space to separate command from args
@@ -59,10 +80,10 @@ void begin() {
     comms_log_file = SDCard::open("log.txt", FILE_WRITE);
   } else {
     Router::println("SD card not found.");
-    while (true) {
-      Router::println("Reboot once SD card inserted...");
-      delay(1000);
-    }
+    // while (true) {
+    //   Router::println("Reboot once SD card inserted...");
+    //   delay(1000);
+    // }
   }
 }
 

@@ -9,6 +9,9 @@
 
 using namespace std;
 
+// #define COMMS_SERIAL Serial
+// #define COMMS_RATE 115200
+
 // #define USE_RADIO
 
 struct func;

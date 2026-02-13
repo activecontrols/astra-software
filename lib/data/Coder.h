@@ -13,7 +13,7 @@ template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', 
   static constexpr size_t csum_packet_size() {
     return sizeof(T) + sizeof(CsumT);
   }
-  static constexpr size_t max_delimited_size() {
+  static constexpr size_t max_framed_size() {
     return 2 * csum_packet_size() + 2;
   }
 
@@ -118,6 +118,11 @@ template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', 
       raw_i = 0;
     }
 
+    void start_frame() {
+      st = state::in_frame;
+      raw_i = 0;
+    }
+
     // push one raw byte into buffer; overflow => reset. returns true on successful push.
     bool push_or_reset(uint8_t b) {
       if (raw_i >= csum_packet_size()) {
@@ -134,12 +139,12 @@ template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', 
 
       case state::hunt:
         if (b == DS)
-          st = state::in_frame;
+          start_frame();
         return false;
 
       case state::in_frame:
         if (b == DS) { // DS cannot appear unescaped, let's pretend this is the new start.
-          st = state::in_frame;
+          start_frame();
           return false;
         }
         if (b == DE) { // end of frame
@@ -162,60 +167,4 @@ template <typename T, typename CsumT = int, uint8_t DS = 'S', uint8_t DE = 'E', 
       return false; // unreachable, but keeps compilers happy
     }
   };
-
-  // // decode when we have one byte at a time (like in reality)
-  // struct Decoder {
-  //   uint8_t raw[csum_packet_size()];
-  //   size_t raw_i = 0;
-  //   bool in_frame = false;
-  //   bool esc_pending = false;
-
-  //   // feed one byte. returns true if a full valid packet was decoded into out.
-  //   bool feed(uint8_t b, T &out) {
-  //     if (!in_frame) { // wait until in the frame
-  //       if (b == DS) {
-  //         in_frame = true;
-  //         esc_pending = false;
-  //         raw_i = 0;
-  //       }
-  //       return false;
-  //     }
-
-  //     // now we are in frame
-
-  //     if (!esc_pending && (b == DS || b == DE)) { // unescaped DS, DE is bad.
-  //       raw_i = 0;
-  //       esc_pending = false;
-  //       return false;
-  //     }
-
-  //     if (esc_pending) {
-  //       if (raw_i >= csum_packet_size()) {
-  //         in_frame = false;
-  //         return false;
-  //       }
-  //       raw[raw_i++] = b ^ R;
-  //       esc_pending = false;
-  //       return false;
-  //     }
-
-  //     if (b == ESC) {
-  //       esc_pending = true;
-  //       return false;
-  //     }
-
-  //     if (b == DE) {
-  //       bool ok = (!esc_pending && raw_i == csum_packet_size() && csum_decode(raw, out));
-  //       in_frame = false;
-  //       return ok;
-  //     }
-
-  //     if (raw_i >= csum_packet_size()) {
-  //       in_frame = false;
-  //       return false;
-  //     }
-  //     raw[raw_i++] = b;
-  //     return false;
-  //   }
-  // };
 };
