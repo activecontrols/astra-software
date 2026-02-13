@@ -67,7 +67,7 @@ void SDCard::cat(const char *filename) { // okay technically this can only print
   File f = SD.open(filename, FILE_READ);
   if (f) {
     while (f.available()) {
-      Serial.println(f.readStringUntil('\n'));
+      Router::println(f.readStringUntil('\n'));
     }
     f.close();
   } else {

@@ -54,8 +54,8 @@ void follow_trajectory() {
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
       char cmd_char = ' ';
-      if (Serial.available()) {
-        cmd_char = Serial.read();
+      if (external_uart.available()) {
+        cmd_char = external_uart.read();
       }
       if (cmd_char == 'k') {
         should_kill = true;

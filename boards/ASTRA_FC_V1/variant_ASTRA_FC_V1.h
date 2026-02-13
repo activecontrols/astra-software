@@ -218,7 +218,7 @@
 
 // On-board LED pin number
 #ifndef LED_BUILTIN
-#define LED_BUILTIN PNUM_NOT_DEFINED
+#define LED_BUILTIN PA7
 #endif
 
 // On-board user button
@@ -268,7 +268,7 @@
 
 // UART Definitions
 #ifndef SERIAL_UART_INSTANCE
-#define SERIAL_UART_INSTANCE 4
+#define SERIAL_UART_INSTANCE 6 // default serial instance if `Serial` is used
 #endif
 
 // Default pin used for generic 'Serial' instance
@@ -324,4 +324,3 @@
 
 // Robert additions
 #define USE_PWR_EXTERNAL_SOURCE_SUPPLY
-#define HAVE_HWSERIAL1
