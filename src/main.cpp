@@ -8,6 +8,8 @@
 #include "gimbal_servos.h"
 #include <Arduino.h>
 
+// TODO - printf not supporting floats / doubles
+
 // TODO - this should be included - don't know why I had to write it manually
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -77,8 +79,7 @@ void ping(const char *args) {
 
 void setup() {
   delay(3000);
-  // TODO - handle SPI stuff in multisensor
-  // SPI.begin(); // spi is a shared interface, so we always begin here
+  fc_spi.begin(); // spi is a shared interface, so we always begin here
   Router::begin();
   Router::println("Controller started.");
 

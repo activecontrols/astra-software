@@ -30,8 +30,7 @@ constexpr double GYRO_RESOLUTION = 1.0 / 16.4;
 
 using namespace IMU;
 
-SPIClass imu_spi(IMU_MOSI, IMU_MISO, IMU_SCK);
-Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &imu_spi)};
+Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &fc_spi)};
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
@@ -403,10 +402,10 @@ void cmd_log_accel_for_calibration(const char *param) {
   char serial_input[10];
 
   while (1) {
-    while (!Serial.available()) {
+    while (!Router::available()) {
       delay(100);
     }
-    Serial.readBytesUntil('\n', serial_input, sizeof(serial_input));
+    external_uart.readBytesUntil('\n', serial_input, sizeof(serial_input));
     if (!strcmp(serial_input, "stop")) {
       break;
     }
@@ -448,7 +447,7 @@ void cmd_imu_log() {
 
   unsigned long start_time = micros();
   // run until the user presses enter
-  while (!Serial.available()) {
+  while (!Router::available()) {
     double t = (micros() - start_time) * 1e-6;
 
     Router::printf("%lf", t);
@@ -531,8 +530,6 @@ void imu_speed_test() {
 }
 
 int IMU::begin() {
-  imu_spi.begin();
-
   int error = 0;
   error |= IMUs[0].init();
   error |= IMUs[0].enable_accel();

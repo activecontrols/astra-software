@@ -7,8 +7,6 @@
 
 namespace Router {
 
-HardwareSerial radio_uart(RADIO_TX, RADIO_RX);
-
 File comms_log_file;
 
 CString<COMMAND_BUFFER_SIZE> commandBuffer;
@@ -87,6 +85,10 @@ char *read() {
   comms_log_file.flush();
 
   return readBuffer.str;
+}
+
+bool available() {
+  return COMMS_SERIAL.available();
 }
 
 void add(func f) {

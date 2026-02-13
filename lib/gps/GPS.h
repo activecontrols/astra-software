@@ -2,8 +2,6 @@
 #include "matlab_funcs.h"
 #include <Arduino.h>
 
-#define GPS_UART Serial1
-
 #define EARTH_RADIUS_M 6371001.0
 
 struct GPS_Coord {

@@ -1,6 +1,7 @@
 #include "GPS.h"
 #include "Router.h"
 #include "UBX.h"
+#include "fc_pins.h"
 
 // #define DEBUG_GPS_MSG
 
@@ -37,19 +38,19 @@ void output_gps_inf() {
   void (*old_cbk)(uint8_t, const char *) = ubx.inf_msg_cbk;
   ubx.inf_msg_cbk = output_gps_inf_cbk;
 
-  while (!Serial.available()) {
+  while (!external_uart.available()) {
     pump_events();
 
     delay(20);
   }
 
-  while (Serial.read() != '\n')
+  while (external_uart.read() != '\n')
     ;
   ubx.inf_msg_cbk = old_cbk;
 }
 
 void print_gps_events() {
-  while (!Serial.available()) {
+  while (!external_uart.available()) {
     pump_events();
 
     if (ubx.pvt_solution.updated && has_valid_recent_pos()) {
@@ -101,13 +102,13 @@ void print_gps_events() {
     delay(10);
   }
 
-  while (Serial.read() != '\n')
+  while (external_uart.read() != '\n')
     ;
 }
 
 void begin() {
 
-  GPS_UART.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
+  gps_uart.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
 
 #ifdef DEBUG_GPS_MSG
   Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
@@ -159,8 +160,8 @@ void get_pos_cov(Matrix3_3 &out) {
 }
 
 void pump_events() {
-  while (GPS_UART.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
-    char c = GPS_UART.read();
+  while (gps_uart.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
+    char c = gps_uart.read();
     ubx.encode(c);
 
 #ifdef DEBUG_GPS_MSG
@@ -169,7 +170,7 @@ void pump_events() {
   }
 
 #ifdef DEBUG_GPS_MSG
-  if (ubx.updated) {
+  if (ubx.updated) { // TODO - ubx has no member updated
     // convert from (degrees * 10^-7) to degrees
     double real_lat = ubx.pvt_solution.data->lat / 10000000.0;
     double real_lon = ubx.pvt_solution.data->lon / 10000000.0;

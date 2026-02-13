@@ -16,16 +16,8 @@ struct func_no_args;
 
 namespace Router {
 
-#ifdef USE_RADIO
-extern UART radio_uart;
-#define COMMS_SERIAL radio_uart
-#define COMMS_RATE 57600
-#endif
-
-#ifndef USE_RADIO
-#define COMMS_SERIAL Serial
-#define COMMS_RATE 115200
-#endif
+#define COMMS_SERIAL external_uart
+#define COMMS_RATE 115200 // TODO - change to 57600 for radio
 
 extern File comms_log_file;
 
@@ -95,6 +87,8 @@ void receive(char msg[], unsigned int len);
 
 // reads a message from the serial port into a string and returns it
 char *read();
+
+bool available();
 
 // add registers a new function to the router
 void add(func f);
