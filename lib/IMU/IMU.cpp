@@ -30,7 +30,7 @@ constexpr double GYRO_RESOLUTION = 1.0 / 16.4;
 
 using namespace IMU;
 
-Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &fc_spi)};
+Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &SPI)};
 
 int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
 int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
@@ -405,7 +405,7 @@ void cmd_log_accel_for_calibration(const char *param) {
     while (!Router::available()) {
       delay(100);
     }
-    external_uart.readBytesUntil('\n', serial_input, sizeof(serial_input));
+    Serial.readBytesUntil('\n', serial_input, sizeof(serial_input));
     if (!strcmp(serial_input, "stop")) {
       break;
     }

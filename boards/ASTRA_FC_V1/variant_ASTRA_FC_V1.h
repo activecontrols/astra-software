@@ -228,33 +228,33 @@
 
 // SPI definitions
 #ifndef PIN_SPI_SS
-#define PIN_SPI_SS PA4
+#define PIN_SPI_SS PNUM_NOT_DEFINED
 #endif
 #ifndef PIN_SPI_SS1
-#define PIN_SPI_SS1 PA15
+#define PIN_SPI_SS1 PNUM_NOT_DEFINED
 #endif
 #ifndef PIN_SPI_SS2
-#define PIN_SPI_SS2 PG10
+#define PIN_SPI_SS2 PNUM_NOT_DEFINED
 #endif
 #ifndef PIN_SPI_SS3
 #define PIN_SPI_SS3 PNUM_NOT_DEFINED
 #endif
 #ifndef PIN_SPI_MOSI
-#define PIN_SPI_MOSI PA7
+#define PIN_SPI_MOSI PC3_C
 #endif
 #ifndef PIN_SPI_MISO
-#define PIN_SPI_MISO PA6
+#define PIN_SPI_MISO PC2_C
 #endif
 #ifndef PIN_SPI_SCK
-#define PIN_SPI_SCK PA5
+#define PIN_SPI_SCK PB10
 #endif
 
 // I2C definitions
 #ifndef PIN_WIRE_SDA
-#define PIN_WIRE_SDA PB7
+#define PIN_WIRE_SDA PNUM_NOT_DEFINED
 #endif
 #ifndef PIN_WIRE_SCL
-#define PIN_WIRE_SCL PB6
+#define PIN_WIRE_SCL PNUM_NOT_DEFINED
 #endif
 
 // Timer Definitions
@@ -274,10 +274,10 @@
 // Default pin used for generic 'Serial' instance
 // Mandatory for Firmata
 #ifndef PIN_SERIAL_RX
-#define PIN_SERIAL_RX PA1
+#define PIN_SERIAL_RX PG9
 #endif
 #ifndef PIN_SERIAL_TX
-#define PIN_SERIAL_TX PA0
+#define PIN_SERIAL_TX PG14
 #endif
 
 // Extra HAL modules

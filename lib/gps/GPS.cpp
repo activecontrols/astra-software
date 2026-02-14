@@ -4,6 +4,7 @@
 #include "fc_pins.h"
 
 // #define DEBUG_GPS_MSG
+HardwareSerial gps_uart(GPS_UART_RX, GPS_UART_TX);
 
 namespace GPS {
 GPS_Coord origin;
@@ -38,19 +39,19 @@ void output_gps_inf() {
   void (*old_cbk)(uint8_t, const char *) = ubx.inf_msg_cbk;
   ubx.inf_msg_cbk = output_gps_inf_cbk;
 
-  while (!external_uart.available()) {
+  while (!Serial.available()) {
     pump_events();
 
     delay(20);
   }
 
-  while (external_uart.read() != '\n')
+  while (Serial.read() != '\n')
     ;
   ubx.inf_msg_cbk = old_cbk;
 }
 
 void print_gps_events() {
-  while (!external_uart.available()) {
+  while (!Serial.available()) {
     pump_events();
 
     if (ubx.pvt_solution.updated && has_valid_recent_pos()) {
@@ -102,7 +103,7 @@ void print_gps_events() {
     delay(10);
   }
 
-  while (external_uart.read() != '\n')
+  while (Serial.read() != '\n')
     ;
 }
 

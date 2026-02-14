@@ -16,7 +16,7 @@ struct func_no_args;
 
 namespace Router {
 
-#define COMMS_SERIAL external_uart
+#define COMMS_SERIAL Serial
 #define COMMS_RATE 115200 // TODO - change to 57600 for radio
 
 extern File comms_log_file;

@@ -16,7 +16,7 @@ void ping(const char *args) {
 
 void setup() {
   delay(3000);
-  fc_spi.begin(); // spi is a shared interface, so we always begin here
+  SPI.begin(); // spi is a shared interface, so we always begin here
   Router::begin();
   Router::println("Controller started.");
 
