@@ -75,6 +75,20 @@ void ping(const char *args) {
   Router::println(args == nullptr ? "null" : args);
 }
 
+void gps_corr()
+{
+  while (1)
+  {
+    while (COMMS_SERIAL.available())
+    {
+      gps_uart.write(COMMS_SERIAL.read());
+    }
+
+    GPS::pump_events();
+    delay(1);
+  }
+}
+
 void setup() {
   delay(3000);
   fc_spi.begin(); // spi is a shared interface, so we always begin here
@@ -96,16 +110,17 @@ void setup() {
   digitalWrite(PE7, HIGH);
   digitalWrite(PE4, HIGH);
 
-  Prop::begin();
-  Mag::begin();
+  // Prop::begin();
+  // Mag::begin();
   GPS::begin();
-  IMU::begin();
-  GimbalServos::begin();
-  TrajectoryLoader::begin();
-  TrajectoryFollower::begin();
+  // IMU::begin();
+  // GimbalServos::begin();
+  // TrajectoryLoader::begin();
+  // TrajectoryFollower::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
+  Router::add({gps_corr, "gps_corr"});
 }
 
 void loop() {
