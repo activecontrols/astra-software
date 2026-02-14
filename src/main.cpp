@@ -8,8 +8,6 @@
 #include "gimbal_servos.h"
 #include <Arduino.h>
 
-// TODO - printf not supporting floats / doubles
-
 // TODO - this should be included - don't know why I had to write it manually
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -108,6 +106,11 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
+
+  while (true) {
+    Router::printf("%f %lf\n", 0.5, 0.25);
+    delay(500);
+  }
 }
 
 void loop() {
