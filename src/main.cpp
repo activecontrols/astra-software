@@ -97,7 +97,7 @@ void setup() {
   digitalWrite(PE4, HIGH);
 
   Prop::begin();
-  // Mag::begin();
+  Mag::begin();
   GPS::begin();
   IMU::begin();
   GimbalServos::begin();
@@ -106,11 +106,6 @@ void setup() {
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
-
-  while (true) {
-    Router::printf("%f %lf\n", 0.5, 0.25);
-    delay(500);
-  }
 }
 
 void loop() {

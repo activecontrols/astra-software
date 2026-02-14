@@ -170,7 +170,7 @@ void pump_events() {
   }
 
 #ifdef DEBUG_GPS_MSG
-  if (ubx.updated) { // TODO - ubx has no member updated
+  if (ubx.pvt_solution.updated) {
     // convert from (degrees * 10^-7) to degrees
     double real_lat = ubx.pvt_solution.data->lat / 10000000.0;
     double real_lon = ubx.pvt_solution.data->lon / 10000000.0;
@@ -192,6 +192,8 @@ void pump_events() {
     Router::printf("Velocity Down  (m/s): %lf\n", velocity_down);
     Router::printf("Altitude (m): %lf\n", altitude);
     Router::println("================");
+
+    ubx.pvt_solution.updated = false;
   }
 #endif
 }
