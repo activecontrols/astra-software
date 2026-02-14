@@ -193,6 +193,7 @@ const uint32_t analogInputPin[] = {
     140  // A31, PC3_C
 };
 
+// TODO - check main CPU frequency
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -245,8 +246,17 @@ void SystemClock_Config(void) {
 
   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_SPI123;
-  PeriphClkInit.Spi123ClockSelection = RCC_SPI123CLKSOURCE_PLL;
+  // Configure PLL3 for 48 MHz USB
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
+  PeriphClkInit.PLL3.PLL3M = 32;  // PLL3 input divider (depends on your HSE)
+  PeriphClkInit.PLL3.PLL3N = 192; // PLL3 multiplier
+  PeriphClkInit.PLL3.PLL3P = 2;   // Optional for other peripherals
+  PeriphClkInit.PLL3.PLL3Q = 8;   // USB divider
+  PeriphClkInit.PLL3.PLL3R = 2;
+  PeriphClkInit.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_2; // input range
+  PeriphClkInit.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+  PeriphClkInit.PLL3.PLL3FRACN = 0;
+  PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
 
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
     Error_Handler();
