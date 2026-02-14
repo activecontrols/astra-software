@@ -83,28 +83,62 @@ void setup() {
   Router::begin();
   Router::println("Controller started.");
 
+  digitalWrite(PB7, HIGH);
+  digitalWrite(PC12, HIGH);
+
+  digitalWrite(PD7, HIGH); // MAG CS 1
+  digitalWrite(PE7, HIGH); // MAG CS 2
+  digitalWrite(PE4, HIGH); // MAG CS 3
+
+  digitalWrite(PB3, HIGH); // IMU CS 3
+  digitalWrite(PB4, HIGH); // IMU CS 2
+  digitalWrite(PB5, HIGH); // IMU CS 1
+
   // TODO - configure CS somewhere else!
   pinMode(PB7, OUTPUT);
-  pinMode(PB3, OUTPUT);
-  pinMode(PB5, OUTPUT);
   pinMode(PC12, OUTPUT);
   pinMode(PE7, OUTPUT);
   pinMode(PE4, OUTPUT);
 
-  digitalWrite(PB7, HIGH);
-  digitalWrite(PB3, HIGH);
-  digitalWrite(PB5, HIGH);
-  digitalWrite(PC12, HIGH);
-  digitalWrite(PE7, HIGH);
-  digitalWrite(PE4, HIGH);
+  pinMode(PB3, OUTPUT);
+  pinMode(PB4, OUTPUT);
+  pinMode(PB5, OUTPUT);
+  pinMode(PD7, OUTPUT);
 
-  Prop::begin();
+  pinMode(PB6, OUTPUT);
+
+
+#define test_cs IMU_CS[0]
+  digitalWrite(IMU_CS_4_EX, HIGH);
+  digitalWrite(test_cs, HIGH);
+  pinMode(test_cs, OUTPUT);
+
+  while (1)
+  {
+    digitalWrite(test_cs, LOW);
+    digitalWrite(IMU_CS_4_EX, LOW);
+    fc_spi.beginTransaction(SPISettings(500'000, MSBFIRST, SPI_MODE0));
+
+    uint8_t response = fc_spi.transfer(0x2F | (1 << 7)); // read MAG digital id - should respond with 0x30
+    // fc_spi.transfer(0x75 | (1 << 7)); // read WHOAMI - IMU should respond with 0x3B
+    uint8_t response = fc_spi.transfer(0x00);
+
+    fc_spi.endTransaction();
+    digitalWrite(IMU_CS_4_EX, HIGH);
+    digitalWrite(test_cs, HIGH);
+
+    Router::println(response, HEX);
+
+    delay(1000);
+  }
+
+  // Prop::begin();
   // Mag::begin();
-  GPS::begin();
-  IMU::begin();
-  GimbalServos::begin();
-  TrajectoryLoader::begin();
-  TrajectoryFollower::begin();
+  // GPS::begin();
+  // IMU::begin();
+  // GimbalServos::begin();
+  // TrajectoryLoader::begin();
+  // TrajectoryFollower::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});

@@ -15,6 +15,8 @@
 #include "SparkFun_MMC5983MA_IO.h"
 #include "SparkFun_MMC5983MA_Arduino_Library_Constants.h"
 
+#include "fc_pins.h"
+
 // Read operations must have the most significant bit set
 #define READ_REG(x) (0x80 | x)
 
@@ -31,7 +33,8 @@ void SFE_MMC5983MA_IO::initSPISettings()
     //  In practice SPI_MODE0 is what worked.
 
     // note: per the datasheet, we can actually push this to 10 MHz if we need
-    _mmcSpiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0);
+    // _mmcSpiSettings = SPISettings(2000000, MSBFIRST, SPI_MODE0);
+    _mmcSpiSettings = SPISettings(500'000, MSBFIRST, SPI_MODE0); // I noticed data sometimes not being shifted out at the right time - might be an issue with the logic analyzer setup but for now I've reduced the frequency (Jacob H)
 }
 
 bool SFE_MMC5983MA_IO::begin(const uint8_t csPin, SPIClass &spiPort)
@@ -66,10 +69,12 @@ bool SFE_MMC5983MA_IO::isConnected()
     if (useSPI)
     {
         _spiPort->beginTransaction(_mmcSpiSettings);
+        digitalWrite(PB6, LOW);
         digitalWrite(_csPin, LOW);
         _spiPort->transfer(READ_REG(PROD_ID_REG));
         uint8_t readback = _spiPort->transfer(DUMMY);
         digitalWrite(_csPin, HIGH);
+        digitalWrite(PB6, HIGH);
         _spiPort->endTransaction();
         result = (readback == PROD_ID);
     }

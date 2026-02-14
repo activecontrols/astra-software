@@ -2,6 +2,7 @@
 #include "SPI.h"
 #include <Arduino.h>
 
+
 // PWM PINS
 #define PROP1_PIN PD14
 #define PROP2_PIN PD15
@@ -10,7 +11,7 @@
 
 // SPI PINS
 #define SD_CARD_CS PC12
-#define IMU_CS PB4 // TODO - break out into 3 IMUs
+#define IMU_CS_4_EX PB6
 // TODO - add mags
 
 #define FC_SCK PB10
@@ -35,5 +36,7 @@ extern HardwareSerial gps_uart;
 #define RADIO_RX PC7
 #define PROP1_PIN PA8
 
-const uint32_t IMU_CS[] = {PB5, PB4, PB3};
-const uint32_t MAG_CS[] = {PD7, PE7, PE4};
+// const uint32_t IMU_CS[] = {PB5, PB4, PB3};
+const uint32_t IMU_CS[] = {PB4, PB3};
+// const uint32_t MAG_CS[] = {PD7, PE7, PE4};
+const uint32_t MAG_CS[] = {PD7};

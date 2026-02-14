@@ -16,7 +16,7 @@
 
 // Unit: Hz
 // !!! DO NOT EXCEED 24MHz !!!
-#define SPI_RATE (1 * 1000000) // TODO - 24 used to work, check on a scope
+#define SPI_RATE (1 * 1000000)
 
 #define G_TO_MS2 9.80145
 
@@ -31,19 +31,6 @@ const double GYRO_RESOLUTION = 1.0 / 16.4;
 
 #define SPI_SETTINGS SPISettings(SPI_RATE, MSBFIRST, SPI_MODE0)
 
-using namespace IMU;
-
-Sensor IMU::IMUs[IMU_COUNT] = {Sensor(IMU_CS, &fc_spi)};
-
-int read_reg(void *context, uint8_t reg, uint8_t *buf, uint32_t len);
-int write_reg(void *context, uint8_t reg, const uint8_t *buf, uint32_t len);
-
-void begin_transaction(SPI_Interface *my_spi);
-void end_transaction(SPI_Interface *my_spi);
-
-Sensor::Sensor(int cs, SPIClass *spi) {
-  this->spi_interface.cs = cs;
-  this->spi_interface.spi = spi;
 IMU::IMU() {
 
   this->clear_calib();
@@ -450,10 +437,10 @@ void IMU::cmd_log_accel_for_calibration(const char *param) {
   char serial_input[10];
 
   while (1) {
-    while (!Router::available()) {
+    while (!COMMS_SERIAL.available()) {
       delay(100);
     }
-    external_uart.readBytesUntil('\n', serial_input, sizeof(serial_input));
+    COMMS_SERIAL.readBytesUntil('\n', serial_input, sizeof(serial_input));
     if (!strcmp(serial_input, "stop")) {
       break;
     }
@@ -495,7 +482,7 @@ void IMU::cmd_imu_log() {
 
   unsigned long start_time = micros();
   // run until the user presses enter
-  while (!Router::available()) {
+  while (!COMMS_SERIAL.available()) {
     double t = (micros() - start_time) * 1e-6;
 
     Router::printf("%lf", t);
@@ -582,35 +569,35 @@ void IMU::cmd_imu_log_fused() {
 
   unsigned long start_micros = micros();
 
-  Serial.print("\n\nTime (s)\tAccel X (m/s^2)\tAccel Y (m/s^2)\tAccel Z (m/s^2)\tGyro X (rad/s)\tGyro Y (rad/s)\tGyro Z (rad/s)\n");
+  COMMS_SERIAL.print("\n\nTime (s)\tAccel X (m/s^2)\tAccel Y (m/s^2)\tAccel Z (m/s^2)\tGyro X (rad/s)\tGyro Y (rad/s)\tGyro Z (rad/s)\n");
 
   while (1) {
-    if (Serial.available()) {
+    if (COMMS_SERIAL.available()) {
       break;
     }
 
     double t = (micros() - start_micros) * 1e-6;
 
-    Serial.print(t, 3);
+    COMMS_SERIAL.print(t, 3);
 
     read_latest_fused(&last_measurement);
 
     for (int i = 0; i < 3; ++i) {
-      Serial.print('\t');
-      Serial.print(last_measurement.acc[i], 4);
+      COMMS_SERIAL.print('\t');
+      COMMS_SERIAL.print(last_measurement.acc[i], 4);
     }
 
     for (int i = 0; i < 3; ++i) {
-      Serial.print('\t');
-      Serial.print(last_measurement.gyro[i], 4);
+      COMMS_SERIAL.print('\t');
+      COMMS_SERIAL.print(last_measurement.gyro[i], 4);
     }
 
-    Serial.print('\n');
+    COMMS_SERIAL.print('\n');
 
     delay(5);
   }
 
-  while (Serial.read() != '\n')
+  while (COMMS_SERIAL.read() != '\n')
     ;
 
   return;
@@ -619,12 +606,14 @@ void IMU::cmd_imu_log_fused() {
 void IMU::begin() {
 
   for (int i = 0; i < IMU_COUNT; ++i) {
-    bool error = IMUs[i].init(IMU_CS[i], &SPI);
+    bool error = IMUs[i].init(IMU_CS[i], &fc_spi);
     error = error || IMUs[i].enable_accel();
     error = error || IMUs[i].enable_gyro();
 
     if (error)
       Router::printf("IMU %d Failed to Initialize\n", i);
+    else
+      Router::printf("IMU %d Initialized\n", i);
   }
 
   Router::add({cmd_calibrate_gyro, "imu_calibrate_gyro"});

@@ -633,10 +633,7 @@ void mag_record_test(const char *arg) {
   mag.setFilterBandwidth(old_filter_bw);
 }
 
-void cmd_log_fused()
-{
-
-}
+void cmd_log_fused() {}
 
 void begin() {
 
@@ -645,11 +642,16 @@ void begin() {
 
     calibs[i] = identity_calib; // set to identity calib for now, will be overwritten later when instant calib is done/or calib is loaded from file
 
-    if (!MAGs[i].begin(MAG_CS[i], SPI)) {
-      while (true) {
-        Router::printf("Magnetometer %d not found, reboot once magnetometer connected...\n", i);
-        delay(1000);
-      }
+    // if (!MAGs[i].begin(MAG_CS[i], fc_spi)) {
+    //   while (true) {
+    //     Router::printf("Magnetometer %d not found, reboot once magnetometer connected...\n", i);
+    //     delay(1000);
+    //   }
+    // }
+
+    while (!MAGs[i].begin(MAG_CS[i], fc_spi)) {
+      Router::printf("Magnetometer %d not found, reboot once magnetometer connected...\n", i);
+      delay(1000);
     }
 
     MAGs[i].softReset();
