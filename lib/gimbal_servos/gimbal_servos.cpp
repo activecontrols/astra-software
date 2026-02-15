@@ -65,6 +65,11 @@ void setGimbalAngle(float bottom, float top) {
   top_servo.pulsewidth_us(calc_servo_pulsewidth(servo_top_angle));
 }
 
+void setServoAngle(float servo_bottom_angle, float servo_top_angle) {
+  bottom_servo.pulsewidth_us(calc_servo_pulsewidth(servo_bottom_angle));
+  top_servo.pulsewidth_us(calc_servo_pulsewidth(servo_top_angle));
+}
+
 void centerGimbal() {
   setGimbalAngle(0, 0);
 }
@@ -92,6 +97,17 @@ void set_offset_bottom(const char *param) {
   centerGimbal();
 }
 
+
+void cmd_set_servo_angle(const char *args)
+{
+  double bottom_top_angle[2];
+  if (!Router::parse_doubles(args, bottom_top_angle, 2)) {
+    Router::printf("Usage: gimbal_set_angle_bt 0.00 0.00\n");
+    return;
+  }
+  setServoAngle(bottom_top_angle[0], bottom_top_angle[1]);
+}
+
 void init() {
   bottom_servo.period_ms(20);
   top_servo.period_ms(20);
@@ -100,5 +116,6 @@ void init() {
   Router::add({centerGimbal, "gimbal_center"});
   Router::add({set_offset_top, "gimbal_top_offset"});
   Router::add({set_offset_bottom, "gimbal_bottom_offset"});
+  Router::add({cmd_set_servo_angle, "set_servo_angle"});
 }
 } // namespace GimbalServos

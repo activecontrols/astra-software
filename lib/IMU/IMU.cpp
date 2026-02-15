@@ -18,7 +18,7 @@
 
 // Unit: Hz
 // !!! DO NOT EXCEED 24MHz !!!
-#define SPI_RATE (24 * 1000000)
+#define SPI_RATE (1'000000)
 
 #define G_TO_MS2 9.80145
 
