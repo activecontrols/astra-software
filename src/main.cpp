@@ -21,19 +21,29 @@ void setup() {
   Router::println("Controller started.");
 
   // TODO - configure CS somewhere else!
+  digitalWrite(PB7, HIGH);
+  digitalWrite(PC12, HIGH);
+
+  digitalWrite(PD7, HIGH); // MAG CS 1
+  digitalWrite(PE7, HIGH); // MAG CS 2
+  digitalWrite(PE4, HIGH); // MAG CS 3
+
+  digitalWrite(PB3, HIGH); // IMU CS 3
+  digitalWrite(PB4, HIGH); // IMU CS 2
+  digitalWrite(PB5, HIGH); // IMU CS 1
+
+  // TODO - configure CS somewhere else!
   pinMode(PB7, OUTPUT);
-  pinMode(PB3, OUTPUT);
-  pinMode(PB5, OUTPUT);
   pinMode(PC12, OUTPUT);
   pinMode(PE7, OUTPUT);
   pinMode(PE4, OUTPUT);
 
-  digitalWrite(PB7, HIGH);
-  digitalWrite(PB3, HIGH);
-  digitalWrite(PB5, HIGH);
-  digitalWrite(PC12, HIGH);
-  digitalWrite(PE7, HIGH);
-  digitalWrite(PE4, HIGH);
+  pinMode(PB3, OUTPUT);
+  pinMode(PB4, OUTPUT);
+  pinMode(PB5, OUTPUT);
+  pinMode(PD7, OUTPUT);
+
+  pinMode(PB6, OUTPUT);
 
   // Prop::begin();
   // // Mag::begin();
