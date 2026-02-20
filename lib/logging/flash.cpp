@@ -8,8 +8,7 @@
 
 #define FREQ_MAX 50'000'000
 
-// 1ms
-#define HAL_TIMEOUT 1
+#define HAL_TIMEOUT 10000
 
 // proper practice here is to always keep WEL disabled (write enable latch, which should be kept low to prevent accidental writes or erases)
 // each function that modifies data on the flash should first enable WEL, write, then disable WEL before returning
@@ -57,6 +56,7 @@ bool command(uint8_t instruction, unsigned int data_len = 0, uint32_t addr = sta
   cmd.Instruction = instruction;
   cmd.InstructionMode = QSPI_INSTRUCTION_4_LINES;
   cmd.DummyCycles = dummy;
+  cmd.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;
 
   if (data_len) {
     cmd.NbData = data_len;
@@ -75,7 +75,7 @@ bool command(uint8_t instruction, unsigned int data_len = 0, uint32_t addr = sta
   return true;
 }
 
-bool read(uint8_t instruction, void *data, unsigned int len, uint32_t addr = static_cast<uint32_t>(-1), unsigned int dummy = 0) {
+bool receive(uint8_t instruction, void *data, unsigned int len, uint32_t addr = static_cast<uint32_t>(-1), unsigned int dummy = 0) {
   if (!command(instruction, len, addr, dummy))
     return false;
 
@@ -110,17 +110,17 @@ bool enable_qspi() {
 // read electronic id over quadspi
 // returns true if peripheral did not error
 inline bool read_qpiid(uint8_t out[3]) {
-  return read(CMD_QPIID, out, sizeof(out), -1, 6);
+  return receive(CMD_QPIID, out, 3, -1, 6);
 }
 // read status register (RDSR)
 inline bool read_status(flash_status_reg *out) {
-  return read(CMD_RDSR, out, sizeof(*out));
+  return receive(CMD_RDSR, out, sizeof(*out));
 }
 
 // read security register (RDSCUR)
 
 // wait for write-in-progress bit to be unset
-bool wait_for_wip(unsigned long max_delay = 50) {
+bool wait_for_wip(unsigned long max_delay) {
   flash_status_reg reg;
 
   unsigned long start_micros = micros();
@@ -136,6 +136,8 @@ bool wait_for_wip(unsigned long max_delay = 50) {
     read_status(&reg);
     delayMicroseconds(10);
   } while (reg.WIP);
+
+  return true;
 }
 
 bool is_write_enable() {
@@ -203,20 +205,24 @@ bool chip_erase() {
 
 // erase a 4KB sector
 bool sector_erase(uint32_t addr) {
+  const unsigned int timeout_us = 240'000; // DS says max sector erase time is 120ms
   wait_for_wip();
   write_enable();
 
   // check that write enable bit is set
-  if (!is_write_enable())
+  if (!is_write_enable()) {
     return false;
+  }
 
   if (!command(CMD_SE, 0, addr))
     return false;
 
-  wait_for_wip();  // wait for erase operation to complete
   write_disable(); // disable write to protect against accidental data corruption
 
-  // check the write enable bit is unset - even though the erase operation probably succeeded, still return false to indicate something is wrong
+  if (!wait_for_wip(timeout_us)) // wait for erase operation to complete
+    return false;
+
+  // check the write enable bit is unset
   if (is_write_enable())
     return false;
 
@@ -225,9 +231,11 @@ bool sector_erase(uint32_t addr) {
 
 // as per DS - only last 256 bytes are actually written, and the write address wraps back around the the beginning of the 256-byte page when necessary
 // chain function calls together to write data across multiple pages
-bool page_program(uint8_t addr, uint8_t *data, uint32_t len) {
-  if (!write(CMD_4PP, data, len, addr))
-    return false;
+bool page_program(uint32_t addr, uint8_t *data, uint32_t len) {
+  write_enable();
+  bool status = write(CMD_PP, data, len, addr);
+  write_disable();
+  return status;
 }
 
 bool _initialize() {
@@ -236,10 +244,13 @@ bool _initialize() {
   hqspi.Instance = QUADSPI;
   hqspi.Init.ClockPrescaler = f_hclk / FREQ_MAX;
 
-  if (!(f_hclk % FREQ_MAX)) // "round up" when needed
+  if (hqspi.Init.ClockPrescaler > 255) {
+    hqspi.Init.ClockPrescaler = 255;
+  } else if (!(f_hclk % FREQ_MAX)) // "round up" when needed
   {
     --hqspi.Init.ClockPrescaler;
   }
+
   hqspi.Init.FifoThreshold = 1;
   hqspi.Init.ClockMode = QSPI_CLOCK_MODE_0;
   hqspi.Init.SampleShifting = QSPI_SAMPLE_SHIFTING_NONE;
@@ -294,40 +305,53 @@ bool _initialize() {
   return true;
 }
 
-void write_test() {
-  Router::print("Write test commencing.\n");
+inline bool read(uint32_t addr, uint32_t len, uint8_t* out)
+{
+  return receive(CMD_4READ, out, len, addr, 6);
+}
 
-  if (!sector_erase(0)) {
+void rw_test() {
+  const uint32_t addr = 0x0FF000;
+  const uint32_t sector = SECTOR(addr);
+  const uint32_t page = PAGE(addr);
+
+  Router::printf("Erasing Sector %d\n", sector);
+  if (!sector_erase(addr)) {
     Router::print("Sector erase command failed.\n");
+    Router::printf("HAL Error: %X\n", HAL_QSPI_GetError(&hqspi));
     return;
   }
   Router::print("Sector erased and WIP unset.\n");
 
   // program sector
   char program_data[256];
-  char str[] = "Hello, world!";
+  char str[] = "Hello, world! From the NOR Flash!";
   memset(program_data, 0, sizeof(program_data));
   memcpy(program_data, str, sizeof(str));
 
-  Router::print("Programming page 0\n");
+  Router::printf("Programming page %d\n", page);
   unsigned long start_micros = micros();
-  if (!page_program(0, reinterpret_cast<uint8_t *>(program_data), sizeof(program_data))) {
+
+  if (!page_program(addr, reinterpret_cast<uint8_t *>(program_data), sizeof(program_data))) {
     Router::print("Page program command Failed.\n");
     return;
   }
 
   // wait for write operation to finish
-  wait_for_wip();
-
+  // DS says this could take up to 1.2 ms
+  if (!wait_for_wip(1500)) {
+    Router::print("wait_for_wip failed\n");
+    return;
+  }
   unsigned long delta_t = micros() - start_micros;
   Router::print("Page program command succeeded.\n");
   Router::print("WIP Unset.\n");
-  Router::printf("Single block write time (us): %d\n", delta_t);
+  Router::printf("Single page write time (us): %d\n", delta_t);
 
-  Router::print("Reading page 0\n");
+  Router::printf("Reading page %d\n", page);
 
   char data_read[sizeof(program_data)];
-  if (!read(CMD_4READ, data_read, sizeof(data_read), 0, 6)) {
+  if (!read(addr, sizeof(data_read), reinterpret_cast<uint8_t *>(data_read))) {
     Router::print("4READ command failed\n");
     return;
   }
@@ -336,8 +360,53 @@ void write_test() {
     Router::print("Error: 4READ data does not match program data.\n");
   }
 
+  Router::printf("Page %d contents: ", page);
   Router::print(data_read);
   Router::print('\n');
+}
+
+void write_speed_test()
+{
+  const unsigned long addr = 0xFFFF00; // use the top page/sector
+
+  uint8_t program_data[256];
+  memset(program_data, 'A', sizeof(program_data));
+
+  for (unsigned long i = 5; i < sizeof(program_data); i += 10)
+  {
+    if (!sector_erase(addr))
+    {
+      Router::print("Sector Erase Failed\n");
+      return;
+    }
+
+    unsigned long start_micros = micros();
+    if (!page_program(addr, program_data, i))
+    {
+      Router::print("Page Program Failed\n");
+      return;
+    }
+
+    if (!wait_for_wip(2'400)) {
+      Router::print("wait_for_wip failed.\n");
+      return;
+    }
+
+    unsigned long delta_micros = micros() - start_micros;
+
+    if (is_write_enable())
+    {
+      Router::print("Error: write is still enabled\n");
+      return;
+    }
+
+    Router::print(i);
+    Router::print(", ");
+    Router::print(delta_micros);
+    Router::print('\n');
+
+    delay(10);
+  }
 }
 
 void begin() {
@@ -350,7 +419,8 @@ void begin() {
   }
 
   Router::print("Flash driver ready.\n");
-  Router::add({write_test, "write_test"});
+  Router::add({rw_test, "rw_test"});
+  Router::add({write_speed_test, "write_speed_test"});
 
   return;
 }
