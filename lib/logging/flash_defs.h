@@ -9,7 +9,7 @@
 #define CMD_RDSR 0x05
 #define CMD_RDSCUR 0x0c
 
-#define CMD_4PP 0x38
+#define CMD_PP 0x02
 
 #define CMD_4READ 0xEB
 
@@ -25,7 +25,7 @@
 // chip erase
 #define CMD_CE 0x60
 
-struct flash_status_reg {
+struct __packed flash_status_reg {
   uint8_t WIP : 1; // write in progress bit
   uint8_t WEL : 1; // write enable latch
   uint8_t BP0 : 1; // BP0 level of protected block
@@ -37,7 +37,7 @@ struct flash_status_reg {
 };
 
 
-struct flash_config_reg 
+struct __packed flash_config_reg 
 {
     uint8_t ODS : 3; // output driver strength - see table 9 from datasheet
     uint8_t TB : 1; // top/bottom OTP bit
@@ -45,7 +45,7 @@ struct flash_config_reg
     uint8_t DC : 2; // configurable dummy cycle count for certain commands
 };
 
-struct flash_security_reg
+struct __packed flash_security_reg
 {
     uint8_t factory_otp_indicator : 1;
     uint8_t user_otp_indicator : 1;
