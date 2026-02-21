@@ -17,7 +17,7 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
       return 0;
 
     CsumT csum = 0;
-    size_t out_i = 0;
+    uint16_t out_i = 0;
 
     auto push_escaped = [&](uint8_t b) {
       if (b == DS || b == DE || b == ESC) {
@@ -33,91 +33,88 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
     push_escaped((uint8_t)(src_len >> 8));
 
     // add escaped bytes while calculating checksum.
-    for (size_t i = 0; i < src_len; i++) {
+    for (uint16_t i = 0; i < src_len; i++) {
       uint8_t b = src[i];
       csum += b;
       push_escaped(b);
     }
 
     uint8_t *csum_bytes = (uint8_t *)(&csum);
-    for (size_t i = 0; i < sizeof(CsumT); i++) {
+    for (uint16_t i = 0; i < sizeof(CsumT); i++)
       push_escaped(csum_bytes[i]);
-    }
 
     dest[out_i++] = DE; // end byte.
-
     return out_i;
   }
 
   struct Decoder {
-    enum class State : uint8_t { HUNT, LEN_0, LEN_1, PAYLOAD, CSUM };
+    enum class State : uint8_t { HUNT, LEN_0, LEN_1, DATA, AWAIT_END };
+
     State state = State::HUNT;
-
     bool escaped = false;
-    bool expecting_end = false;
-
-    uint16_t expected_len = 0;
-
+    uint16_t expected_len = 0; // payload length only
+    // uint16_t expected_total = 0; // payload + checksum
     uint8_t buffer[MAX_LENGTH + sizeof(CsumT)];
     uint16_t buf_i = 0;
 
-    uint16_t feed(uint8_t b, uint8_t *dest) {
-      if (expecting_end) {
-        expecting_end = false;
-        if (b == DE && !escaped)
-          return validate(dest); // verifies checksum and writes to dest.
-        // otherwise, we need to keep going to find a valid packet.
-      }
+    // void reset() {
+    //   state = State::HUNT;
+    //   escaped = false;
+    //   buf_i = 0;
+    // }
 
-      if (b == DS && !escaped) { // unescaped DS
-        state = State::LEN_0;    // start
+    uint16_t feed(uint8_t b, uint8_t *dest) {
+      if (b == DS && !escaped) { // unescaped ds is start, regardless of state.
+        state = State::LEN_0;
         buf_i = 0;
         return 0;
       }
-
       if (b == ESC && !escaped) {
         escaped = true;
-        return 0; // wait for the escaped byte
+        return 0;
       }
+
+      bool was_escaped = escaped; // useful when checking DE (since it must be unescaped)
       escaped = false;
 
-      // data is guaranteed to be literal (not escape)
-      uint8_t data = b;
-
       switch (state) {
-      case State::LEN_0: // lower byte.
-        expected_len = data;
+
+      case State::HUNT: // we start when we see unescaped DS
+        break;
+
+      case State::LEN_0: // lower byte
+        expected_len = b;
         state = State::LEN_1;
         break;
 
-      case State::LEN_1: // upper byte.
-        expected_len |= ((uint16_t)data) << 8;
-        if (expected_len > MAX_LENGTH)
+      case State::LEN_1: // upper byte
+        expected_len |= ((uint16_t)b) << 8;
+        if (expected_len > MAX_LENGTH) {
           state = State::HUNT;
-        else
-          state = State::PAYLOAD;
-        break;
-
-      case State::PAYLOAD:
-        buffer[buf_i++] = data;
-        if (buf_i == expected_len) // we should see csum after the expected length.
-          state = State::CSUM;
-        break;
-
-      case State::CSUM:
-        buffer[buf_i++] = data;
-        if (buf_i == expected_len + sizeof(CsumT)) {
-          expecting_end = true;
-          state = State::HUNT;
+        } else {
+          buf_i = 0;
+          state = State::DATA;
         }
         break;
 
-      default:
+      case State::DATA: // captures payload and checksum.
+                        // todo: we should maybe check for unescaped DE here in case length field is garbled.
+                        // however, we already check for unescaped DS so maybe its ok.
+        buffer[buf_i++] = b;
+        if (buf_i == expected_len + sizeof(CsumT))
+          state = State::AWAIT_END;
+        break;
+
+      case State::AWAIT_END:
+        state = State::HUNT;
+        if (b == DE && !was_escaped) // unescaped DE
+          return validate(dest);
         break;
       }
       return 0;
     }
 
+  private:
     uint16_t validate(uint8_t *dest) {
       CsumT calculated = 0;
       for (uint16_t i = 0; i < expected_len; i++)
@@ -126,11 +123,11 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
       CsumT received;
       memcpy(&received, buffer + expected_len, sizeof(CsumT));
 
-      if (calculated == received) {
-        memcpy(dest, buffer, expected_len);
-        return expected_len;
-      }
-      return 0;
+      if (calculated != received)
+        return 0;
+
+      memcpy(dest, buffer, expected_len);
+      return expected_len;
     }
   };
 };
