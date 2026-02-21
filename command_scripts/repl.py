@@ -11,42 +11,27 @@ import serial
 DS = ord('S')
 DE = ord('E')
 ESC = ord('\\')
-R = 0x5A
 
 COMMAND_BUFFER_SIZE = 200
-CSUM_FMT = "<i"   # little-endian int32
-
-def make_cmd_packet(command: str) -> bytes:
-    buf = bytearray(COMMAND_BUFFER_SIZE)
-    b = command.encode("ascii", errors="strict")
-    if len(b) >= COMMAND_BUFFER_SIZE:
-        raise ValueError("Command too long")
-    buf[:len(b)] = b
-    return bytes(buf)
-
-def checksum(payload: bytes) -> int:
-    return sum(payload) & 0xFFFFFFFF
-
-def csum_encode(payload: bytes) -> bytes:
-    csum = checksum(payload)
-    if csum >= 0x80000000:
-        csum -= 0x100000000
-    return payload + struct.pack(CSUM_FMT, csum)
-
-def escape_delimit(raw: bytes) -> bytes:
-    out = bytearray()
-    out.append(DS)
-    for b in raw:
-        if b in (DS, DE, ESC):
-            out.append(ESC)
-            out.append(b ^ R)
-        else:
-            out.append(b)
-    out.append(DE)
-    return bytes(out)
 
 def encode_command(cmd: str) -> bytes:
-    return escape_delimit(csum_encode(make_cmd_packet(cmd)))
+    payload = cmd.encode("ascii")
+    p_len = len(payload)
+    
+    csum = sum(payload) & 0xFFFFFFFF
+    if csum >= 0x80000000: csum -= 0x100000000
+    
+    # <H : little endian unsigned short. <i : little endian signed int32
+    raw_bytes = struct.pack("<H", p_len) + payload + struct.pack("<i", csum)
+    
+    # 3. Framing & Escaping
+    out = bytearray([DS])
+    for b in raw_bytes:
+        if b in (DS, DE, ESC):
+            out.append(ESC)
+        out.append(b)
+    out.append(DE)
+    return bytes(out)
 
 
 def reader_loop(ser, stop_evt, show_hex_flag):

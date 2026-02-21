@@ -18,14 +18,6 @@ void ping(const char *args) {
   Router::println(args == nullptr ? "null" : args);
 }
 
-// void test_coder() {
-//   if (PacketCodec<Router:: ::test()) {
-//     Router::println("Coder test passed.");
-//   } else {
-//     Router::println("Coder test failed.");
-//   }
-// }
-
 void setup() {
   delay(3000);
   SPI.begin(); // spi is a shared interface, so we always begin here
@@ -33,7 +25,7 @@ void setup() {
   Router::println("Controller started.");
 
   // Prop::begin();
-  // Mag::begin();
+  Mag::begin();
   // GPS::begin();
   // IMU::begin();
   // GimbalServos::init();

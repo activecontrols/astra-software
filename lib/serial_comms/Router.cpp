@@ -7,13 +7,9 @@
 
 #define COMMAND_BUFFER_SIZE (200)
 
-struct CMDPacket {
-  char command[COMMAND_BUFFER_SIZE];
-};
-
 namespace Router {
 
-using Codec = PacketCodec<CMDPacket>;
+using Codec = VarPacketCodec<COMMAND_BUFFER_SIZE - 1>; // -1 for null byte.
 static Codec::Decoder dec;
 static uint8_t rx_byte;
 
@@ -31,20 +27,25 @@ namespace { // private namespace
 vector<func> funcs;
 
 void readCommand() {
-  CMDPacket cmd_packet;
+  uint16_t decoded_len;
 
-  // wait until a command is decoded.
   while (true) {
-    COMMS_SERIAL.readBytes((char *)&rx_byte, 1); // read 1 byte (blocking, since timeout is "never")
-    // rx_byte = COMMS_SERIAL.read();
-    if (dec.feed(rx_byte, cmd_packet))
-      break; // got a packet
+    if (COMMS_SERIAL.available()) {
+      rx_byte = COMMS_SERIAL.read();
+      // if (rx_byte) {
+      //   print("byte received: ");
+      //   println(rx_byte, 16);
+      // }
+      if ((decoded_len = dec.feed(rx_byte, (uint8_t *)commandBuffer.str))) // extra parens to remove compiler warning about assignment
+        break;
+    }
   }
 
-  memcpy(commandBuffer.str, cmd_packet.command, COMMAND_BUFFER_SIZE); // todo: just use cmd_packet.command directly.
+  // mprintln("received command of length ", decoded_len);
 
-  commandBuffer.str[sizeof(cmd_packet.command) - 1] = '\0'; // null terminate
-  commandBuffer.trim();                                     // remove leading/trailing whitespace or newline
+  // commandBuffer.str[COMMAND_BUFFER_SIZE - 1] = '\0'; // null terminate
+  commandBuffer.str[decoded_len] = '\0'; // null terminate
+  commandBuffer.trim();                  // remove leading/trailing whitespace or newline
   commandBuffer.resolve_backspaces();
 
   // find first space to separate command from args
@@ -85,7 +86,7 @@ void begin() {
     //   delay(1000);
     // }
   }
-  Router::mprintln("codec self test: ", Codec::self_test());
+  Router::mprintln("codec self test: ", run_protocol_tests());
 }
 
 void send(char msg[], unsigned int len) {
@@ -132,7 +133,8 @@ void add(func_no_args fna) {
     for (auto &f : funcs) {
       if (commandBuffer.equals(f.name)) {
         // f.f(); // call the function. it can decide to send, receive or whatever.
-        f.f(argStart); // call the function. it can decide to send, receive or whatever.
+        f.f(argStart);        // call the function. it can decide to send, receive or whatever.
+        COMMS_SERIAL.flush(); // flush after function is done. TODO: honestly we could move the file flushes here too. no point flushing so often.
         cmd_found = true;
         break;
       }
