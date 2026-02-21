@@ -51,11 +51,13 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
     enum class State : uint8_t { HUNT, LEN_0, LEN_1, DATA, AWAIT_END };
 
     State state = State::HUNT;
+
+    // part of state
     bool escaped = false;
-    uint16_t expected_len = 0; // payload length only
-    // uint16_t expected_total = 0; // payload + checksum
-    uint8_t buffer[MAX_LENGTH + sizeof(CsumT)];
     uint16_t buf_i = 0;
+
+    uint16_t expected_len = 0; // payload length only
+    uint8_t buffer[MAX_LENGTH + sizeof(CsumT)];
 
     // void reset() {
     //   state = State::HUNT;
@@ -64,22 +66,28 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
     // }
 
     uint16_t feed(uint8_t b, uint8_t *dest) {
-      if (b == DS && !escaped) { // unescaped ds is start, regardless of state.
-        state = State::LEN_0;
-        buf_i = 0;
-        return 0;
+      // unescaped DS or DE means start or reset, ESC means set escape.
+      if (!escaped) {
+        if (b == DS) { // start.
+          state = State::LEN_0;
+          buf_i = 0;
+          return 0;
+        }
+        if (b == DE) {
+          bool expected = state == State::AWAIT_END;
+          state = State::HUNT; // whether expected or not, an unescaped DE must reset.
+          return expected ? validate(dest) : 0;
+        }
+        if (b == ESC) { // next byte is escaped.
+          escaped = true;
+          return 0;
+        }
       }
-      if (b == ESC && !escaped) {
-        escaped = true;
-        return 0;
-      }
-
-      bool was_escaped = escaped; // useful when checking DE (since it must be unescaped)
       escaped = false;
 
       switch (state) {
 
-      case State::HUNT: // we start when we see unescaped DS
+      case State::HUNT: // we start when unescaped DS pulls us out of HUNT
         break;
 
       case State::LEN_0: // lower byte
@@ -98,17 +106,13 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
         break;
 
       case State::DATA: // captures payload and checksum.
-                        // todo: we should maybe check for unescaped DE here in case length field is garbled.
-                        // however, we already check for unescaped DS so maybe its ok.
         buffer[buf_i++] = b;
         if (buf_i == expected_len + sizeof(CsumT))
           state = State::AWAIT_END;
         break;
 
-      case State::AWAIT_END:
-        state = State::HUNT;
-        if (b == DE && !was_escaped) // unescaped DE
-          return validate(dest);
+      case State::AWAIT_END: // we stay in this state only on the one byte we expect DE in.
+        state = State::HUNT; // if we reach here, it means we saw a non-DE byte and so we need to reset.
         break;
       }
       return 0;
@@ -117,7 +121,7 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
   private:
     uint16_t validate(uint8_t *dest) {
       CsumT calculated = 0;
-      for (uint16_t i = 0; i < expected_len; i++)
+      for (uint16_t i = 0; i < expected_len; i++) // we could arguably calculate checksum on the go. nbd tbh.
         calculated += buffer[i];
 
       CsumT received;
