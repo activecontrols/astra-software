@@ -53,7 +53,9 @@ void setup() {
   // TrajectoryLoader::begin();
   // TrajectoryFollower::begin();
 
-  Flash::begin();
+  // Flash::begin();
+
+  Logging::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});

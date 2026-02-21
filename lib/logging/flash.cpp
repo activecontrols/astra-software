@@ -158,45 +158,37 @@ bool is_write_in_progress() {
   return reg.WIP;
 }
 
-bool write_enable() {
-  if (!command(CMD_WREN))
-    return false;
-
-  wait_for_wip();
-  return true;
+// note: this function does not wait for WIP to be set before returning
+inline bool write_enable() {
+  return command(CMD_WREN);
 }
 
-// note: this function waits for WIP to be unset before returning
-bool write_disable() {
-  QSPI_CommandTypeDef cmd{};
-
-  cmd.Instruction = CMD_WRDI;
-  cmd.InstructionMode = QSPI_INSTRUCTION_4_LINES;
-
-  if (HAL_QSPI_Command(&hqspi, &cmd, HAL_TIMEOUT) != HAL_OK)
-    return false;
-
-  wait_for_wip();
-  return true;
+// note: this function does not wait for WIP to be unset before returning
+inline bool write_disable() {
+  return command(CMD_WRDI);
 }
 
 // !!! EXERCISE CAUTION: THIS COMMAND WILL ERASE THE ENTIRE CHIP !!!
 // this function blocks until the erase is complete
 bool chip_erase() {
+  // max chip erase time per DS is 60 seconds
+  const unsigned int timeout_us = 70'000'000;
   wait_for_wip();
   write_enable();
+  wait_for_wip();
 
   // check that write enable bit is set
   if (!is_write_enable())
     return false;
 
-  if (command(CMD_CE) != HAL_OK)
+  if (!command(CMD_CE))
     return false;
 
-  wait_for_wip();  // wait for chip erase operation to complete (takes about 60 seconds)
-  write_disable(); // disable write to protect against accidental data corruption
+  if (!write_disable())
+    return false;
+  if (!wait_for_wip(timeout_us))
+    return false; // wait for chip erase operation to complete (can take up to 60 seconds)
 
-  // check the write enable bit is unset - even though the erase operation probably succeeded, still return false to indicate something is wrong
   if (is_write_enable())
     return false;
 
@@ -208,12 +200,14 @@ bool sector_erase(uint32_t addr) {
   const unsigned int timeout_us = 240'000; // DS says max sector erase time is 120ms
   wait_for_wip();
   write_enable();
+  wait_for_wip();
 
   // check that write enable bit is set
   if (!is_write_enable()) {
     return false;
   }
 
+  // send sector erase command
   if (!command(CMD_SE, 0, addr))
     return false;
 
@@ -232,13 +226,22 @@ bool sector_erase(uint32_t addr) {
 // as per DS - only last 256 bytes are actually written, and the write address wraps back around the the beginning of the 256-byte page when necessary
 // chain function calls together to write data across multiple pages
 bool page_program(uint32_t addr, uint8_t *data, uint32_t len) {
+  wait_for_wip();
   write_enable();
+  wait_for_wip();
   bool status = write(CMD_PP, data, len, addr);
   write_disable();
   return status;
 }
 
 bool _initialize() {
+  // reset the flash device
+  digitalWrite(PIN_QSPI_FLASH_RST_IO3, HIGH);
+  pinMode(PIN_QSPI_FLASH_RST_IO3, OUTPUT);
+  digitalWrite(PIN_QSPI_FLASH_RST_IO3, LOW);
+  delay(350);
+  digitalWrite(PIN_QSPI_FLASH_RST_IO3, HIGH);
+
   uint32_t f_hclk = HAL_RCC_GetHCLKFreq();
 
   hqspi.Instance = QUADSPI;
@@ -305,8 +308,7 @@ bool _initialize() {
   return true;
 }
 
-inline bool read(uint32_t addr, uint32_t len, uint8_t* out)
-{
+inline bool read(uint32_t addr, uint32_t len, uint8_t *out) {
   return receive(CMD_4READ, out, len, addr, 6);
 }
 
@@ -365,24 +367,20 @@ void rw_test() {
   Router::print('\n');
 }
 
-void write_speed_test()
-{
+void write_speed_test() {
   const unsigned long addr = 0xFFFF00; // use the top page/sector
 
   uint8_t program_data[256];
   memset(program_data, 'A', sizeof(program_data));
 
-  for (unsigned long i = 5; i < sizeof(program_data); i += 10)
-  {
-    if (!sector_erase(addr))
-    {
+  for (unsigned long i = 5; i < sizeof(program_data); i += 10) {
+    if (!sector_erase(addr)) {
       Router::print("Sector Erase Failed\n");
       return;
     }
 
     unsigned long start_micros = micros();
-    if (!page_program(addr, program_data, i))
-    {
+    if (!page_program(addr, program_data, i)) {
       Router::print("Page Program Failed\n");
       return;
     }
@@ -394,8 +392,7 @@ void write_speed_test()
 
     unsigned long delta_micros = micros() - start_micros;
 
-    if (is_write_enable())
-    {
+    if (is_write_enable()) {
       Router::print("Error: write is still enabled\n");
       return;
     }

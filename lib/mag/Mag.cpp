@@ -12,13 +12,6 @@ SFE_MMC5983MA mag;
 
 namespace Mag {
 
-struct calibration {
-  double hard_x;
-  double hard_y;
-  double hard_z;
-  double soft[3][3];
-};
-
 // these come from final.m in mag_calib/
 // calibration matlab_calib = {-1714.23, -2777.08, 1604.81, {{1.0656, 0.0175, -0.0067}, {0.0175, 0.9805, 0.0141}, {-0.0067, 0.0141, 1.0678}}};
 
