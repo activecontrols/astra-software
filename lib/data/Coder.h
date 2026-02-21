@@ -66,14 +66,12 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
     // }
 
     uint16_t feed(uint8_t b, uint8_t *dest) {
-      // unescaped DS or DE means start or reset, ESC means set escape.
-      if (!escaped) {
+      if (!escaped) {  // deal with unescaped DS, DE, ESC
         if (b == DS) { // start.
           state = State::LEN_0;
-          buf_i = 0;
           return 0;
         }
-        if (b == DE) {
+        if (b == DE) { // either return or reset.
           bool expected = state == State::AWAIT_END;
           state = State::HUNT; // whether expected or not, an unescaped DE must reset.
           return expected ? validate(dest) : 0;
@@ -105,7 +103,7 @@ template <uint16_t MAX_LENGTH, typename CsumT = int32_t, uint8_t DS = 'S', uint8
         }
         break;
 
-      case State::DATA: // captures payload and checksum.
+      case State::DATA: // captures payload and checksum. an unexpected DE is handled above.
         buffer[buf_i++] = b;
         if (buf_i == expected_len + sizeof(CsumT))
           state = State::AWAIT_END;
