@@ -36,7 +36,7 @@ extern HardwareSerial gps_uart;
 #define RADIO_RX PC7
 #define PROP1_PIN PA8
 
-// const uint32_t IMU_CS[] = {PB5, PB4, PB3};
-const uint32_t IMU_CS[] = {PB4, PB3};
-// const uint32_t MAG_CS[] = {PD7, PE7, PE4};
-const uint32_t MAG_CS[] = {PD7};
+const uint32_t IMU_CS[] = {PB5, PB4, PB3};
+// const uint32_t IMU_CS[] = {PB4, PB3};
+const uint32_t MAG_CS[] = {PD7, PE7, PE4};
+// const uint32_t MAG_CS[] = {PD7};

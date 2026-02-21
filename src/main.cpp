@@ -107,29 +107,48 @@ void setup() {
 
   pinMode(PB6, OUTPUT);
 
-
-#define test_cs IMU_CS[0]
   digitalWrite(IMU_CS_4_EX, HIGH);
-  digitalWrite(test_cs, HIGH);
-  pinMode(test_cs, OUTPUT);
 
-  while (1)
-  {
-    digitalWrite(test_cs, LOW);
-    digitalWrite(IMU_CS_4_EX, LOW);
-    fc_spi.beginTransaction(SPISettings(500'000, MSBFIRST, SPI_MODE0));
+  while (1) {
+    for (int i = 0; i < IMU::IMU_COUNT; ++i) {
+      uint32_t test_cs = IMU_CS[i];
+      digitalWrite(test_cs, LOW);
+      digitalWrite(IMU_CS_4_EX, LOW);
+      fc_spi.beginTransaction(SPISettings(1'000'000, MSBFIRST, SPI_MODE0));
 
-    uint8_t response = fc_spi.transfer(0x2F | (1 << 7)); // read MAG digital id - should respond with 0x30
-    // fc_spi.transfer(0x75 | (1 << 7)); // read WHOAMI - IMU should respond with 0x3B
-    uint8_t response = fc_spi.transfer(0x00);
+      // fc_spi.transfer(0x2F | (1 << 7)); // read MAG digital id - should respond with 0x30
+      fc_spi.transfer(0x75 | (1 << 7)); // read WHOAMI - IMU should respond with 0x3B
+      uint8_t response = fc_spi.transfer(0x00);
 
-    fc_spi.endTransaction();
-    digitalWrite(IMU_CS_4_EX, HIGH);
-    digitalWrite(test_cs, HIGH);
+      fc_spi.endTransaction();
+      digitalWrite(IMU_CS_4_EX, HIGH);
+      digitalWrite(test_cs, HIGH);
 
-    Router::println(response, HEX);
+      Router::printf("IMU %d: ", i + 1);
+      Router::println(response, HEX);
 
-    delay(1000);
+      delay(1000);
+    }
+
+    for (int i = 0; i < Mag::MAG_COUNT; ++i) {
+      uint32_t test_cs = MAG_CS[i];
+      digitalWrite(test_cs, LOW);
+      digitalWrite(IMU_CS_4_EX, LOW);
+      fc_spi.beginTransaction(SPISettings(1'000'000, MSBFIRST, SPI_MODE0));
+
+      fc_spi.transfer(0x2F | (1 << 7)); // read MAG digital id - should respond with 0x30
+      // fc_spi.transfer(0x75 | (1 << 7)); // read WHOAMI - IMU should respond with 0x3B
+      uint8_t response = fc_spi.transfer(0x00);
+
+      fc_spi.endTransaction();
+      digitalWrite(IMU_CS_4_EX, HIGH);
+      digitalWrite(test_cs, HIGH);
+
+      Router::printf("MAG %d: ", i + 1);
+      Router::println(response, HEX);
+
+      delay(1000);
+    }
   }
 
   // Prop::begin();
