@@ -8,6 +8,8 @@
 #include "gimbal_servos.h"
 #include <Arduino.h>
 
+#include "FlashLogging.h"
+
 // TODO - this should be included - don't know why I had to write it manually
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -69,8 +71,6 @@ void SystemClock_Config(void) {
   }
 }
 
-#include "flash.h"
-
 void ping(const char *args) {
   Router::println("pong");
   Router::print("args: ");
@@ -116,7 +116,9 @@ void setup() {
   // TrajectoryLoader::begin();
   // TrajectoryFollower::begin();
 
-  Flash::begin();
+  // Flash::begin();
+
+  Logging::begin();
 
   Router::add({ping, "ping"}); // example registration
   Router::add({Router::print_all_cmds, "help"});
