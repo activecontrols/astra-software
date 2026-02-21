@@ -1,5 +1,12 @@
 #pragma once
 
+#define PIN_QSPI_FLASH_MISO PD12
+#define PIN_QSPI_FLASH_MOSI PD11
+#define PIN_QSPI_FLASH_CLK PF10
+#define PIN_QSPI_FLASH_CS PG6
+#define PIN_QSPI_FLASH_RST_IO3 PD13
+#define PIN_QSPI_FLASH_WP_IO2 PF7
+
 #define CMD_EQIO 0x35
 #define CMD_RDID 0x9F
 #define CMD_QPIID 0xAF
@@ -26,33 +33,30 @@
 #define CMD_CE 0x60
 
 struct __packed flash_status_reg {
-  uint8_t WIP : 1; // write in progress bit
-  uint8_t WEL : 1; // write enable latch
-  uint8_t BP0 : 1; // BP0 level of protected block
-  uint8_t BP1 : 1; // BP1 level of protected block
-  uint8_t BP2 : 1; // BP2 level of protected block
-  uint8_t BP3 : 1; // BP3 level of protected block
-  uint8_t QE : 1; // quadspi enable
+  uint8_t WIP : 1;  // write in progress bit
+  uint8_t WEL : 1;  // write enable latch
+  uint8_t BP0 : 1;  // BP0 level of protected block
+  uint8_t BP1 : 1;  // BP1 level of protected block
+  uint8_t BP2 : 1;  // BP2 level of protected block
+  uint8_t BP3 : 1;  // BP3 level of protected block
+  uint8_t QE : 1;   // quadspi enable
   uint8_t SRWD : 1; // status register write protect
 };
 
-
-struct __packed flash_config_reg 
-{
-    uint8_t ODS : 3; // output driver strength - see table 9 from datasheet
-    uint8_t TB : 1; // top/bottom OTP bit
-    uint8_t RESERVED : 2;
-    uint8_t DC : 2; // configurable dummy cycle count for certain commands
+struct __packed flash_config_reg {
+  uint8_t ODS : 3; // output driver strength - see table 9 from datasheet
+  uint8_t TB : 1;  // top/bottom OTP bit
+  uint8_t RESERVED : 2;
+  uint8_t DC : 2; // configurable dummy cycle count for certain commands
 };
 
-struct __packed flash_security_reg
-{
-    uint8_t factory_otp_indicator : 1;
-    uint8_t user_otp_indicator : 1;
-    uint8_t PSB : 1;
-    uint8_t ESB : 1;
-    uint8_t RESERVED : 1;
-    uint8_t P_FAIL : 1;
-    uint8_t E_FAIL : 1;
-    uint8_t WPSEL : 1;
+struct __packed flash_security_reg {
+  uint8_t factory_otp_indicator : 1;
+  uint8_t user_otp_indicator : 1;
+  uint8_t PSB : 1;
+  uint8_t ESB : 1;
+  uint8_t RESERVED : 1;
+  uint8_t P_FAIL : 1;
+  uint8_t E_FAIL : 1;
+  uint8_t WPSEL : 1;
 };
