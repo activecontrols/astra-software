@@ -1,0 +1,18 @@
+#ifndef ASTRA_GS_UI_GRAPHS_H
+#define ASTRA_GS_UI_GRAPHS_H
+
+#include "flight_data.h"
+
+typedef struct {
+  const char *render_title;
+  const char *plot_title;
+  const char *y1_label;
+  const char *y2_label;
+  const char *y3_label;
+  double y_max;
+  double y_min;
+} scrolling_line_chart_arg_t;
+
+void scrolling_line_chart(scrolling_line_chart_arg_t arg, float y1[FLIGHT_HISTORY_LENGTH], float y2[FLIGHT_HISTORY_LENGTH], float y3[FLIGHT_HISTORY_LENGTH]);
+
+#endif

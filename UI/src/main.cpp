@@ -16,6 +16,9 @@
 #include <d3d11.h>
 #include <tchar.h>
 
+#include "ui.h"
+#include "ui_components.h" // for loading fonts
+
 // Data
 static ID3D11Device *g_pd3dDevice = nullptr;
 static ID3D11DeviceContext *g_pd3dDeviceContext = nullptr;
