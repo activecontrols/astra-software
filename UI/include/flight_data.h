@@ -16,6 +16,18 @@ struct flight_history_t {
   float accel_x[FLIGHT_HISTORY_LENGTH * 2];
   float accel_y[FLIGHT_HISTORY_LENGTH * 2];
   float accel_z[FLIGHT_HISTORY_LENGTH * 2];
+  float gyro_yaw[FLIGHT_HISTORY_LENGTH * 2];
+  float gyro_pitch[FLIGHT_HISTORY_LENGTH * 2];
+  float gyro_roll[FLIGHT_HISTORY_LENGTH * 2];
+  float mag_x[FLIGHT_HISTORY_LENGTH * 2];
+  float mag_y[FLIGHT_HISTORY_LENGTH * 2];
+  float mag_z[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_pos_north[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_pos_west[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_pos_up[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_vel_north[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_vel_west[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_vel_up[FLIGHT_HISTORY_LENGTH * 2];
 
   // points to the oldest stored data
   int read_start_pos;
@@ -30,6 +42,18 @@ struct flight_packet_t {
   float accel_x;
   float accel_y;
   float accel_z;
+  float gyro_yaw;
+  float gyro_pitch;
+  float gyro_roll;
+  float mag_x;
+  float mag_y;
+  float mag_z;
+  float gps_pos_north;
+  float gps_pos_west;
+  float gps_pos_up;
+  float gps_vel_north;
+  float gps_vel_west;
+  float gps_vel_up;
 };
 
 extern flight_history_t FlightHistory; // public interface

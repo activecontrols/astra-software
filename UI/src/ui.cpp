@@ -23,7 +23,40 @@ void imu_accel_panel() {
   ImGui::End();
 }
 
-const char *names[9] = {IMU_ACCEL_PANEL, IMU_GYRO_PANEL, "", "", "", "", "", "", ""};
+void imu_gyro_panel() {
+  ImGui::Begin(IMU_GYRO_PANEL);
+
+  scrolling_line_chart_arg_t imu_gyro;
+  imu_gyro.plot_title = "IMU Gyro";
+  imu_gyro.render_title = "##IMU Gyro";
+  imu_gyro.y1_label = "yaw";
+  imu_gyro.y2_label = "pitch";
+  imu_gyro.y3_label = "roll";
+  imu_gyro.y_max = 0.5;
+  imu_gyro.y_min = -0.5;
+
+  scrolling_line_chart(imu_gyro, FlightHistory.gyro_yaw, FlightHistory.gyro_pitch, FlightHistory.gyro_roll);
+
+  ImGui::End();
+}
+
+void mag_panel() {
+  ImGui::Begin(MAG_PANEL);
+
+  scrolling_line_chart_arg_t mag;
+  mag.plot_title = "Mag";
+  mag.render_title = "##Mag";
+  mag.y1_label = "x";
+  mag.y2_label = "y";
+  mag.y3_label = "z";
+  mag.y_max = 1.5;
+  mag.y_min = -1.5;
+  scrolling_line_chart(mag, FlightHistory.mag_x, FlightHistory.mag_y, FlightHistory.mag_z);
+
+  ImGui::End();
+}
+
+const char *names[9] = {IMU_ACCEL_PANEL, IMU_GYRO_PANEL, MAG_PANEL, "", "", "", "", "", ""};
 
 void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderRemoveNode(dockspace_id);
@@ -79,6 +112,8 @@ void render_loop() {
 
   // create each window
   imu_accel_panel();
+  imu_gyro_panel();
+  mag_panel();
 
   ImGui::End();
 }
