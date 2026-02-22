@@ -25,6 +25,17 @@ struct flight_history_t {
   int write_pos;
 };
 
+// a single frame of flight history
+struct flight_packet_t {
+  float accel_x;
+  float accel_y;
+  float accel_z;
+};
+
 extern flight_history_t FlightHistory; // public interface
+
+void init_flight_data();
+void deinit_flight_data();
+void load_data_from_file_periodic();
 
 #endif

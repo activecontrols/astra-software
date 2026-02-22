@@ -16,6 +16,7 @@
 #include <d3d11.h>
 #include <tchar.h>
 
+#include "flight_data.h"
 #include "ui.h"
 #include "ui_components.h" // for loading fonts
 
@@ -36,6 +37,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Main code
 int main(int argc, char **argv) {
+  init_flight_data();
+
   // Make process DPI aware and obtain main monitor scale
   ImGui_ImplWin32_EnableDpiAwareness();
   float main_scale = ImGui_ImplWin32_GetDpiScaleForMonitor(::MonitorFromPoint(POINT{0, 0}, MONITOR_DEFAULTTOPRIMARY));
@@ -139,6 +142,8 @@ int main(int argc, char **argv) {
       CreateRenderTarget();
     }
 
+    load_data_from_file_periodic();
+
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -174,6 +179,8 @@ int main(int argc, char **argv) {
   CleanupDeviceD3D();
   ::DestroyWindow(hwnd);
   ::UnregisterClassW(wc.lpszClassName, wc.hInstance);
+
+  deinit_flight_data();
 
   return 0;
 }
