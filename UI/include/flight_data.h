@@ -22,12 +22,32 @@ struct flight_history_t {
   float mag_x[FLIGHT_HISTORY_LENGTH * 2];
   float mag_y[FLIGHT_HISTORY_LENGTH * 2];
   float mag_z[FLIGHT_HISTORY_LENGTH * 2];
-  float gps_pos_north[FLIGHT_HISTORY_LENGTH * 2];
-  float gps_pos_west[FLIGHT_HISTORY_LENGTH * 2];
-  float gps_pos_up[FLIGHT_HISTORY_LENGTH * 2];
-  float gps_vel_north[FLIGHT_HISTORY_LENGTH * 2];
-  float gps_vel_west[FLIGHT_HISTORY_LENGTH * 2];
-  float gps_vel_up[FLIGHT_HISTORY_LENGTH * 2];
+  float gps_pos_north;
+  float gps_pos_west;
+  float gps_pos_up;
+  float gps_vel_north;
+  float gps_vel_west;
+  float gps_vel_up;
+
+  float state_q_vec_new;
+  float state_q_vec_0;
+  float state_q_vec_1;
+  float state_q_vec_2;
+  float state_pos_north;
+  float state_pos_west;
+  float state_pos_up;
+  float state_vel_north;
+  float state_vel_west;
+  float state_vel_up;
+
+  float gimbal_yaw_raw;
+  float gimbal_pitch_raw;
+  float thrust_N;
+  float roll_N;
+
+  float target_pos_north;
+  float target_pos_west;
+  float target_pos_up;
 
   // points to the oldest stored data
   int read_start_pos;
@@ -54,6 +74,26 @@ struct flight_packet_t {
   float gps_vel_north;
   float gps_vel_west;
   float gps_vel_up;
+
+  float state_q_vec_new;
+  float state_q_vec_0;
+  float state_q_vec_1;
+  float state_q_vec_2;
+  float state_pos_north;
+  float state_pos_west;
+  float state_pos_up;
+  float state_vel_north;
+  float state_vel_west;
+  float state_vel_up;
+
+  float gimbal_yaw_raw;
+  float gimbal_pitch_raw;
+  float thrust_N;
+  float roll_N;
+
+  float target_pos_north;
+  float target_pos_west;
+  float target_pos_up;
 };
 
 extern flight_history_t FlightHistory; // public interface

@@ -4,6 +4,7 @@
 #include "imgui_internal.h"
 #include "implot.h"
 #include "implot3d.h"
+#include "ui_components.h"
 #include "ui_graphs.h"
 
 void imu_accel_panel() {
@@ -56,7 +57,105 @@ void mag_panel() {
   ImGui::End();
 }
 
-const char *names[9] = {IMU_ACCEL_PANEL, IMU_GYRO_PANEL, MAG_PANEL, "", "", "", "", "", ""};
+void gps_pos_panel() {
+  ImGui::Begin(GPS_POS_PANEL);
+
+  float state_x = -FlightHistory.gps_pos_west;
+  float state_y = FlightHistory.gps_pos_north;
+  float target_x = -FlightHistory.target_pos_west;
+  float target_y = FlightHistory.target_pos_north;
+
+  centered_text("GPS Position");
+  if (ImPlot::BeginPlot("##GPS Position", ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
+    ImPlot::SetupAxes("East (m)", "North (m)");
+    ImPlot::SetupAxesLimits(-5, 5, -5, 5);
+    ImPlot::PlotScatter("State", &state_x, &state_y, 1);
+    ImPlot::PlotScatter("Target", &target_x, &target_y, 1);
+    ImPlot::EndPlot();
+  }
+
+  ImGui::End();
+}
+
+void gps_vel_panel() {
+  ImGui::Begin(GPS_VEL_PANEL);
+
+  centered_text("GPS Velocity");
+  if (ImPlot::BeginPlot("##GPS Velocity", ImVec2(-1, 200), ImPlotFlags_NoLegend)) {
+    ImPlot::SetupAxes("East (m/s)", "North (m/s)");
+    ImPlot::SetupAxesLimits(-5, 5, -5, 5);
+
+    double gps_x[2] = {0, -FlightHistory.gps_vel_west};
+    double gps_y[2] = {0, FlightHistory.gps_vel_north};
+    ImPlotSpec spec;
+    spec.LineWeight = 4;
+    ImPlot::PlotLine("##GPS Velocity", gps_x, gps_y, 2, spec);
+
+    ImPlot::EndPlot();
+  }
+
+  ImGui::End();
+}
+
+void estimated_pos_panel() {
+  ImGui::Begin(EST_POS_PANEL);
+
+  centered_text("Estimated Pos");
+  if (ImPlot3D::BeginPlot("##Estimated Pos")) {
+    double cs_x[2] = {-FlightHistory.state_pos_west, -FlightHistory.state_pos_west};
+    double cs_y[2] = {FlightHistory.state_pos_north, FlightHistory.state_pos_north};
+    double cs_z[2] = {0, FlightHistory.state_pos_up};
+
+    double target_x[2] = {-FlightHistory.target_pos_west, -FlightHistory.target_pos_west};
+    double target_y[2] = {FlightHistory.target_pos_north, FlightHistory.target_pos_north};
+    double target_z[2] = {0, FlightHistory.target_pos_up};
+
+    ImPlot3D::SetupAxes("East (m)", "North (m)", "Up (m)");
+    ImPlot3D::SetupAxisLimits(ImAxis3D_Z, 0, 5);
+    ImPlot3D::SetupAxisLimits(ImAxis3D_X, -5, 5);
+    ImPlot3D::SetupAxisLimits(ImAxis3D_Y, -5, 5);
+
+    ImPlot3DSpec marker_spec;
+    marker_spec.Marker = ImPlot3DMarker_Circle;
+    marker_spec.MarkerSize = 5;
+    marker_spec.MarkerFillColor = ImPlot3D::GetColormapColor(0, ImPlot3DColormap_Deep);
+    ImPlot3D::PlotScatter("State", cs_x, cs_y, cs_z, 2, marker_spec);
+
+    marker_spec.Marker = ImPlot3DMarker_Diamond;
+    marker_spec.MarkerSize = 5;
+    marker_spec.MarkerFillColor = ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep);
+    ImPlot3D::PlotScatter("Target", target_x, target_y, target_z, 2, marker_spec);
+
+    ImPlot3DSpec line_spec;
+    line_spec.LineColor = ImPlot3D::GetColormapColor(0, ImPlot3DColormap_Deep);
+    line_spec.LineWeight = 2;
+    ImPlot3D::PlotLine("State", cs_x, cs_y, cs_z, 2, line_spec);
+
+    line_spec.LineColor = ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep);
+    line_spec.LineWeight = 2;
+    ImPlot3D::PlotLine("Target", target_x, target_y, target_z, 2, line_spec);
+
+    ImPlot3D::EndPlot();
+  }
+
+  ImGui::End();
+}
+
+void estimated_orientation_panel() {
+  ImGui::Begin(EST_ROT_PANEL);
+
+  centered_text("Orientation");
+  ImVec4 q;
+  q.x = FlightHistory.state_q_vec_0;
+  q.y = FlightHistory.state_q_vec_1;
+  q.z = FlightHistory.state_q_vec_2;
+  q.w = FlightHistory.state_q_vec_new;
+  rotatable_cube_plot(q);
+
+  ImGui::End();
+}
+
+const char *names[9] = {IMU_ACCEL_PANEL, IMU_GYRO_PANEL, MAG_PANEL, GPS_POS_PANEL, GPS_VEL_PANEL, EST_POS_PANEL, EST_ROT_PANEL, "", ""};
 
 void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderRemoveNode(dockspace_id);
@@ -114,6 +213,10 @@ void render_loop() {
   imu_accel_panel();
   imu_gyro_panel();
   mag_panel();
+  gps_pos_panel();
+  gps_vel_panel();
+  estimated_pos_panel();
+  estimated_orientation_panel();
 
   ImGui::End();
 }

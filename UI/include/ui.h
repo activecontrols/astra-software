@@ -7,5 +7,9 @@ void render_loop();
 #define IMU_ACCEL_PANEL "imu_accel_panel"
 #define IMU_GYRO_PANEL "imu_gyro_panel"
 #define MAG_PANEL "mag_panel"
+#define GPS_POS_PANEL "gps_pos_panel"
+#define GPS_VEL_PANEL "gps_vel_panel"
+#define EST_POS_PANEL "est_pos_panel"
+#define EST_ROT_PANEL "est_rot_panel"
 
 #endif

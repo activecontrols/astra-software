@@ -26,6 +26,12 @@ void parse_packet(char *msg) {
     sscanf(msg, ">a %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f", &active_packet.accel_x, &active_packet.accel_y, &active_packet.accel_z, &active_packet.gyro_yaw, &active_packet.gyro_pitch,
            &active_packet.gyro_roll, &active_packet.mag_x, &active_packet.mag_y, &active_packet.mag_z, &active_packet.gps_pos_north, &active_packet.gps_pos_west, &active_packet.gps_pos_up,
            &active_packet.gps_vel_north, &active_packet.gps_vel_west, &active_packet.gps_vel_up);
+  } else if (msg[0] == '>' && msg[1] == 'b') {
+    sscanf(msg, ">b %f %f %f %f %f %f %f %f %f %f", &active_packet.state_q_vec_new, &active_packet.state_q_vec_0, &active_packet.state_q_vec_1, &active_packet.state_q_vec_2,
+           &active_packet.state_pos_north, &active_packet.state_pos_west, &active_packet.state_pos_up, &active_packet.state_vel_north, &active_packet.state_vel_west, &active_packet.state_vel_up);
+  } else if (msg[0] == '>' && msg[1] == 'c') {
+    sscanf(msg, ">c %f %f %f %f %f %f %f", &active_packet.gimbal_yaw_raw, &active_packet.gimbal_pitch_raw, &active_packet.thrust_N, &active_packet.roll_N, &active_packet.target_pos_north,
+           &active_packet.target_pos_west, &active_packet.target_pos_up);
   }
 
   // commit packet // TODO - only do this when ready
@@ -48,18 +54,33 @@ void parse_packet(char *msg) {
   FlightHistory.mag_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.mag_y;
   FlightHistory.mag_z[FlightHistory.write_pos] = active_packet.mag_z;
   FlightHistory.mag_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.mag_z;
-  FlightHistory.gps_pos_north[FlightHistory.write_pos] = active_packet.gps_pos_north;
-  FlightHistory.gps_pos_north[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gps_pos_north;
-  FlightHistory.gps_pos_west[FlightHistory.write_pos] = active_packet.gps_pos_west;
-  FlightHistory.gps_pos_west[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gps_pos_west;
-  FlightHistory.gps_pos_up[FlightHistory.write_pos] = active_packet.gps_pos_up;
-  FlightHistory.gps_pos_up[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gps_pos_up;
-  FlightHistory.gps_vel_north[FlightHistory.write_pos] = active_packet.gps_vel_north;
-  FlightHistory.gps_vel_north[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gps_vel_north;
-  FlightHistory.gps_vel_west[FlightHistory.write_pos] = active_packet.gps_vel_west;
-  FlightHistory.gps_vel_west[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gps_vel_west;
-  FlightHistory.gps_vel_up[FlightHistory.write_pos] = active_packet.gps_vel_up;
-  FlightHistory.gps_vel_up[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gps_vel_up;
+  FlightHistory.gps_pos_north = active_packet.gps_pos_north;
+  FlightHistory.gps_pos_west = active_packet.gps_pos_north;
+  FlightHistory.gps_pos_up = active_packet.gps_pos_north;
+  FlightHistory.gps_vel_north = active_packet.gps_pos_north;
+  FlightHistory.gps_vel_west = active_packet.gps_pos_north;
+  FlightHistory.gps_vel_up = active_packet.gps_pos_north;
+
+  FlightHistory.state_q_vec_new = active_packet.state_q_vec_new;
+  FlightHistory.state_q_vec_0 = active_packet.state_q_vec_0;
+  FlightHistory.state_q_vec_1 = active_packet.state_q_vec_1;
+  FlightHistory.state_q_vec_2 = active_packet.state_q_vec_2;
+
+  FlightHistory.state_pos_north = active_packet.state_pos_north;
+  FlightHistory.state_pos_west = active_packet.state_pos_west;
+  FlightHistory.state_pos_up = active_packet.state_pos_up;
+  FlightHistory.state_vel_north = active_packet.state_vel_north;
+  FlightHistory.state_vel_west = active_packet.state_vel_west;
+  FlightHistory.state_vel_up = active_packet.state_vel_up;
+
+  FlightHistory.gimbal_yaw_raw = active_packet.gimbal_yaw_raw;
+  FlightHistory.gimbal_pitch_raw = active_packet.gimbal_pitch_raw;
+  FlightHistory.thrust_N = active_packet.thrust_N;
+  FlightHistory.roll_N = active_packet.roll_N;
+
+  FlightHistory.target_pos_north = active_packet.target_pos_north;
+  FlightHistory.target_pos_west = active_packet.target_pos_west;
+  FlightHistory.target_pos_up = active_packet.target_pos_up;
 
   FlightHistory.write_pos += 1;
   FlightHistory.write_pos %= FLIGHT_HISTORY_LENGTH;
