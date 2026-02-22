@@ -94,11 +94,11 @@ int main(int argc, char **argv) {
 
   ImPlotStyle &plotStyle = ImPlot::GetStyle();
   plotStyle.PlotBorderSize = 1.0f;                                                             // thickness of border
-  plotStyle.Colors[ImPlotCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);                        // Plot background
+  plotStyle.Colors[ImPlotCol_FrameBg] = style.Colors[ImGuiCol_ChildBg];                        // Plot background
   plotStyle.Colors[ImPlotCol_PlotBorder] = ImVec4(205 / 255.0, 159 / 255.0, 38 / 255.0, 1.0f); // Plot border
 
   ImPlot3DStyle &plot3DStyle = ImPlot3D::GetStyle();
-  plot3DStyle.Colors[ImPlot3DCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f); // Plot background
+  plot3DStyle.Colors[ImPlot3DCol_FrameBg] = style.Colors[ImGuiCol_ChildBg]; // Plot background
 
   // Setup Platform/Renderer backends
   ImGui_ImplWin32_Init(hwnd);

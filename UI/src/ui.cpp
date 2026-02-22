@@ -114,7 +114,7 @@ void estimated_pos_panel() {
   ImGui::Begin(EST_POS_PANEL);
 
   centered_text("Estimated Pos");
-  if (ImPlot3D::BeginPlot("##Estimated Pos")) {
+  if (ImPlot3D::BeginPlot("##Estimated Pos", ImVec2(-1, 500))) {
     double cs_x[2] = {-FlightHistory.state_pos_west, -FlightHistory.state_pos_west};
     double cs_y[2] = {FlightHistory.state_pos_north, FlightHistory.state_pos_north};
     double cs_z[2] = {0, FlightHistory.state_pos_up};
@@ -168,6 +168,35 @@ void estimated_orientation_panel() {
   ImGui::End();
 }
 
+void controller_output_panel() {
+  ImGui::Begin(CONTROLLER_OUTPUT_PANEL);
+
+  centered_text("Controller Output");
+  ImGui::Text("  Target Thrust: %5.2f N", FlightHistory.thrust_N);
+  ImGui::Text("    Target Roll: %5.2f rad/s^2", FlightHistory.roll_N);
+  ImGui::Text("         Thrust: %5.2f %%", 0); // TODO - these
+  ImGui::Text("   Differential: %5.2f %%", 0);
+
+  ImGui::End();
+}
+
+void gimbal_output_panel() {
+  ImGui::Begin(GIMBAL_OUTPUT_PANEL);
+
+  float x = FlightHistory.gimbal_yaw_raw * 180 / 3.1415;
+  float y = FlightHistory.gimbal_pitch_raw * 180 / 3.1415;
+
+  centered_text("Gimbal Command");
+  if (ImPlot::BeginPlot("##Gimbal Command", ImVec2(-1, 250), ImPlotFlags_NoLegend)) {
+    ImPlot::SetupAxes("Yaw (deg)", "Pitch (deg)");
+    ImPlot::SetupAxesLimits(-20, 20, -20, 20, ImPlotCond_Always);
+    ImPlot::PlotScatter("##Gimbal", &x, &y, 1);
+    ImPlot::EndPlot();
+  }
+
+  ImGui::End();
+}
+
 void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderRemoveNode(dockspace_id);
   ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
@@ -191,10 +220,13 @@ void build_dock_layout(ImGuiID dockspace_id) {
   ImGuiID live_sensor_br = ImGui::DockBuilderSplitNode(live_sensor_bottom, ImGuiDir_Right, 0.5, nullptr, &live_sensor_bl);
 
   ImGuiID top_right_panel = right_panel;
-  // ImGuiID bottom_right_panel = ImGui::DockBuilderSplitNode(right_panel, ImGuiDir_Down, 0.5, nullptr, &top_right_panel);
+  ImGuiID bottom_right_panel = ImGui::DockBuilderSplitNode(right_panel, ImGuiDir_Down, 0.5, nullptr, &top_right_panel);
 
   ImGuiID left_top_right_panel = top_right_panel;
   ImGuiID right_top_right_panel = ImGui::DockBuilderSplitNode(top_right_panel, ImGuiDir_Right, 0.5, nullptr, &left_top_right_panel);
+
+  ImGuiID left_bottom_right_panel = bottom_right_panel;
+  ImGuiID right_bottom_right_panel = ImGui::DockBuilderSplitNode(bottom_right_panel, ImGuiDir_Right, 0.5, nullptr, &left_bottom_right_panel);
 
   ImGui::DockBuilderDockWindow(IMU_ACCEL_PANEL, live_sensor_tl);
   ImGui::DockBuilderDockWindow(IMU_GYRO_PANEL, live_sensor_tr);
@@ -205,6 +237,8 @@ void build_dock_layout(ImGuiID dockspace_id) {
 
   ImGui::DockBuilderDockWindow(EST_POS_PANEL, left_top_right_panel);
   ImGui::DockBuilderDockWindow(EST_ROT_PANEL, right_top_right_panel);
+  ImGui::DockBuilderDockWindow(CONTROLLER_OUTPUT_PANEL, left_bottom_right_panel);
+  ImGui::DockBuilderDockWindow(GIMBAL_OUTPUT_PANEL, right_bottom_right_panel);
 
   ImGui::DockBuilderFinish(dockspace_id);
 }
@@ -222,7 +256,7 @@ void render_loop() {
   ImGui::Begin("MainWindow", nullptr, flags);
 
   ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
-  ImGui::DockSpace(dockspace_id, ImVec2(0, 0));
+  ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_AutoHideTabBar);
 
   static bool first_time = true;
   if (first_time || ImGui::IsKeyPressed(ImGuiKey_R)) {
@@ -239,6 +273,8 @@ void render_loop() {
   gps_vert_panel();
   estimated_pos_panel();
   estimated_orientation_panel();
+  controller_output_panel();
+  gimbal_output_panel();
 
   ImGui::End();
 }

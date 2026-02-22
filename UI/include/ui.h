@@ -12,5 +12,7 @@ void render_loop();
 #define GPS_VERT_PANEL "gps_vert_panel"
 #define EST_POS_PANEL "est_pos_panel"
 #define EST_ROT_PANEL "est_rot_panel"
+#define CONTROLLER_OUTPUT_PANEL "controller_output_panel"
+#define GIMBAL_OUTPUT_PANEL "gimbal_output_panel"
 
 #endif

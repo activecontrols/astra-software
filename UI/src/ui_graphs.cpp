@@ -42,7 +42,7 @@ void rotatable_cube_plot(ImVec4 q) {
     rot[i] = quatRot(q, cube_verts[i]);
   }
 
-  if (ImPlot3D::BeginPlot("##Cube3D")) {
+  if (ImPlot3D::BeginPlot("##Cube3D", ImVec2(-1, 500))) {
     ImPlot3D::SetupAxes("East (m)", "North (m)", "Up (m)");
     ImPlot3D::SetupAxesLimits(-3, 3, -3, 3, -3, 3, ImPlot3DCond_Always);
 
