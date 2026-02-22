@@ -23,9 +23,27 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float y1[FLIGHT_HISTOR
   }
 }
 
-ImVec4 cube_verts[12] = {{-1, -1, -2, 0}, {1, -1, -2, 0}, {1, 1, -2, 0}, {-1, 1, -2, 0}, {-1, -1, 2, 0}, {1, -1, 2, 0},
-                         {1, 1, 2, 0},    {-1, 1, 2, 0},  {0, 0, 0, 0},  {3, 0, 0, 0},   {0, 3, 0, 0},   {0, 0, 3, 0}};
-int cube_edges[15][2] = {{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}, {8, 9}, {8, 10}, {8, 11}};
+#define NUM_PTS 17
+#define NUM_EDG 23
+ImVec4 cube_verts[NUM_PTS] = {{-0.75, -0.75, -1.5, 0},
+                              {0.75, -0.75, -1.5, 0},
+                              {0.75, 0.75, -1.5, 0},
+                              {-0.75, 0.75, -1.5, 0},
+                              {-0.75, -0.75, 1.75, 0},
+                              {0.75, -0.75, 1.75, 0},
+                              {0.75, 0.75, 1.75, 0},
+                              {-0.75, 0.75, 1.75, 0},
+                              {0, 0, 0, 0},
+                              {3, 0, 0, 0},
+                              {0, 3, 0, 0},
+                              {0, 0, 3, 0},
+                              {-1.25, -1.25, -2.5, 0},
+                              {1.25, -1.25, -2.5, 0},
+                              {1.25, 1.25, -2.5, 0},
+                              {-1.25, 1.25, -2.5, 0},
+                              {0, 0, 2.5, 0}};
+int cube_edges[NUM_EDG][2] = {{0, 1}, {1, 2},  {2, 3},  {3, 0},  {4, 5},  {5, 6},  {6, 7},  {7, 4},  {0, 4},  {1, 5},  {2, 6}, {3, 7},
+                              {8, 9}, {8, 10}, {8, 11}, {0, 12}, {1, 13}, {2, 14}, {3, 15}, {4, 16}, {5, 16}, {6, 16}, {7, 16}};
 
 ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
   ImVec4 out;
@@ -37,8 +55,8 @@ ImVec4 quatRot(ImVec4 q, ImVec4 vtx) {
 
 void rotatable_cube_plot(ImVec4 q) {
   // rotate cube vertices
-  ImVec4 rot[15];
-  for (int i = 0; i < 15; i++) {
+  ImVec4 rot[NUM_PTS];
+  for (int i = 0; i < NUM_PTS; i++) {
     rot[i] = quatRot(q, cube_verts[i]);
   }
 
@@ -48,6 +66,15 @@ void rotatable_cube_plot(ImVec4 q) {
 
     // plot cube
     for (int i = 0; i < 12; i++) {
+      ImVec4 a = rot[cube_edges[i][0]];
+      ImVec4 b = rot[cube_edges[i][1]];
+      // Draw line segment
+      double xs[2] = {-a.y, -b.y};
+      double ys[2] = {a.x, b.x};
+      double zs[2] = {a.z, b.z};
+      ImPlot3D::PlotLine("##edge", xs, ys, zs, 2);
+    }
+    for (int i = 15; i < NUM_EDG; i++) {
       ImVec4 a = rot[cube_edges[i][0]];
       ImVec4 b = rot[cube_edges[i][1]];
       // Draw line segment
