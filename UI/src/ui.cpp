@@ -197,6 +197,55 @@ void gimbal_output_panel() {
   ImGui::End();
 }
 
+char concat_msg_buf[1000];
+void serial_control_panel() {
+  ImGui::Begin(SERIAL_CONTROL_PANEL);
+
+  ImGui::PushFont(panel_header_font);
+  ImGui::SeparatorText("Serial Monitor");
+  ImGui::PopFont();
+
+  ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
+  static char inputBuffer[128] = ""; // buffer for text input
+  bool should_send = false;
+
+  if (ImGui::InputTextWithHint("##serial_input", "enter serial command", inputBuffer, IM_ARRAYSIZE(inputBuffer), flags)) {
+    should_send = true;
+  }
+
+  bool text_box_active = ImGui::IsItemActive();
+  ImGui::SameLine();
+  if (rounded_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
+    should_send = true;
+  }
+
+  if (should_send) {
+    ImGui::ActivateItemByID(ImGui::GetID("##serial_input"));
+  }
+
+  if (should_send) {
+    // write_serial(inputBuffer);
+    printf("You entered: %s\n", inputBuffer);
+    inputBuffer[0] = '\0';
+  }
+
+  if (!text_box_active && ImGui::IsKeyPressed(ImGuiKey_K)) {
+    // write_serial("k");
+    printf("You entered: %s\n", "k");
+  }
+
+  ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100), ImGuiInputTextFlags_ReadOnly);
+
+  // autoscroll code - // TODO - only enable if autoscroll enabled
+  // ImGuiContext &g = *GImGui;
+  // const char *child_window_name = NULL;
+  // ImFormatStringToTempBuffer(&child_window_name, NULL, "%s/%s_%08X", g.CurrentWindow->Name, "##serial_output", ImGui::GetID("##serial_output"));
+  // ImGuiWindow *child_window = ImGui::FindWindowByName(child_window_name);
+  // ImGui::SetScrollY(child_window, child_window->ScrollMax.y);
+
+  ImGui::End();
+}
+
 void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderRemoveNode(dockspace_id);
   ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
@@ -206,7 +255,7 @@ void build_dock_layout(ImGuiID dockspace_id) {
   ImGuiID right_panel = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.5, nullptr, &left_panel);
 
   ImGuiID live_sensor_panel = left_panel;
-  // ImGuiID bottom_left_panel = ImGui::DockBuilderSplitNode(left_panel, ImGuiDir_Down, 0.5, nullptr, &live_sensor_panel);
+  ImGuiID bottom_left_panel = ImGui::DockBuilderSplitNode(left_panel, ImGuiDir_Down, 1.0 / 3.0, nullptr, &live_sensor_panel);
 
   ImGuiID live_sensor_top = live_sensor_panel;
   ImGuiID live_sensor_middle = ImGui::DockBuilderSplitNode(live_sensor_panel, ImGuiDir_Down, 2.0 / 3.0, nullptr, &live_sensor_top);
@@ -234,6 +283,7 @@ void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderDockWindow(GPS_VERT_PANEL, live_sensor_mr);
   ImGui::DockBuilderDockWindow(GPS_POS_PANEL, live_sensor_bl);
   ImGui::DockBuilderDockWindow(GPS_VEL_PANEL, live_sensor_br);
+  ImGui::DockBuilderDockWindow(SERIAL_CONTROL_PANEL, bottom_left_panel);
 
   ImGui::DockBuilderDockWindow(EST_POS_PANEL, left_top_right_panel);
   ImGui::DockBuilderDockWindow(EST_ROT_PANEL, right_top_right_panel);
@@ -275,6 +325,8 @@ void render_loop() {
   estimated_orientation_panel();
   controller_output_panel();
   gimbal_output_panel();
+
+  serial_control_panel();
 
   ImGui::End();
 }

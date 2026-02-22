@@ -1,4 +1,5 @@
 #include "ui_components.h"
+#include "imgui_internal.h"
 
 ImFont *panel_header_font;
 ImFont *large_font;
@@ -15,4 +16,26 @@ void centered_text(const char *text) {
   ImGui::PushFont(large_font);
   ImGui::Text(text);
   ImGui::PopFont();
+}
+
+ImU32 AdjustBrightness(ImU32 color, float factor) {
+  ImVec4 c = ImGui::ColorConvertU32ToFloat4(color);
+  c.x = ImClamp(c.x * factor, 0.0f, 1.0f);
+  c.y = ImClamp(c.y * factor, 0.0f, 1.0f);
+  c.z = ImClamp(c.z * factor, 0.0f, 1.0f);
+  return ImGui::ColorConvertFloat4ToU32(c);
+}
+
+bool rounded_button(const char *label, const ImVec2 &size, ImU32 color, float rounding) {
+  ImGui::PushStyleColor(ImGuiCol_Button, color);
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, AdjustBrightness(color, 1.2));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, AdjustBrightness(color, 0.7));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, rounding);
+
+  bool clicked = ImGui::Button(label, size);
+
+  ImGui::PopStyleVar();
+  ImGui::PopStyleColor(3);
+
+  return clicked;
 }
