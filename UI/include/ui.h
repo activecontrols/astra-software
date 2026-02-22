@@ -9,6 +9,7 @@ void render_loop();
 #define MAG_PANEL "mag_panel"
 #define GPS_POS_PANEL "gps_pos_panel"
 #define GPS_VEL_PANEL "gps_vel_panel"
+#define GPS_VERT_PANEL "gps_vert_panel"
 #define EST_POS_PANEL "est_pos_panel"
 #define EST_ROT_PANEL "est_rot_panel"
 

@@ -97,6 +97,19 @@ void gps_vel_panel() {
   ImGui::End();
 }
 
+void gps_vert_panel() {
+  ImGui::Begin(GPS_VERT_PANEL);
+
+  centered_text("Altitude");
+  ImGui::Text("     GPS: %5.2f m", FlightHistory.gps_pos_up);
+  ImGui::Text("  Target: %5.2f m", FlightHistory.target_pos_up);
+  ImGui::Dummy(ImVec2(0, 50)); // Add vertical spacing
+  centered_text("Vert Velocity");
+  ImGui::Text("     GPS: %5.2f m/s", FlightHistory.gps_vel_up);
+
+  ImGui::End();
+}
+
 void estimated_pos_panel() {
   ImGui::Begin(EST_POS_PANEL);
 
@@ -155,35 +168,43 @@ void estimated_orientation_panel() {
   ImGui::End();
 }
 
-const char *names[9] = {IMU_ACCEL_PANEL, IMU_GYRO_PANEL, MAG_PANEL, GPS_POS_PANEL, GPS_VEL_PANEL, EST_POS_PANEL, EST_ROT_PANEL, "", ""};
-
 void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderRemoveNode(dockspace_id);
   ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
   ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
 
-  ImGuiID cols[3];
-  ImGuiID rows[3][3];
+  ImGuiID left_panel = dockspace_id;
+  ImGuiID right_panel = ImGui::DockBuilderSplitNode(dockspace_id, ImGuiDir_Right, 0.5, nullptr, &left_panel);
 
-  // Split into 3 columns
-  cols[0] = dockspace_id;
-  cols[1] = ImGui::DockBuilderSplitNode(cols[0], ImGuiDir_Right, 2.0f / 3.0f, nullptr, &cols[0]);
-  cols[2] = ImGui::DockBuilderSplitNode(cols[1], ImGuiDir_Right, 0.5f, nullptr, &cols[1]);
+  ImGuiID live_sensor_panel = left_panel;
+  // ImGuiID bottom_left_panel = ImGui::DockBuilderSplitNode(left_panel, ImGuiDir_Down, 0.5, nullptr, &live_sensor_panel);
 
-  // Split each column into 3 rows
-  for (int c = 0; c < 3; c++) {
-    rows[c][0] = cols[c];
-    rows[c][1] = ImGui::DockBuilderSplitNode(rows[c][0], ImGuiDir_Down, 2.0f / 3.0f, nullptr, &rows[c][0]);
-    rows[c][2] = ImGui::DockBuilderSplitNode(rows[c][1], ImGuiDir_Down, 0.5f, nullptr, &rows[c][1]);
-  }
+  ImGuiID live_sensor_top = live_sensor_panel;
+  ImGuiID live_sensor_middle = ImGui::DockBuilderSplitNode(live_sensor_panel, ImGuiDir_Down, 2.0 / 3.0, nullptr, &live_sensor_top);
+  ImGuiID live_sensor_bottom = ImGui::DockBuilderSplitNode(live_sensor_middle, ImGuiDir_Down, 0.5, nullptr, &live_sensor_middle);
 
-  // Dock example plot windows
-  int idx = 0;
-  for (int c = 0; c < 3; c++) {
-    for (int r = 0; r < 3; r++) {
-      ImGui::DockBuilderDockWindow(names[c * 3 + r], rows[c][r]);
-    }
-  }
+  ImGuiID live_sensor_tl = live_sensor_top;
+  ImGuiID live_sensor_tr = ImGui::DockBuilderSplitNode(live_sensor_top, ImGuiDir_Right, 0.5, nullptr, &live_sensor_tl);
+  ImGuiID live_sensor_ml = live_sensor_middle;
+  ImGuiID live_sensor_mr = ImGui::DockBuilderSplitNode(live_sensor_middle, ImGuiDir_Right, 0.5, nullptr, &live_sensor_ml);
+  ImGuiID live_sensor_bl = live_sensor_bottom;
+  ImGuiID live_sensor_br = ImGui::DockBuilderSplitNode(live_sensor_bottom, ImGuiDir_Right, 0.5, nullptr, &live_sensor_bl);
+
+  ImGuiID top_right_panel = right_panel;
+  // ImGuiID bottom_right_panel = ImGui::DockBuilderSplitNode(right_panel, ImGuiDir_Down, 0.5, nullptr, &top_right_panel);
+
+  ImGuiID left_top_right_panel = top_right_panel;
+  ImGuiID right_top_right_panel = ImGui::DockBuilderSplitNode(top_right_panel, ImGuiDir_Right, 0.5, nullptr, &left_top_right_panel);
+
+  ImGui::DockBuilderDockWindow(IMU_ACCEL_PANEL, live_sensor_tl);
+  ImGui::DockBuilderDockWindow(IMU_GYRO_PANEL, live_sensor_tr);
+  ImGui::DockBuilderDockWindow(MAG_PANEL, live_sensor_ml);
+  ImGui::DockBuilderDockWindow(GPS_VERT_PANEL, live_sensor_mr);
+  ImGui::DockBuilderDockWindow(GPS_POS_PANEL, live_sensor_bl);
+  ImGui::DockBuilderDockWindow(GPS_VEL_PANEL, live_sensor_br);
+
+  ImGui::DockBuilderDockWindow(EST_POS_PANEL, left_top_right_panel);
+  ImGui::DockBuilderDockWindow(EST_ROT_PANEL, right_top_right_panel);
 
   ImGui::DockBuilderFinish(dockspace_id);
 }
@@ -215,6 +236,7 @@ void render_loop() {
   mag_panel();
   gps_pos_panel();
   gps_vel_panel();
+  gps_vert_panel();
   estimated_pos_panel();
   estimated_orientation_panel();
 
