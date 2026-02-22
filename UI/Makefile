@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude
+CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude -MMD -MP
 LDFLAGS  := -luser32 -lgdi32 -ld3d11 -ldxgi -ld3dcompiler -ldwmapi
 
 # Sources
@@ -48,3 +48,6 @@ $(BUILD_FOLDER)/%.o: %.cpp | $(BUILD_FOLDER)
 clean:
 	@if exist $(BUILD_FOLDER) rmdir /s /q $(BUILD_FOLDER)
 	@del /Q $(TARGET)
+
+# Include dependency files
+-include $(OBJ:.o=.d)
