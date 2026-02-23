@@ -3,7 +3,7 @@
 #include "UBX.h"
 #include "fc_pins.h"
 
-// #define DEBUG_GPS_MSG
+#define DEBUG_GPS_MSG
 
 namespace GPS {
 GPS_Coord origin;
@@ -164,9 +164,6 @@ void pump_events() {
     char c = gps_uart.read();
     ubx.encode(c);
 
-#ifdef DEBUG_GPS_MSG
-    Router::print(c);
-#endif
   }
 
 #ifdef DEBUG_GPS_MSG
@@ -191,6 +188,9 @@ void pump_events() {
     Router::printf("Velocity East  (m/s): %lf\n", velocity_east);
     Router::printf("Velocity Down  (m/s): %lf\n", velocity_down);
     Router::printf("Altitude (m): %lf\n", altitude);
+    Router::printf("Horizontal Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->hAcc / 1000.0);
+    Router::printf("Vertical Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->vAcc / 1000.0);
+    Router::printf("carrSoln: %d\n", (ubx.pvt_solution.data->flags >> 6) & 0b11);
     Router::println("================");
 
     ubx.pvt_solution.updated = false;
