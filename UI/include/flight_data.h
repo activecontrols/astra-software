@@ -115,6 +115,10 @@ struct flight_data_state_t {
 
   // serial input mode
   std::vector<ComPortInfo> ports;
+  int fv_serial_idx;         // serial index for flight vehicle radio
+  int rtk_serial_idx;        // serial index for GPS RTK source
+  bool fv_serial_port_open;  // used for opening/closing ports and communicating status back to user
+  bool rtk_serial_port_open; // used for opening/closing ports and communicating status back to user
 
   // file input mode
   char selected_file_path[260] = "";
