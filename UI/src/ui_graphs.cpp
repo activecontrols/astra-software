@@ -10,7 +10,7 @@ void scrolling_line_chart(scrolling_line_chart_arg_t arg, float y1[FLIGHT_HISTOR
   if (ImPlot::BeginPlot(arg.render_title, ImVec2(-1, 175))) { // width = fill, height auto
     ImPlot::SetupAxisLimits(ImAxis_X1, 0, 1000, ImPlotCond_Always);
     ImPlot::SetupAxisLimits(ImAxis_Y1, arg.y_min, arg.y_max);
-    ImPlot::SetupLegend(ImPlotLocation_NorthEast);
+    ImPlot::SetupLegend(ImPlotLocation_NorthWest);
 
     ImPlotSpec spec;
     spec.LineColor = axis_colors[0];
