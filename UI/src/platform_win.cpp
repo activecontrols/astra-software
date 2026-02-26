@@ -4,9 +4,13 @@
 // serial port interface
 
 #include "platform_win.h"
+#include <windows.h>
+
+#include <devguid.h>
+#include <regstr.h>
+#include <setupapi.h>
 #include <shlwapi.h>  // file path management
 #include <shobjidl.h> // IFileOpenDialog
-#include <windows.h>
 
 // will fill path if file is chosen
 // TODO - restrict file type
@@ -51,4 +55,35 @@ void OpenFileDialog(char *path) {
 const char *get_filename_from_path(const char *full_path) {
   const char *filename = PathFindFileNameA(full_path);
   return filename;
+}
+
+std::vector<ComPortInfo> ports;
+void enumerate_ports() {
+  ports.clear();
+
+  HDEVINFO deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, NULL, NULL, DIGCF_PRESENT);
+
+  if (deviceInfoSet == INVALID_HANDLE_VALUE)
+    return;
+
+  SP_DEVINFO_DATA devInfoData;
+  devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
+
+  for (DWORD i = 0; SetupDiEnumDeviceInfo(deviceInfoSet, i, &devInfoData); i++) {
+    char friendlyName[256];
+    if (SetupDiGetDeviceRegistryPropertyA(deviceInfoSet, &devInfoData, SPDRP_FRIENDLYNAME, NULL, (PBYTE)friendlyName, sizeof(friendlyName), NULL)) {
+      std::string fn = friendlyName;
+
+      // Extract COM port name from "(COMx)"
+      size_t start = fn.find("(COM");
+      size_t end = fn.find(")", start);
+
+      if (start != std::string::npos && end != std::string::npos) {
+        std::string port = fn.substr(start + 1, end - start - 1);
+        ports.push_back({port, fn});
+      }
+    }
+  }
+
+  SetupDiDestroyDeviceInfoList(deviceInfoSet);
 }

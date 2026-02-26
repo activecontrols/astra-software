@@ -213,6 +213,13 @@ void data_management_panel() {
   ImGui::RadioButton("File Input (Flight Replay)", &input_mode, 1);
 
   if (input_mode == MODE_SERIAL_INPUT) {
+    if (ImGui::Button("refresh")) {
+      enumerate_ports();
+      for (auto port : ports) {
+        printf("%s %s\n", port.portName.c_str(), port.friendlyName.c_str());
+      }
+    }
+
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Serial Monitor");
     ImGui::PopFont();
