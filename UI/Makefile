@@ -1,6 +1,6 @@
 CXX      := g++
 CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude -MMD -MP
-LDFLAGS  := -luser32 -lgdi32 -ld3d11 -ldxgi -ld3dcompiler -ldwmapi
+LDFLAGS  := -luser32 -lgdi32 -ld3d11 -ldxgi -ld3dcompiler -ldwmapi -lole32 -luuid
 
 # Sources
 IMGUI_SRC := imgui\imgui.cpp \
@@ -14,7 +14,7 @@ IMGUI_SRC := imgui\imgui.cpp \
              implot3d\implot3d.cpp \
              implot3d\implot3d_items.cpp
 
-APP_SRC   := main.cpp ui.cpp ui_components.cpp ui_graphs.cpp flight_data.cpp
+APP_SRC   := main.cpp ui.cpp ui_components.cpp ui_graphs.cpp flight_data.cpp platform_win.cpp
 SRC       := $(APP_SRC) $(IMGUI_SRC)
 BUILD_FOLDER := build
 

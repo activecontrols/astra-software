@@ -15,6 +15,6 @@ void render_loop();
 #define CONTROLLER_OUTPUT_PANEL "controller_output_panel"
 #define GIMBAL_OUTPUT_PANEL "gimbal_output_panel"
 
-#define SERIAL_CONTROL_PANEL "serial_control_panel"
+#define DATA_MANAGEMENT_PANEL "data_management_panel"
 
 #endif
