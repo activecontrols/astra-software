@@ -100,6 +100,11 @@ extern flight_history_t FlightHistory; // public interface
 
 void init_flight_data();
 void deinit_flight_data();
+void load_flight_replay(const char *file_path);
 void load_data_from_file_periodic();
+
+extern int file_length;
+extern int file_read_progress;
+extern bool file_reading_paused;
 
 #endif

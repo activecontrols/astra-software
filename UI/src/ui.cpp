@@ -261,9 +261,27 @@ void data_management_panel() {
 
     if (ImGui::Button("Choose Replay File")) {
       OpenFileDialog(selected_file_path);
+      load_flight_replay(selected_file_path);
     }
 
-    ImGui::Text("Selected: %s", selected_file_path);
+    ImGui::Text("Selected: %s", get_filename_from_path(selected_file_path));
+
+    if (file_length > 0) {
+      ImGui::Dummy(ImVec2(0, 20));
+      ImGui::Text("File playback progress: ");
+      char buf[32];
+      sprintf(buf, "%d/%d", file_read_progress, file_length);
+      ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+      ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(205 / 255.0, 159 / 255.0, 38 / 255.0, 1.0f)); // fil
+      ImGui::ProgressBar((float)file_read_progress / file_length, ImVec2(0.f, 0.f), buf);
+      ImGui::PopStyleColor();
+      ImGui::PopStyleVar();
+
+      // --- Play / Pause ---
+      if (ImGui::Button(file_reading_paused ? ">" : "||", ImVec2(100, 40))) {
+        file_reading_paused = !file_reading_paused;
+      }
+    }
   }
   ImGui::End();
 }

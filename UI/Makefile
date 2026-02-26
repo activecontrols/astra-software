@@ -1,6 +1,6 @@
 CXX      := g++
 CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude -MMD -MP
-LDFLAGS  := -luser32 -lgdi32 -ld3d11 -ldxgi -ld3dcompiler -ldwmapi -lole32 -luuid
+LDFLAGS  := -luser32 -lgdi32 -ld3d11 -ldxgi -ld3dcompiler -ldwmapi -lole32 -luuid -lshlwapi
 
 # Sources
 IMGUI_SRC := imgui\imgui.cpp \
