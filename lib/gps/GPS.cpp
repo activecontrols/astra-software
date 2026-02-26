@@ -39,19 +39,19 @@ void output_gps_inf() {
   void (*old_cbk)(uint8_t, const char *) = ubx.inf_msg_cbk;
   ubx.inf_msg_cbk = output_gps_inf_cbk;
 
-  while (!Serial.available()) {
+  while (!Router::available()) {
     pump_events();
 
     delay(20);
   }
 
-  while (Serial.read() != '\n')
+  while (Router::read() != '\n')
     ;
   ubx.inf_msg_cbk = old_cbk;
 }
 
 void print_gps_events() {
-  while (!Serial.available()) {
+  while (!Router::available()) {
     pump_events();
 
     if (ubx.pvt_solution.updated && has_valid_recent_pos()) {
@@ -103,7 +103,7 @@ void print_gps_events() {
     delay(10);
   }
 
-  while (Serial.read() != '\n')
+  while (Router::read() != '\n')
     ;
 }
 
@@ -163,6 +163,7 @@ void get_pos_cov(Matrix3_3 &out) {
 void pump_events() {
   while (gps_uart.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
     char c = gps_uart.read();
+    gps_uart.println();
     ubx.encode(c);
 
 #ifdef DEBUG_GPS_MSG

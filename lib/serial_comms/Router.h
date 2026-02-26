@@ -85,8 +85,11 @@ void send(char msg[], unsigned int len);
 // the caller is responsible for freeing the memory of the message
 void receive(char msg[], unsigned int len);
 
+// read a single character
+int read();
+
 // reads a message from the serial port into a string and returns it
-char *read();
+char *readline();
 
 bool available();
 

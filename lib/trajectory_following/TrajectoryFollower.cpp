@@ -54,8 +54,8 @@ void follow_trajectory() {
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
       char cmd_char = ' ';
-      if (Serial.available()) {
-        cmd_char = Serial.read();
+      if (Router::available()) {
+        cmd_char = Router::read();
       }
       if (cmd_char == 'k') {
         should_kill = true;
@@ -170,7 +170,7 @@ void arm(const char *) {
 
   // filenames use DOS 8.3 standard
   Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
-  char *log_file_name = Router::read();
+  char *log_file_name = Router::readline();
   TrajectoryLogger::create_trajectory_log(log_file_name); // lower case files have issues on teensy
 
   Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");

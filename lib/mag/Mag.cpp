@@ -180,7 +180,7 @@ void collect_samples() {
 // }
 
 void mag_heading() {
-  while (!Serial.available()) {
+  while (!Router::available()) {
     double heading = get_heading();
     Router::println(heading);
   }
@@ -343,7 +343,7 @@ void do_simple_calib() {
 
 void custom_calib() {
   Router::println("Enter hard iron offsets separated by spaces (x y z): ");
-  char *line = Router::read();
+  char *line = Router::readline();
 
   double vals[3];
   if (!Router::parse_doubles(line, vals, 3)) {
@@ -355,7 +355,7 @@ void custom_calib() {
   calib.hard_z = vals[2];
 
   Router::println("Enter soft iron correction matrix (or hit enter for identity): ");
-  char *matline = Router::read();
+  char *matline = Router::readline();
 
   if (matline[0] == '\0') { // len is 0
     for (int i = 0; i < 3; i++) {
@@ -394,7 +394,7 @@ void show_centered_reading() {
 void show_normalized_reading() {
   mag.beginMeasurement();
   delay(1);
-  while (!Serial.available()) {
+  while (!Router::available()) {
     if (mag.isMeasurementReady()) {
       double mx, my, mz;
       if (read_xyz_normalized(mx, my, mz)) {
@@ -405,7 +405,7 @@ void show_normalized_reading() {
     delay(5);
   }
 
-  while (Serial.read() != '\n')
+  while (Router::read() != '\n')
     ;
 }
 
@@ -441,15 +441,15 @@ void mag_record_test(const char *arg) {
   }
 
   mag.setFilterBandwidth(new_filter_bw);
-  Serial.println("<<< CSV BEGIN >>>");
-  Serial.println();
-  Serial.println();
-  Serial.print(new_filter_bw);
-  Serial.print("\nTime (s),X reading,Y reading,Z reading\n");
+  Router::println("<<< CSV BEGIN >>>");
+  Router::println();
+  Router::println();
+  Router::print(new_filter_bw);
+  Router::print("\nTime (s),X reading,Y reading,Z reading\n");
 
   unsigned long start_micros = micros();
 
-  while (!Serial.available()) {
+  while (!Router::available()) {
 
     double x, y, z;
     x = y = z = 0;
@@ -473,12 +473,12 @@ void mag_record_test(const char *arg) {
     delay(1);
   }
 
-  while (Serial.read() != '\n')
+  while (Router::read() != '\n')
     ;
 
-  Serial.println();
-  Serial.println();
-  Serial.println("<<< CSV END >>>");
+  Router::println();
+  Router::println();
+  Router::println("<<< CSV END >>>");
 
   mag.setFilterBandwidth(old_filter_bw);
 }

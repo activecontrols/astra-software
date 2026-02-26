@@ -70,7 +70,7 @@ void load_trajectory_serial(const char *) {
 void load_trajectory_sd_cmd(const char *) {
   // filenames use DOS 8.3 standard
   Router::print("Enter filename: ");
-  char *filename = Router::read();
+  char *filename = Router::readline();
   File f = SDCard::open(filename, FILE_READ);
   if (f) {
     load_trajectory_generic(false, &f);
@@ -97,7 +97,7 @@ bool load_trajectory_sd(const char *filename) {
 void write_trajectory_sd(const char *) {
   // filenames use DOS 8.3 standard
   Router::print("Enter filename: ");
-  char *filename = Router::read();
+  char *filename = Router::readline();
   File f = SDCard::open(filename, FILE_WRITE);
   if (!f) {
     Router::println("File not found.");

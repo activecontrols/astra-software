@@ -167,7 +167,7 @@ int Sensor::write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val) {
 // loads three doubles from serial and stores them in dest
 int load_calibration_helper(double *dest) {
   char buf[3][100];
-  char *line = Router::read();
+  char *line = Router::readline();
   Router::println(line);
   int read = sscanf(line, "%99s %99s %99s", buf[0], buf[1], buf[2]);
   if (read != 3) {
@@ -399,13 +399,12 @@ void cmd_log_accel_for_calibration(const char *param) {
   Sensor *imu = &IMUs[imu_index];
 
   Data last_packet;
-  char serial_input[10];
 
   while (1) {
     while (!Router::available()) {
       delay(100);
     }
-    Serial.readBytesUntil('\n', serial_input, sizeof(serial_input));
+    char *serial_input = Router::readline();
     if (!strcmp(serial_input, "stop")) {
       break;
     }

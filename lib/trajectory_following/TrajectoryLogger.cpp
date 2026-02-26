@@ -24,7 +24,7 @@ void log_trajectory_csv(float time, int phase, Controller_Input ci, Controller_O
   if (print_counter % 10 == 0) {
     telemCSV.clear();
     telemCSV << time << "  " << ci.target_pos_north << "  " << ci.target_pos_west << "  " << ci.target_pos_up;
-    telemCSV.print();
+    Router::print(telemCSV.str);
   }
 }
 

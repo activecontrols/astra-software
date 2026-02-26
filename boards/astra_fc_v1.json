@@ -1,7 +1,7 @@
 {
   "name": "ASTRA Flight Controller v1",
   "vendor": "Custom PCB",
-  "url": "TODO - confluence link",
+  "url": "https://purdue-space-program.atlassian.net/wiki/spaces/PAC/pages/2045575171/Configuring+a+custom+board+with+PlatformIO",
   "frameworks": [
     "arduino"
   ],

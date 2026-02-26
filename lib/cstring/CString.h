@@ -14,9 +14,6 @@
  */
 
 namespace cstring {
-inline void print(const char *str) {
-  Serial.println(str);
-}
 
 int append(char *str, size_t bufferLen, const char *src);
 
@@ -78,10 +75,6 @@ public:
   bool equals(const char *src) {
     return cstring::equals(str, src);
   }
-
-  void print() const {
-    cstring::print(str);
-  }
 };
 
 // Non-template class for CString that takes a pointer to a CString
@@ -138,9 +131,5 @@ public:
 
   bool equals(const char *src) {
     return cstring::equals(str, src);
-  }
-
-  void print() const {
-    cstring::print(str);
   }
 };

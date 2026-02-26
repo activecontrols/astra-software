@@ -72,7 +72,7 @@ void receive(char msg[], unsigned int len) {
   COMMS_SERIAL.readBytes(msg, len);
 }
 
-char *read() {
+char *readline() {
   // read until newline char or 200 characters (hopefully none of our funcs have names that long lol)
   size_t read_length = COMMS_SERIAL.readBytesUntil('\n', readBuffer.str, COMMAND_BUFFER_SIZE - 1);
   readBuffer.str[read_length] = '\0'; // null terminate
@@ -85,6 +85,10 @@ char *read() {
   comms_log_file.flush();
 
   return readBuffer.str;
+}
+
+int read() {
+  return COMMS_SERIAL.read();
 }
 
 bool available() {
