@@ -106,6 +106,12 @@ int main(int argc, char **argv) {
 
   style.FontSizeBase = 16.0f;
   io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf");
+
+  ImFontConfig config;
+  config.MergeMode = true; // merge into your base font
+  // adds symbols into fonts
+  io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\seguisym.ttf", 16.0f, &config);
+
   panel_header_font = io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf", 24.0f); // larger size
   large_font = io.Fonts->AddFontFromFileTTF("imgui/misc/fonts/Cousine-Regular.ttf", 20.0f);        // larger size
 

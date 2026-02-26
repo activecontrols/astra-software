@@ -1,13 +1,8 @@
 #include "flight_data.h"
-#include <stdio.h>
 
 flight_history_t FlightHistory;
 flight_packet_t active_packet; // may be partially filled
-
-int file_length;
-int file_read_progress;
-bool file_reading_paused = false;
-FILE *input_file;
+flight_data_state_t FlightDataState;
 
 void init_flight_data() {
   FlightHistory = {};
@@ -18,9 +13,9 @@ void init_flight_data() {
 }
 
 void deinit_flight_data() {
-  if (input_file != NULL) {
-    fclose(input_file);
-    input_file = NULL;
+  if (FlightDataState.input_file != NULL) {
+    fclose(FlightDataState.input_file);
+    FlightDataState.input_file = NULL;
   }
 }
 
@@ -77,34 +72,34 @@ void commit_packet() {
   FlightHistory.read_end_pos = FlightHistory.read_start_pos + FLIGHT_HISTORY_LENGTH - 1;
 }
 
-void load_flight_replay(const char *file_path) {
-  if (input_file != NULL) {
-    fclose(input_file);
-    input_file = NULL;
+void load_flight_replay() {
+  if (FlightDataState.input_file != NULL) {
+    fclose(FlightDataState.input_file);
+    FlightDataState.input_file = NULL;
   }
 
-  input_file = fopen(file_path, "rb");
-  file_read_progress = 0;
+  FlightDataState.input_file = fopen(FlightDataState.selected_file_path, "rb");
+  FlightDataState.file_read_progress = 0;
 
   // determine file length
-  if (input_file != NULL) {
+  if (FlightDataState.input_file != NULL) {
     while (true) {
-      size_t read_size = fread(&active_packet, sizeof(active_packet), 1, input_file);
+      size_t read_size = fread(&active_packet, sizeof(active_packet), 1, FlightDataState.input_file);
       if (read_size == 1) {
-        file_length += 1;
+        FlightDataState.file_length += 1;
       } else {
         break;
       }
     }
-    fseek(input_file, 0, SEEK_SET);
+    fseek(FlightDataState.input_file, 0, SEEK_SET);
   }
 }
 
 void load_data_from_file_periodic() {
-  if (input_file != NULL && !file_reading_paused) {
-    size_t read_size = fread(&active_packet, sizeof(active_packet), 1, input_file);
+  if (FlightDataState.input_file != NULL && !FlightDataState.file_reading_paused) {
+    size_t read_size = fread(&active_packet, sizeof(active_packet), 1, FlightDataState.input_file);
     if (read_size == 1) {
-      file_read_progress += 1;
+      FlightDataState.file_read_progress += 1;
       commit_packet();
     }
   }

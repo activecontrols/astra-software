@@ -198,25 +198,38 @@ void gimbal_output_panel() {
   ImGui::End();
 }
 
-#define MODE_SERIAL_INPUT 0
-#define MODE_FILE_INPUT 1
-int input_mode;
-char selected_file_path[260] = "";
-
 char concat_msg_buf[1000];
 
 void data_management_panel() {
   ImGui::Begin(DATA_MANAGEMENT_PANEL);
 
-  ImGui::RadioButton("Serial Input (Live Monitoring)", &input_mode, 0);
+  ImGui::RadioButton("Serial Input (Live Monitoring)", &FlightDataState.data_input_mode, 0);
   ImGui::SameLine();
-  ImGui::RadioButton("File Input (Flight Replay)", &input_mode, 1);
+  ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, 1);
 
-  if (input_mode == MODE_SERIAL_INPUT) {
-    if (ImGui::Button("refresh")) {
-      enumerate_ports();
-      for (auto port : ports) {
+  if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
+    if (ImGui::Button("\uE117")) {
+      FlightDataState.ports = enumerate_ports();
+      for (auto port : FlightDataState.ports) {
         printf("%s %s\n", port.portName.c_str(), port.friendlyName.c_str());
+      }
+    }
+
+    if (FlightDataState.ports.size() > 0) {
+      static int item_current_idx = 0; // Index of the currently selected item
+      ImGui::SameLine();
+      if (ImGui::BeginCombo("Radio", FlightDataState.ports[item_current_idx].friendlyName.c_str())) {
+        for (int i = 0; i < FlightDataState.ports.size(); i++) {
+          ComPortInfo port = FlightDataState.ports[i];
+          const bool is_selected = (item_current_idx == i);
+          if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
+            item_current_idx = i;
+
+          // Set the initial focus when opening the combo (scrolling to selection)
+          if (is_selected)
+            ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
       }
     }
 
@@ -267,26 +280,26 @@ void data_management_panel() {
     ImGui::PopFont();
 
     if (ImGui::Button("Choose Replay File")) {
-      OpenFileDialog(selected_file_path);
-      load_flight_replay(selected_file_path);
+      OpenFileDialog(FlightDataState.selected_file_path);
+      load_flight_replay();
     }
 
-    ImGui::Text("Selected: %s", get_filename_from_path(selected_file_path));
+    ImGui::Text("Selected: %s", get_filename_from_path(FlightDataState.selected_file_path));
 
-    if (file_length > 0) {
+    if (FlightDataState.file_length > 0) {
       ImGui::Dummy(ImVec2(0, 20));
       ImGui::Text("File playback progress: ");
       char buf[32];
-      sprintf(buf, "%d/%d", file_read_progress, file_length);
+      sprintf(buf, "%d/%d", FlightDataState.file_read_progress, FlightDataState.file_length);
       ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
       ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(205 / 255.0, 159 / 255.0, 38 / 255.0, 1.0f)); // fil
-      ImGui::ProgressBar((float)file_read_progress / file_length, ImVec2(0.f, 0.f), buf);
+      ImGui::ProgressBar((float)FlightDataState.file_read_progress / FlightDataState.file_length, ImVec2(0.f, 0.f), buf);
       ImGui::PopStyleColor();
       ImGui::PopStyleVar();
 
       // --- Play / Pause ---
-      if (ImGui::Button(file_reading_paused ? ">" : "||", ImVec2(100, 40))) {
-        file_reading_paused = !file_reading_paused;
+      if (ImGui::Button(FlightDataState.file_reading_paused ? "\uE102" : "\uE103", ImVec2(100, 40))) {
+        FlightDataState.file_reading_paused = !FlightDataState.file_reading_paused;
       }
     }
   }

@@ -57,14 +57,13 @@ const char *get_filename_from_path(const char *full_path) {
   return filename;
 }
 
-std::vector<ComPortInfo> ports;
-void enumerate_ports() {
-  ports.clear();
+std::vector<ComPortInfo> enumerate_ports() {
+  std::vector<ComPortInfo> ports;
 
   HDEVINFO deviceInfoSet = SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, NULL, NULL, DIGCF_PRESENT);
 
   if (deviceInfoSet == INVALID_HANDLE_VALUE)
-    return;
+    return ports;
 
   SP_DEVINFO_DATA devInfoData;
   devInfoData.cbSize = sizeof(SP_DEVINFO_DATA);
@@ -86,4 +85,5 @@ void enumerate_ports() {
   }
 
   SetupDiDestroyDeviceInfoList(deviceInfoSet);
+  return ports;
 }
