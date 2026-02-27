@@ -9,15 +9,17 @@
 
 using namespace std;
 
-// #define USE_RADIO
-
 struct func;
 struct func_no_args;
 
 namespace Router {
 
-#define COMMS_SERIAL Serial
-#define COMMS_RATE 115200 // TODO - change to 57600 for radio
+#define COMMS_SERIAL SerialUSB
+#define COMMS_RATE 115200
+
+// TODO - enable radio before flight
+// #define COMMS_SERIAL Serial6
+// #define COMMS_RATE 57600
 
 extern File comms_log_file;
 
