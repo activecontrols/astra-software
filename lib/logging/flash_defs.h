@@ -1,12 +1,5 @@
 #pragma once
 
-#define PIN_QSPI_FLASH_MISO PD12
-#define PIN_QSPI_FLASH_MOSI PD11
-#define PIN_QSPI_FLASH_CLK PF10
-#define PIN_QSPI_FLASH_CS PG6
-#define PIN_QSPI_FLASH_RST_IO3 PD13
-#define PIN_QSPI_FLASH_WP_IO2 PF7
-
 #define CMD_EQIO 0x35
 #define CMD_RDID 0x9F
 #define CMD_QPIID 0xAF
