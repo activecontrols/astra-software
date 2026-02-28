@@ -26,9 +26,7 @@ void cmd_log_arm() {
   Router::print("WARNING: Proceeding will permanently delete all data on the flash.\n");
   Router::printf("Enter %d to proceed: ", key);
 
-  char res[21];
-  int len = COMMS_SERIAL.readBytesUntil('\n', res, sizeof(res) - 1);
-  res[len] = 0;
+  char* res = Router::readline();
 
   if (atoi(res) != key) {
     Router::print("Incorrect key entered.\n");
