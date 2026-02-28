@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
       CreateRenderTarget();
     }
 
-    load_data_from_file_periodic();
+    flight_data_periodic();
 
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();

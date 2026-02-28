@@ -1,4 +1,6 @@
 #include "flight_data.h"
+#include "flight_data_state.h"
+#include "platform_win.h"
 
 flight_history_t FlightHistory;
 flight_packet_t active_packet; // may be partially filled
@@ -17,6 +19,8 @@ void deinit_flight_data() {
     fclose(FlightDataState.input_file);
     FlightDataState.input_file = NULL;
   }
+  close_serial_port(&FlightDataState.fv_serial);
+  close_serial_port(&FlightDataState.rtk_serial);
 }
 
 void commit_packet() {
@@ -95,12 +99,37 @@ void load_flight_replay() {
   }
 }
 
-void load_data_from_file_periodic() {
-  if (FlightDataState.input_file != NULL && !FlightDataState.file_reading_paused) {
-    size_t read_size = fread(&active_packet, sizeof(active_packet), 1, FlightDataState.input_file);
-    if (read_size == 1) {
-      FlightDataState.file_read_progress += 1;
-      commit_packet();
+void flight_data_periodic() {
+  if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
+    if (FlightDataState.fv_serial_port_open && FlightDataState.fv_serial == INVALID_HANDLE_VALUE && FlightDataState.fv_serial_idx < FlightDataState.ports.size()) {
+      open_serial_port(&FlightDataState.fv_serial, FlightDataState.ports[FlightDataState.fv_serial_idx].portName.c_str());
+      if (FlightDataState.fv_serial == INVALID_HANDLE_VALUE) {
+        FlightDataState.fv_serial_port_open = false; // tell the user we failed to open the port
+      }
+    }
+
+    if (FlightDataState.rtk_serial_port_open && FlightDataState.rtk_serial == INVALID_HANDLE_VALUE && FlightDataState.rtk_serial_idx < FlightDataState.ports.size()) {
+      open_serial_port(&FlightDataState.rtk_serial, FlightDataState.ports[FlightDataState.rtk_serial_idx].portName.c_str());
+      if (FlightDataState.rtk_serial == INVALID_HANDLE_VALUE) {
+        FlightDataState.rtk_serial_port_open = false; // tell the user we failed to open the port
+      }
+    }
+
+    if (!FlightDataState.fv_serial_port_open && FlightDataState.fv_serial != INVALID_HANDLE_VALUE) {
+      close_serial_port(&FlightDataState.fv_serial);
+    }
+
+    if (!FlightDataState.rtk_serial_port_open && FlightDataState.rtk_serial != INVALID_HANDLE_VALUE) {
+      close_serial_port(&FlightDataState.rtk_serial);
+    }
+
+  } else {
+    if (FlightDataState.input_file != NULL && !FlightDataState.file_reading_paused) {
+      size_t read_size = fread(&active_packet, sizeof(active_packet), 1, FlightDataState.input_file);
+      if (read_size == 1) {
+        FlightDataState.file_read_progress += 1;
+        commit_packet();
+      }
     }
   }
 }

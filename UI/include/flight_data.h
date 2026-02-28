@@ -1,9 +1,8 @@
 #ifndef ASTRA_GS_FLIGHT_DATA_H
 #define ASTRA_GS_FLIGHT_DATA_H
 
-#include <stdio.h>
-#include <string>
-#include <vector>
+// we try to keep this a pretty clean file because other tools might import to interface with it
+// so no windows.h or things like that
 
 // this is a ring buffer to create history graphs
 // if packets arrive from earlier to later as ABCDE we store
@@ -102,37 +101,9 @@ struct flight_packet_t {
 
 extern flight_history_t FlightHistory; // public interface
 
-#define MODE_SERIAL_INPUT 0
-#define MODE_FILE_INPUT 1
-
-struct ComPortInfo {
-  std::string portName;     // COM3
-  std::string friendlyName; // USB Serial Device (COM3)
-};
-
-struct flight_data_state_t {
-  int data_input_mode;
-
-  // serial input mode
-  std::vector<ComPortInfo> ports;
-  int fv_serial_idx;         // serial index for flight vehicle radio
-  int rtk_serial_idx;        // serial index for GPS RTK source
-  bool fv_serial_port_open;  // used for opening/closing ports and communicating status back to user
-  bool rtk_serial_port_open; // used for opening/closing ports and communicating status back to user
-
-  // file input mode
-  char selected_file_path[260] = "";
-  FILE *input_file;
-  int file_length;
-  int file_read_progress;
-  bool file_reading_paused;
-};
-
-extern flight_data_state_t FlightDataState;
-
 void init_flight_data();
 void deinit_flight_data();
 void load_flight_replay();
-void load_data_from_file_periodic();
+void flight_data_periodic();
 
 #endif

@@ -87,3 +87,49 @@ std::vector<ComPortInfo> enumerate_ports() {
   SetupDiDestroyDeviceInfoList(deviceInfoSet);
   return ports;
 }
+
+void open_serial_port(HANDLE *hSerial, const char *com_port) {
+  char full_port_name[20];
+  snprintf(full_port_name, sizeof(full_port_name), "\\\\.\\%s", com_port);
+  *hSerial = CreateFileA(full_port_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+  if (*hSerial == INVALID_HANDLE_VALUE) {
+    printf("Error opening serial port - make sure port name is correct and all other serial monitors are closed.\n");
+    return;
+  }
+
+  // --- configure port ---
+  DCB dcb = {0};
+  dcb.DCBlength = sizeof(dcb);
+
+  GetCommState(*hSerial, &dcb);
+  dcb.BaudRate = CBR_115200;
+  dcb.ByteSize = 8;
+  dcb.Parity = NOPARITY;
+  dcb.StopBits = ONESTOPBIT;
+
+  if (!SetCommState(*hSerial, &dcb)) {
+    printf("SetCommState error while opening serial port.\n");
+    close_serial_port(hSerial);
+  }
+
+  // --- set timeouts (non-blocking with small wait) ---
+  COMMTIMEOUTS timeouts = {0};
+  timeouts.ReadIntervalTimeout = 10;
+  timeouts.ReadTotalTimeoutConstant = 10;
+  timeouts.ReadTotalTimeoutMultiplier = 0;
+  if (!SetCommTimeouts(*hSerial, &timeouts)) {
+    printf("SetCommTimeouts error while opening serial port.\n");
+    close_serial_port(hSerial);
+  }
+
+  printf("Serial port opened!\n");
+}
+
+void close_serial_port(HANDLE *hSerial) {
+  if (*hSerial != INVALID_HANDLE_VALUE) {
+    printf("Serial port closed.\n");
+    CloseHandle(*hSerial);
+  }
+  *hSerial = INVALID_HANDLE_VALUE;
+}
