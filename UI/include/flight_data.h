@@ -105,5 +105,6 @@ void init_flight_data();
 void deinit_flight_data();
 void load_flight_replay();
 void flight_data_periodic();
+void write_serial_to_fv(const char *msg);
 
 #endif

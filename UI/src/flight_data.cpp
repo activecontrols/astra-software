@@ -123,6 +123,14 @@ void flight_data_periodic() {
       close_serial_port(&FlightDataState.rtk_serial);
     }
 
+    // RTK forwarding
+    if (FlightDataState.rtk_serial_port_open && FlightDataState.fv_serial_port_open) {
+    }
+
+    // Flight data parsing
+    if (FlightDataState.fv_serial_port_open) {
+    }
+
   } else {
     if (FlightDataState.input_file != NULL && !FlightDataState.file_reading_paused) {
       size_t read_size = fread(&active_packet, sizeof(active_packet), 1, FlightDataState.input_file);
@@ -131,5 +139,18 @@ void flight_data_periodic() {
         commit_packet();
       }
     }
+  }
+}
+
+void write_serial_to_fv(const char *msg) {
+  if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT && FlightDataState.fv_serial_port_open) {
+    size_t len = strlen(msg);
+    if (len != 0) {
+      // write to the flight vehicle, end with newline
+      write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, msg, len, true);
+    }
+
+  } else {
+    printf("Failed to send serial message - make sure serial input mode is active and flight vehicle serial port is open.\n");
   }
 }

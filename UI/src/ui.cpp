@@ -8,6 +8,8 @@
 #include "ui_components.h"
 #include "ui_graphs.h"
 
+bool text_box_active;
+
 void imu_accel_panel() {
   ImGui::Begin(IMU_ACCEL_PANEL);
 
@@ -214,7 +216,7 @@ void data_management_panel() {
     ImGui::PopFont();
 
     if (FlightDataState.ports.size() == 0) {
-      FlightDataState.ports = enumerate_ports();
+      FlightDataState.ports = enumerate_ports(); // TODO - this could re-arrange the user's selections - make sure we preserve when possible
       if (FlightDataState.ports.size() == 0) {
 
         FlightDataState.ports.push_back({"", "No Serial Ports Found"});
@@ -271,7 +273,7 @@ void data_management_panel() {
       should_send = true;
     }
 
-    bool text_box_active = ImGui::IsItemActive();
+    text_box_active = ImGui::IsItemActive();
     ImGui::SameLine();
     if (rounded_button("Send", ImVec2(175, 0), IM_COL32(33, 112, 69, 255))) {
       should_send = true;
@@ -282,13 +284,14 @@ void data_management_panel() {
     }
 
     if (should_send) {
-      // write_serial(inputBuffer);
+      write_serial_to_fv(inputBuffer);
       printf("You entered: %s\n", inputBuffer);
+
       inputBuffer[0] = '\0';
     }
 
     if (!text_box_active && ImGui::IsKeyPressed(ImGuiKey_K)) {
-      // write_serial("k");
+      write_serial_to_fv("k");
       printf("You entered: %s\n", "k");
     }
 
@@ -395,7 +398,7 @@ void render_loop() {
   ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_AutoHideTabBar);
 
   static bool first_time = true;
-  if (first_time || ImGui::IsKeyPressed(ImGuiKey_R)) {
+  if (first_time || (ImGui::IsKeyPressed(ImGuiKey_R) && !text_box_active)) {
     build_dock_layout(dockspace_id);
     first_time = false;
   }

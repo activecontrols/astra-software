@@ -133,3 +133,36 @@ void close_serial_port(HANDLE *hSerial) {
   }
   *hSerial = INVALID_HANDLE_VALUE;
 }
+
+void read_from_serial_port(HANDLE *hSerial, bool *open_flag, char *read_buf, size_t MAX_READ_LEN, int *bytes_read) {
+  DWORD dword_bytes_read = 0;
+
+  if (!ReadFile(*hSerial, read_buf, MAX_READ_LEN, &dword_bytes_read, NULL)) {
+    printf("ReadFile error - closing serial port.\n");
+    close_serial_port(hSerial);
+    *open_flag = false;
+    *bytes_read = 0;
+    return;
+  }
+
+  *bytes_read = dword_bytes_read;
+}
+
+void write_to_serial_port(HANDLE *hSerial, bool *open_flag, const char *msg, size_t len, bool end_with_newline) {
+  DWORD bytes_written = 0;
+  if (!WriteFile(*hSerial, msg, len, &bytes_written, NULL)) {
+    printf("WriteFile error - closing serial port.\n");
+    close_serial_port(hSerial);
+    *open_flag = false;
+    return;
+  }
+
+  char newline = '\n';
+
+  if (!WriteFile(*hSerial, &newline, 1, &bytes_written, NULL)) {
+    printf("WriteFile error - closing serial port.\n");
+    close_serial_port(hSerial);
+    *open_flag = false;
+    return;
+  }
+}
