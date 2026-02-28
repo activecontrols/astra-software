@@ -226,9 +226,9 @@ bool sector_erase(uint32_t addr) {
 // as per DS - only last 256 bytes are actually written, and the write address wraps back around the the beginning of the 256-byte page when necessary
 // chain function calls together to write data across multiple pages
 bool page_program(uint32_t addr, uint8_t *data, uint32_t len) {
-  wait_for_wip();
-  write_enable();
-  wait_for_wip();
+  if (!wait_for_wip(1500) || !write_enable() || !wait_for_wip())
+    return false;
+
   bool status = write(CMD_PP, data, len, addr);
   write_disable();
   return status;
@@ -308,7 +308,8 @@ bool _initialize() {
   return true;
 }
 
-inline bool read(uint32_t addr, uint32_t len, uint8_t *out) {
+bool read(uint32_t addr, uint32_t len, uint8_t *out) {
+  wait_for_wip();
   return receive(CMD_4READ, out, len, addr, 6);
 }
 

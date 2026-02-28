@@ -6,6 +6,7 @@
 #include "TrajectoryFollower.h"
 #include "TrajectoryLoader.h"
 #include "gimbal_servos.h"
+#include "FlashLogging.h"
 #include <Arduino.h>
 
 void ping(const char *args) {
