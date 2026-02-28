@@ -59,44 +59,44 @@ void init_controller_and_estimator_constants() {
   last_call_time = micros();
 }
 
-Controller_Output get_controller_output(Controller_Input ci) {
-  unsigned long call_time = micros();
-  float dT = (call_time - last_call_time) / 1000000.0;
-  last_call_time = call_time;
+Controller_Output get_controller_output(Vector15 z, Vector3 TargetPos, bool GND_val, bool new_imu_packet, bool new_gps_packet, float dT) {
+  // unsigned long call_time = micros();
+  // float dT = (call_time - last_call_time) / 1000000.0;
+  // last_call_time = call_time;
 
-  Vector15 z;
-  // clang-format off
-  z << ci.accel_x, ci.accel_y, ci.accel_z, 
-       ci.gyro_yaw, ci.gyro_pitch, ci.gyro_roll,
-       ci.mag_x, ci.mag_y, ci.mag_z,
-       ci.gps_pos_north, ci.gps_pos_west, ci.gps_pos_up, 
-       ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
-  // clang-format on
+  // Vector15 z;
+  // // clang-format off
+  // z << ci.accel_x, ci.accel_y, ci.accel_z,
+  //      ci.gyro_yaw, ci.gyro_pitch, ci.gyro_roll,
+  //      ci.mag_x, ci.mag_y, ci.mag_z,
+  //      ci.gps_pos_north, ci.gps_pos_west, ci.gps_pos_up,
+  //      ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
+  // // clang-format on
 
   Vector9 imu = z.segment<9>(0);
-  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
+  Vector9 filt_imu = DigitalNF(imu, GND_val, last_thrust, dT, dnf_X, dnf_Y);
   z.segment<9>(0) = filt_imu;
 
-  if (!ci.GND_val && last_GND) { // we left GND this frame
+  if (!GND_val && last_GND) { // we left GND this frame
     Flight_P = P.block<9, 9>(0, 0);
     ASTRAv2_Controller_reset(); // reset integral gains in the controller itself
   }
 
-  if (ci.GND_val) {
-    x_est = GroundEstimator(x_est, constantsASTRA, z, dT, P, ci.new_imu_packet, ci.new_gps_packet);
+  if (GND_val) {
+    x_est = GroundEstimator(x_est, constantsASTRA, z, dT, P, new_imu_packet, new_gps_packet);
   } else {
-    x_est = FlightEstimator(x_est, constantsASTRA, z, dT, Flight_P, ci.new_gps_packet);
+    x_est = FlightEstimator(x_est, constantsASTRA, z, dT, Flight_P, new_gps_packet);
   }
 
   Vector16 X = StateAUG(x_est.segment<13>(0), z.segment<3>(3));
-  Vector3 TargetPos;
-  TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
+  // Vector3 TargetPos;
+  // TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
   Vector4 raw_co = ASTRAv2_Controller(TargetPos, X, constantsASTRA, dT);
-  if (ci.GND_val) {
+  if (GND_val) {
     raw_co = Vector4::Zero();
   }
   last_thrust = raw_co(2);
-  last_GND = ci.GND_val;
+  last_GND = GND_val;
 
   Controller_Output co;
   co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;
@@ -105,4 +105,4 @@ Controller_Output get_controller_output(Controller_Input ci) {
   co.roll_rad_sec_squared = raw_co(3);
   return co;
 }
-} // namespace Controller
+} // namespace ControllerAndEstimator

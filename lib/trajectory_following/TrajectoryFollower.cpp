@@ -126,7 +126,7 @@ void follow_trajectory() {
 
       ci.GND_val = !has_left_ground;
 
-      Controller_Output co = ControllerAndEstimator::get_controller_output(ci);
+      Controller_Output co; //= ControllerAndEstimator::get_controller_output(ci);
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);

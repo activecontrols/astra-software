@@ -1,5 +1,7 @@
 #pragma once
 
+#include "matlab_funcs.h"
+
 struct Controller_Output {
   float thrust_N;
   float roll_rad_sec_squared;
@@ -37,5 +39,5 @@ struct Controller_Input {
 
 namespace ControllerAndEstimator {
 void init_controller_and_estimator_constants();
-Controller_Output get_controller_output(Controller_Input ci);
+Controller_Output get_controller_output(Vector15 z, Vector3 TargetPos, bool GND_val, bool new_imu_packet, bool new_gps_packet, float dT);
 }; // namespace ControllerAndEstimator

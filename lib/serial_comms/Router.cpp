@@ -53,15 +53,15 @@ void begin() {
   COMMS_SERIAL.begin(COMMS_RATE);
   COMMS_SERIAL.setTimeout((unsigned long)-1); // wrap around to max long so we never time out
 
-  if (SDCard::begin()) {
-    comms_log_file = SDCard::open("log.txt", FILE_WRITE);
-  } else {
-    Router::println("SD card not found.");
-    while (true) {
-      Router::println("Reboot once SD card inserted...");
-      delay(1000);
-    }
-  }
+  // if (SDCard::begin()) {
+  //   comms_log_file = SDCard::open("log.txt", FILE_WRITE);
+  // } else {
+  //   Router::println("SD card not found.");
+  //   while (true) {
+  //     Router::println("Reboot once SD card inserted...");
+  //     delay(1000);
+  //   }
+  // }
 }
 
 void send(char msg[], unsigned int len) {
