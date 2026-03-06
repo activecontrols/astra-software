@@ -1,6 +1,7 @@
 #pragma once
 #include "matlab_funcs.h"
 #include <Arduino.h>
+#include "UBX.h" // trajectorylogger needs access to UBX.h for pos and vel covariance struct
 
 #define EARTH_RADIUS_M 6371001.0
 
@@ -23,6 +24,8 @@ struct Point {
 };
 
 namespace GPS {
+
+UBX ubx;
 
 extern GPS_Coord origin;
 

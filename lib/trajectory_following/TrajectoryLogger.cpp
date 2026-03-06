@@ -4,6 +4,7 @@
 #include "CString.h"
 #include "Router.h"
 #include "SDCard.h"
+#include "GPS.h"
 
 namespace TrajectoryLogger {
 
@@ -29,13 +30,18 @@ void log_trajectory_csv(float time, int phase, Controller_Input ci, Controller_O
   }
 }
 
-struct type_identifier {
-  uint8_t type; // 0 for trajectory log, 1 for gps log
-  float time;
-  int phase;
+struct __packed MeasurementFlags {
+  bool new_imu_packet : 1;
+  bool new_gps_packet : 1;
 };
 
-struct sensorWriting : type_identifier {
+struct __packed EntryBase {
+  MeasurementFlags flags;
+  float time;
+  uint8_t phase;
+};
+
+struct __packed SensorEntry {
 
   float accel_x;
   float accel_y;
@@ -50,7 +56,7 @@ struct sensorWriting : type_identifier {
   float mag_z;
 };
 
-struct gpsWriting : type_identifier {
+struct __packed GpsEntry {
 
   float gps_pos_north;
   float gps_pos_west;
@@ -59,52 +65,79 @@ struct gpsWriting : type_identifier {
   float gps_vel_north;
   float gps_vel_west;
   float gps_vel_up;
+
+  float posCovNN; // m^2
+  float posCovNE; // m^2
+  float posCovND; // m^2
+  float posCovEE; // m^2
+  float posCovED; // m^2
+  float posCovDD; // m^2
+  float velCovNN; // m^2/s^2
+  float velCovNE; // m^2/s^2
+  float velCovND; // m^2/s^2
+  float velCovEE; // m^2/s^2
+  float velCovED; // m^2/s^2
+  float velCovDD; // m^2/s^2
 };
 
-void log_trajectory_flash(float time, int phase, Controller_Input ci, Controller_Output co) {
+void log_trajectory_flash(float time, int phase, const Controller_Input* ci, const Controller_Output* co) {
 
-  type_identifier idSensor{};
-  idSensor.type = 0;
-  idSensor.time = time;
-  idSensor.phase = phase;
+  MeasurementFlags flags {};
+  flags.new_gps_packet = ci->new_gps_packet;
+  flags.new_imu_packet = ci->new_imu_packet;
 
-  sensorWriting sensorData{};
-  sensorData.type = idSensor.type;
-  sensorData.time = idSensor.time;
-  sensorData.phase = idSensor.phase;
-  sensorData.accel_x = ci.accel_x;
-  sensorData.accel_y = ci.accel_y;
-  sensorData.accel_z = ci.accel_z;
-  sensorData.gyro_yaw = ci.gyro_yaw;
-  sensorData.gyro_pitch = ci.gyro_pitch;
-  sensorData.gyro_roll = ci.gyro_roll;
-  sensorData.mag_x = ci.mag_x;
-  sensorData.mag_y = ci.mag_y;
-  sensorData.mag_z = ci.mag_z;
+  EntryBase entryBase{};
+  entryBase.flags = flags;
+  entryBase.time = time;
+  entryBase.phase = phase;
+
+  Logging::write((uint8_t *)&entryBase, sizeof(entryBase));
+
+  SensorEntry sensorData{};
+  sensorData.accel_x = ci->accel_x;
+  sensorData.accel_y = ci->accel_y;
+  sensorData.accel_z = ci->accel_z;
+  sensorData.gyro_yaw = ci->gyro_yaw;
+  sensorData.gyro_pitch = ci->gyro_pitch;
+  sensorData.gyro_roll = ci->gyro_roll;
+  sensorData.mag_x = ci->mag_x;
+  sensorData.mag_y = ci->mag_y;
+  sensorData.mag_z = ci->mag_z;
 
   Logging::write((uint8_t *)&sensorData, sizeof(sensorData));
 
-  if (ci.new_gps_packet) {
-    type_identifier idGPS{};
-    idGPS.type = 1;
-    idGPS.time = time;
-    idGPS.phase = phase;
+  if (ci->new_gps_packet) {
+    GpsEntry gpsData{};
+    gpsData.gps_pos_north = ci->gps_pos_north;
+    gpsData.gps_pos_west = ci->gps_pos_west;
+    gpsData.gps_pos_up = ci->gps_pos_up;
 
-    gpsWriting gpsData{};
-    gpsData.type = idGPS.type;
-    gpsData.time = idGPS.time;
-    gpsData.phase = idGPS.phase;
+    gpsData.gps_vel_north = ci->gps_vel_north;
+    gpsData.gps_vel_west = ci->gps_vel_west;
+    gpsData.gps_vel_up = ci->gps_vel_up;
 
-    gpsData.gps_pos_north = ci.gps_pos_north;
-    gpsData.gps_pos_west = ci.gps_pos_west;
-    gpsData.gps_pos_up = ci.gps_pos_up;
+    gpsData.posCovNN = GPS::ubx.cov.data->posCovNN;
+    gpsData.posCovNE = GPS::ubx.cov.data->posCovNE;
+    gpsData.posCovND = GPS::ubx.cov.data->posCovND;
+    gpsData.posCovEE = GPS::ubx.cov.data->posCovEE;
+    gpsData.posCovED = GPS::ubx.cov.data->posCovED;
+    gpsData.posCovDD = GPS::ubx.cov.data->posCovDD;
 
-    gpsData.gps_vel_north = ci.gps_vel_north;
-    gpsData.gps_vel_west = ci.gps_vel_west;
-    gpsData.gps_vel_up = ci.gps_vel_up;
+    gpsData.velCovNN = GPS::ubx.cov.data->velCovNN;
+    gpsData.velCovNE = GPS::ubx.cov.data->velCovNE;
+    gpsData.velCovND = GPS::ubx.cov.data->velCovND;
+    gpsData.velCovEE = GPS::ubx.cov.data->velCovEE;
+    gpsData.velCovED = GPS::ubx.cov.data->velCovED;
+    gpsData.velCovDD = GPS::ubx.cov.data->velCovDD;
 
     Logging::write((uint8_t *)&gpsData, sizeof(gpsData));
   }
+
+
+  // log controller output
+  Logging::write((uint8_t*)co, sizeof(*co));
+
+  return;
 }
 
 // creates a log file for the current trajectory and prints csv header

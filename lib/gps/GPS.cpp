@@ -9,8 +9,6 @@ HardwareSerial gps_uart(GPS_UART_RX, GPS_UART_TX);
 namespace GPS {
 GPS_Coord origin;
 
-UBX ubx;
-
 double deg_to_rad(double degrees) {
   return degrees * (PI / 180.0);
 }
