@@ -50,7 +50,7 @@ void setup() {
   // Router::add({Router::print_all_cmds, "help"});
 
   Router::println("Starting benchmark...");
-  long long start = micros();
+  volatile uint32_t start = micros();
 
   ControllerAndEstimator::init_controller_and_estimator_constants();
   Controller_Output co;
@@ -65,8 +65,9 @@ void setup() {
     co4 = co.roll_rad_sec_squared;
   }
 
-  long long end = micros();
-  Router::printf("Finished benchmark in %ld us.\n", end - start);
+  volatile uint32_t end = micros();
+  Router::printf("Finished benchmark in: %ld u.\n", end - start);
+  Router::printf("Sys core clock: %ld u.\n", SystemCoreClock);
 }
 
 void loop() {
