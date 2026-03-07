@@ -12,8 +12,6 @@ Matrix9_4 dnf_Y;
 float last_thrust;
 bool last_GND;
 
-unsigned long last_call_time; // ms
-
 void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.2490;
@@ -55,14 +53,9 @@ void init_controller_and_estimator_constants() {
   last_GND = true;
 
   ASTRAv2_Controller_reset();
-
-  last_call_time = micros();
 }
 
-Controller_Output get_controller_output(Controller_Input ci) {
-  unsigned long call_time = micros();
-  float dT = (call_time - last_call_time) / 1000000.0;
-  last_call_time = call_time;
+Controller_Output get_controller_output(Controller_Input ci, float dT) {
 
   Vector15 z;
   // clang-format off

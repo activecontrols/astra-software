@@ -37,5 +37,5 @@ struct Controller_Input {
 
 namespace ControllerAndEstimator {
 void init_controller_and_estimator_constants();
-Controller_Output get_controller_output(Controller_Input ci);
+Controller_Output get_controller_output(Controller_Input ci, float dT);
 }; // namespace ControllerAndEstimator

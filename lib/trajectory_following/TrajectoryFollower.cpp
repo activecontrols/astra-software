@@ -14,7 +14,7 @@
 #include "elapsedMillis.h"
 #include "gimbal_servos.h"
 
-#define LOG_INTERVAL_US 5000
+#define TELEMETRY_INTERVAL_US 5000
 #define COMMAND_INTERVAL_US 1000
 
 namespace TrajectoryFollower {
@@ -26,7 +26,7 @@ void follow_trajectory() {
   bool has_left_ground = false;
   bool flight_armed = false;
   bool should_kill = false;
-  bool should_log = false;
+  bool send_telemetry = false;
 
   long counter = 0;
 
@@ -51,11 +51,13 @@ void follow_trajectory() {
   TrajectoryLogger::log_calib_flash();
 
   elapsedMicros timer = elapsedMicros();
-  unsigned long lastlog = timer;
+  unsigned long lasttelemetry = timer;
   unsigned long lastloop = timer;
 
+  float last_time_s = timer / 1000000.0;
+
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
-    while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
+    while (last_time_s < TrajectoryLoader::trajectory[i].time || !flight_armed) {
       char cmd_char = ' ';
       if (Router::available()) {
         cmd_char = Router::read();
@@ -67,17 +69,17 @@ void follow_trajectory() {
       if (cmd_char == 'y') {
         flight_armed = true;
         timer = elapsedMicros();
-        lastlog = timer;
+        lasttelemetry = timer;
         lastloop = timer;
         counter = 0;
         GPS::set_current_position_as_origin();
       }
 
-      if (timer - lastlog > LOG_INTERVAL_US) {
-        lastlog = timer;
-        should_log = true;
+      if (timer - lasttelemetry > TELEMETRY_INTERVAL_US) {
+        lasttelemetry = timer;
+        send_telemetry = true;
       } else {
-        should_log = false;
+        send_telemetry = false;
       }
 
       Controller_Input ci;
@@ -129,21 +131,27 @@ void follow_trajectory() {
 
       ci.GND_val = !has_left_ground;
 
-      Controller_Output co = ControllerAndEstimator::get_controller_output(ci);
+      float time_s = timer / 1000000.0;
+      float dT = time_s - last_time_s;
+
+      Controller_Output co = ControllerAndEstimator::get_controller_output(ci, dT);
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
       Prop::set_throttle_roll(thrust_perc, diffy_perc);
       GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
-      if (should_log) {
-        TrajectoryLogger::log_trajectory_flash(timer / 1000000.0, i, ci, co);
+      TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
+
+      if (send_telemetry) {
+        // TODO - send telemetry here
       }
       counter++;
 
       unsigned long target_slp = COMMAND_INTERVAL_US - (timer - lastloop);
       delayMicroseconds(target_slp < COMMAND_INTERVAL_US ? target_slp : 0); // don't delay for too long
       lastloop += COMMAND_INTERVAL_US;
+      last_time_s = time_s;
     }
     if (should_kill) {
       break;
