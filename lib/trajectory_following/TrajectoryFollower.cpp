@@ -2,6 +2,7 @@
 
 #include "Arduino.h"
 #include "FlashLogging.h"
+#include "FlightCommands.h"
 #include "GPS.h"
 #include "IMU.h"
 #include "Mag.h"
@@ -25,7 +26,6 @@ namespace TrajectoryFollower {
 void follow_trajectory() {
   bool has_left_ground = false;
   bool flight_armed = false;
-  bool should_kill = false;
   bool should_log = false;
 
   long counter = 0;
@@ -57,14 +57,14 @@ void follow_trajectory() {
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (timer / 1000000.0 < TrajectoryLoader::trajectory[i].time || !flight_armed) {
       char cmd_char = ' ';
-      if (Router::available()) {
-        cmd_char = Router::read();
+      while (Router::available()) {
+        FlightCommands::encode(Router::read());
       }
-      if (cmd_char == 'k') {
-        should_kill = true;
+      if (FlightCommands::kill_flag) {
         break;
       }
-      if (cmd_char == 'y') {
+      if (FlightCommands::arm_flag) {
+        FlightCommands::arm_flag = false; // only do this on rising edge
         flight_armed = true;
         timer = elapsedMicros();
         lastlog = timer;
@@ -145,7 +145,7 @@ void follow_trajectory() {
       delayMicroseconds(target_slp < COMMAND_INTERVAL_US ? target_slp : 0); // don't delay for too long
       lastloop += COMMAND_INTERVAL_US;
     }
-    if (should_kill) {
+    if (FlightCommands::kill_flag) {
       break;
     }
   }
