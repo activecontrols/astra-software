@@ -5,8 +5,8 @@
 // PWM PINS
 #define PROP1_PIN PD14
 #define PROP2_PIN PD15
-#define BOTTOM_SERVO_PIN PC6 // servo 1
-#define TOP_SERVO_PIN PC7    // servo 2
+#define INNER_SERVO_PIN PC6 // servo 1
+#define OUTER_SERVO_PIN PC7 // servo 2
 
 // SPI PINS
 #define SD_CARD_CS PC12
