@@ -46,15 +46,13 @@ void setup() {
 
   pinMode(PB6, OUTPUT);
 
-  // Prop::begin();
-  // Mag::begin();
-  // GPS::begin();
-  // IMU::begin();
-  // GimbalServos::begin();
-  // TrajectoryLoader::begin();
-  // TrajectoryFollower::begin();
-
-  // Flash::begin();
+  Prop::begin();
+  Mag::begin();
+  GPS::begin();
+  IMU::begin();
+  GimbalServos::begin();
+  TrajectoryLoader::begin();
+  TrajectoryFollower::begin();
 
   Logging::begin();
 
