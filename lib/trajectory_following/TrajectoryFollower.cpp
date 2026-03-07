@@ -47,6 +47,8 @@ void follow_trajectory() {
 
   GPS::set_current_position_as_origin();
 
+  TrajectoryLogger::log_calib_flash();
+
   elapsedMicros timer = elapsedMicros();
   unsigned long lastlog = timer;
   unsigned long lastloop = timer;
@@ -134,7 +136,7 @@ void follow_trajectory() {
       GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       if (should_log) {
-        TrajectoryLogger::log_trajectory_flash(timer / 1000000.0, i, &ci, &co);
+        TrajectoryLogger::log_trajectory_flash(timer / 1000000.0, i, ci, co);
       }
       counter++;
 

@@ -6,7 +6,6 @@
 
 #include "Mag.h"
 #include "IMU.h"
-#include "log_defs.h"
 
 
 namespace Logging

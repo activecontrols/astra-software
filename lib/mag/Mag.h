@@ -20,4 +20,6 @@ double get_heading();
 
 bool isMeasurementReady();
 bool beginMeasurement();
+
+extern calibration calib;
 } // namespace Mag

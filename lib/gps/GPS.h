@@ -25,7 +25,7 @@ struct Point {
 
 namespace GPS {
 
-UBX ubx;
+extern UBX ubx;
 
 extern GPS_Coord origin;
 
