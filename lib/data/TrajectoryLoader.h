@@ -18,12 +18,12 @@ extern traj_point_pos *trajectory;
 extern bool loaded_trajectory;
 
 void begin(); // registers loader functions with the router
-bool load_trajectory_sd(const char *filename);
+// bool load_trajectory_sd(const char *filename);
 
-// triggered by comms
-void load_trajectory_serial(const char *);
-void load_trajectory_sd_cmd(const char *);
-void write_trajectory_sd(const char *);
+// // triggered by comms
+// void load_trajectory_serial(const char *);
+// void load_trajectory_sd_cmd(const char *);
+// void write_trajectory_sd(const char *);
 
-void load_trajectory_generic(bool serial, File *f);
+// void load_trajectory_generic(bool serial, File *f);
 }; // namespace TrajectoryLoader

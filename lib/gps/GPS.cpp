@@ -7,6 +7,7 @@
 HardwareSerial gps_uart(GPS_UART_RX, GPS_UART_TX);
 
 namespace GPS {
+UBX ubx;
 GPS_Coord origin;
 
 double deg_to_rad(double degrees) {
