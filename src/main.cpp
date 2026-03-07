@@ -36,7 +36,7 @@ void setup() {
   digitalWrite(PE4, HIGH);
 
   Prop::begin();
-  // Mag::begin();
+  Mag::begin();
   GPS::begin();
   IMU::begin();
   GimbalServos::begin();

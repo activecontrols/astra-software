@@ -251,10 +251,10 @@
 
 // I2C definitions
 #ifndef PIN_WIRE_SDA
-#define PIN_WIRE_SDA PNUM_NOT_DEFINED
+#define PIN_WIRE_SDA PH8
 #endif
 #ifndef PIN_WIRE_SCL
-#define PIN_WIRE_SCL PNUM_NOT_DEFINED
+#define PIN_WIRE_SCL PH7
 #endif
 
 // Timer Definitions
