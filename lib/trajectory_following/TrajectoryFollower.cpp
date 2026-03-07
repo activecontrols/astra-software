@@ -35,6 +35,7 @@ void follow_trajectory() {
 
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
   ControllerAndEstimator::init_controller_and_estimator_constants();
+  FlightCommands::reset();
 
   while (!Mag::isMeasurementReady()) {
     Router::println("Waiting on mag...");
