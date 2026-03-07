@@ -99,6 +99,12 @@ void load_flight_replay() {
   }
 }
 
+#define RTK_READ_SIZE 256
+#define RTK_WRITE_SIZE 64
+char rtk_read_buf[RTK_READ_SIZE];
+char rtk_write_buf[RTK_WRITE_SIZE];
+int rtk_write_pos = 0;
+
 void flight_data_periodic() {
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
     if (FlightDataState.fv_serial_port_open && FlightDataState.fv_serial == INVALID_HANDLE_VALUE && FlightDataState.fv_serial_idx < FlightDataState.ports.size()) {
@@ -125,10 +131,23 @@ void flight_data_periodic() {
 
     // RTK forwarding
     if (FlightDataState.rtk_serial_port_open && FlightDataState.fv_serial_port_open) {
+      int rtk_bytes_read = 0;
+      read_from_serial_port(&FlightDataState.rtk_serial, &FlightDataState.rtk_serial_port_open, rtk_read_buf, RTK_READ_SIZE, &rtk_bytes_read);
+      if (rtk_bytes_read > 0) {
+        for (int i = 0; i < rtk_bytes_read; i++) {
+          rtk_write_buf[rtk_write_pos] = rtk_read_buf[i];
+          rtk_write_pos++;
+          if (rtk_write_pos == RTK_WRITE_SIZE) {
+            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, "rtk:", 4, false);                    // send "rtk:" prefix
+            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, rtk_write_buf, RTK_WRITE_SIZE, true); // send data and newline suffix
+          }
+        }
+      }
     }
 
     // Flight data parsing
     if (FlightDataState.fv_serial_port_open) {
+      // TODO - this
     }
 
   } else {

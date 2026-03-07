@@ -115,7 +115,7 @@ void open_serial_port(HANDLE *hSerial, const char *com_port) {
 
   // --- set timeouts (non-blocking with small wait) ---
   COMMTIMEOUTS timeouts = {0};
-  timeouts.ReadIntervalTimeout = 10;
+  timeouts.ReadIntervalTimeout = 2; // wait for 2 ms
   timeouts.ReadTotalTimeoutConstant = 10;
   timeouts.ReadTotalTimeoutMultiplier = 0;
   if (!SetCommTimeouts(*hSerial, &timeouts)) {
@@ -157,12 +157,14 @@ void write_to_serial_port(HANDLE *hSerial, bool *open_flag, const char *msg, siz
     return;
   }
 
-  char newline = '\n';
+  if (end_with_newline) {
+    char newline = '\n';
 
-  if (!WriteFile(*hSerial, &newline, 1, &bytes_written, NULL)) {
-    printf("WriteFile error - closing serial port.\n");
-    close_serial_port(hSerial);
-    *open_flag = false;
-    return;
+    if (!WriteFile(*hSerial, &newline, 1, &bytes_written, NULL)) {
+      printf("WriteFile error - closing serial port.\n");
+      close_serial_port(hSerial);
+      *open_flag = false;
+      return;
+    }
   }
 }
