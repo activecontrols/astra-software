@@ -25,8 +25,8 @@ void setGimbalAngle(float inner, float outer) {
   float servo_inner_angle = inner + 16;
   float servo_outer_angle = outer + 5;
 
-  Router::printf("Outputted Inner Angle: %.2f\n", servo_inner_angle);
-  Router::printf("Outputted Outer Angle: %.2f\n", servo_outer_angle);
+  // Router::printf("Outputted Inner Angle: %.2f\n", servo_inner_angle);
+  // Router::printf("Outputted Outer Angle: %.2f\n", servo_outer_angle);
 
   inner_servo.writeMicroseconds(calc_servo_pulsewidth(servo_inner_angle));
   outer_servo.writeMicroseconds(calc_servo_pulsewidth(servo_outer_angle));

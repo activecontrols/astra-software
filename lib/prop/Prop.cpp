@@ -250,8 +250,8 @@ void begin() {
   Router::add({cmd_ramp_test, "prop_ramp"});
   Router::add({cmd_contra_test, "prop_contra"});
 
-  Router::mprintln("Initialized on pins ", PROP1_PIN, " and ", PROP2_PIN, ".");
-  Router::println("Run 'prop_arm' to arm ESCs.");
+  // Router::mprintln("Initialized on pins ", PROP1_PIN, " and ", PROP2_PIN, ".");
+  // Router::println("Run 'prop_arm' to arm ESCs.");
 }
 
 } // namespace Prop
