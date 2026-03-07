@@ -43,8 +43,8 @@ public:
 
   void calibrate_gyro();
 
-  void load_calib(const char *);
-  void write_calib(const char *);
+  // void load_calib(const char *);
+  // void write_calib(const char *);
 
   void clear_calib();
   void load_custom_calib();

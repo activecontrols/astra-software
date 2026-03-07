@@ -4,16 +4,16 @@
 
 #include "controller_and_estimator.h"
 
-#include "Mag.h"
 #include "IMU.h"
+#include "Mag.h"
 
-
-namespace Logging
-{
+namespace Logging {
 
 void begin();
 
 void complete();
 
 void write(uint8_t *data, unsigned int len);
-};
+
+bool is_armed();
+}; // namespace Logging

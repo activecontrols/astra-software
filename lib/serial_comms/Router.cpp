@@ -6,8 +6,8 @@
 #define COMMAND_BUFFER_SIZE (200)
 
 namespace Router {
-
-File comms_log_file;
+// TODO: re-enable this later
+// File // comms_log_file;
 
 CString<COMMAND_BUFFER_SIZE> commandBuffer;
 CString<COMMAND_BUFFER_SIZE> readBuffer;
@@ -37,15 +37,15 @@ void readCommand() {
     // }
   }
 
-  comms_log_file.print("<");
-  comms_log_file.print(commandBuffer.str);
-  comms_log_file.print(" ");
+  // comms_log_file.print("<");
+  // comms_log_file.print(commandBuffer.str);
+  // comms_log_file.print(" ");
   if (argStart != nullptr) {
-    comms_log_file.print("args: ");
-    comms_log_file.print(argStart);
+    // comms_log_file.print("args: ");
+    // comms_log_file.print(argStart);
   }
-  comms_log_file.print(">\n");
-  comms_log_file.flush();
+  // comms_log_file.print(">\n");
+  // comms_log_file.flush();
 }
 } // namespace
 
@@ -54,7 +54,7 @@ void begin() {
   COMMS_SERIAL.setTimeout((unsigned long)-1); // wrap around to max long so we never time out
 
   // if (SDCard::begin()) {
-  //   comms_log_file = SDCard::open("log.txt", FILE_WRITE);
+  //   // comms_log_file = SDCard::open("log.txt", FILE_WRITE);
   // } else {
   //   Router::println("SD card not found.");
     // while (true) {
@@ -79,10 +79,10 @@ char *readline() {
   readBuffer.trim();                  // remove leading/trailing whitespace or newline
   readBuffer.resolve_backspaces();
 
-  comms_log_file.print("<");
-  comms_log_file.print(readBuffer.str);
-  comms_log_file.print(">\n");
-  comms_log_file.flush();
+  // comms_log_file.print("<");
+  // comms_log_file.print(readBuffer.str);
+  // comms_log_file.print(">\n");
+  // comms_log_file.flush();
 
   return readBuffer.str;
 }

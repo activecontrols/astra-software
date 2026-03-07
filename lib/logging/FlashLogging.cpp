@@ -49,6 +49,10 @@ void cmd_log_arm() {
   return;
 }
 
+bool is_armed(){
+  return log_enable;
+}
+
 void write(uint8_t *data, unsigned int len) {
   if (!log_enable)
     return;

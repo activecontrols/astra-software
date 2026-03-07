@@ -210,28 +210,28 @@ void mag_test_read_time() {
   Router::printf("Test concluded.\nAverage loop time (ms): %lf\nAverage time spend reading per iteration (ms): %lf\nCount Reads: %d\n", average_ms, read_time / 1000.0 / count, count_non_stale);
 }
 
-void write_samples(const char *filename) {
-  if (filename == nullptr) {
-    Router::print("Call with filename to save to.\n");
-    return;
-  }
-  collect_samples();
-  // write raw data to file
-  File f = SDCard::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
-  if (!f) {
-    return;
-  }
-  for (int i = 0; i < 1000; i++) {
-    f.print(read_x[i]);
-    f.print(",");
-    f.print(read_y[i]);
-    f.print(",");
-    f.println(read_z[i]);
-  }
-  f.close();
-  Router::mprintln("Done writing calibration data to ", filename);
-  Router::println("Use final.m in mag_calib/ to compute calibration parameters");
-}
+// void write_samples(const char *filename) {
+//   if (filename == nullptr) {
+//     Router::print("Call with filename to save to.\n");
+//     return;
+//   }
+//   collect_samples();
+//   // write raw data to file
+//   File f = Card::open(filename, FILE_WRITE | O_TRUNC | O_CREAT);
+//   if (!f) {
+//     return;
+//   }
+//   for (int i = 0; i < 1000; i++) {
+//     f.print(read_x[i]);
+//     f.print(",");
+//     f.print(read_y[i]);
+//     f.print(",");
+//     f.println(read_z[i]);
+//   }
+//   f.close();
+//   Router::mprintln("Done writing calibration data to ", filename);
+//   Router::println("Use final.m in mag_calib/ to compute calibration parameters");
+// }
 
 void print_calibration() {
   Router::println("Current calibration:");
@@ -402,22 +402,22 @@ void show_normalized_reading() {
     ;
 }
 
-void save_calib(const char *filename) {
-  if (filename == nullptr) {
-    filename = main_calib_name;
-  }
-  Router::mprintln("Saving calibration to ", filename);
-  SDCard::write_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
-}
+// void save_calib(const char *filename) {
+//   if (filename == nullptr) {
+//     filename = main_calib_name;
+//   }
+//   Router::mprintln("Saving calibration to ", filename);
+//   SDCard::write_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
+// }
 
-void load_calib(const char *filename) {
-  if (filename == nullptr) {
-    filename = main_calib_name;
-  }
-  Router::mprintln("Loading calibration from ", filename);
-  SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
-  print_calibration();
-}
+// void load_calib(const char *filename) {
+//   if (filename == nullptr) {
+//     filename = main_calib_name;
+//   }
+//   Router::mprintln("Loading calibration from ", filename);
+//   SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
+//   print_calibration();
+// }
 
 void no_calib() {
   calib = identity_calib;
@@ -501,15 +501,15 @@ void begin() {
   Router::add({print_calibration, "mag_print_calib"});
   Router::add({show_normalized_reading, "mag_show_normalized_reading"});
   Router::add({mag_test_read_time, "mag_test_read_time"});
-  Router::add({write_samples, "mag_write_samples"});
+  // Router::add({write_samples, "mag_write_samples"});
   Router::add({do_simple_calib, "mag_do_simple_calib"}); // todo: add a way to save samples to a file when doing simple calib
   Router::add({do_instant_calib, "mag_do_instant_calib"});
   Router::add({custom_calib, "mag_custom_calib"});
   Router::add({hard_reset, "mag_hard_reset"});
   Router::add({show_centered_reading, "mag_show_centered"});
   Router::add({no_calib, "mag_no_calib"});
-  Router::add({save_calib, "mag_save_calib"});
-  Router::add({load_calib, "mag_load_calib"});
+  // Router::add({save_calib, "mag_save_calib"});
+  // Router::add({load_calib, "mag_load_calib"});
   Router::add({mag_record_test, "mag_record_test"});
 
   do_instant_calib();

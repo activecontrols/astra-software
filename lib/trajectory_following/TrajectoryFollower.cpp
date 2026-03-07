@@ -1,6 +1,7 @@
 #include "TrajectoryFollower.h"
 
 #include "Arduino.h"
+#include "FlashLogging.h"
 #include "GPS.h"
 #include "IMU.h"
 #include "Mag.h"
@@ -170,17 +171,22 @@ void arm(const char *) {
     return;
   }
 
+  if (!Logging::is_armed()) {
+    Router::println("ARMING FAILURE: Flash logging is not armed. Use command log_arm.");
+    return;
+  }
+
   // filenames use DOS 8.3 standard
-  Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
-  char *log_file_name = Router::readline();
-  TrajectoryLogger::create_trajectory_log(log_file_name); // lower case files have issues on teensy
+  // Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
+  // char *log_file_name = Router::readline();
+  // TrajectoryLogger::create_trajectory_log(log_file_name); // lower case files have issues on teensy
 
   Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");
 
   follow_trajectory();
 
   Router::println("Finished following trajectory!");
-  TrajectoryLogger::close_trajectory_log();
+  // TrajectoryLogger::close_trajectory_log();
 }
 
 } // namespace TrajectoryFollower

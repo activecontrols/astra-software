@@ -354,13 +354,13 @@ void Sensor::clear_calib() {
   }
 }
 
-void Sensor::load_calib(const char *filename) {
-  SDCard::load_bytes(filename, (uint8_t *)&this->calib, sizeof(this->calib));
-}
+// void Sensor::load_calib(const char *filename) {
+//   SDCard::load_bytes(filename, (uint8_t *)&this->calib, sizeof(this->calib));
+// }
 
-void Sensor::write_calib(const char *filename) {
-  SDCard::write_bytes(filename, (uint8_t *)&this->calib, sizeof(this->calib));
-}
+// void Sensor::write_calib(const char *filename) {
+//   SDCard::write_bytes(filename, (uint8_t *)&this->calib, sizeof(this->calib));
+// }
 
 void begin_transaction(SPI_Interface *my_spi) {
   my_spi->spi->beginTransaction(SPI_SETTINGS);
@@ -473,33 +473,33 @@ void cmd_load_custom_calib(const char *arg) {
   IMUs[index].load_custom_calib();
 }
 
-void cmd_load_calib(const char *arg) {
-  char filename[35];
-  int imu_index;
+// void cmd_load_calib(const char *arg) {
+//   char filename[35];
+//   int imu_index;
 
-  sscanf(arg, "%d %34s", &imu_index, filename);
+//   sscanf(arg, "%d %34s", &imu_index, filename);
 
-  if (imu_index < 0 || imu_index >= IMU_COUNT) {
-    Router::print("Invalid IMU index entered.");
-    return;
-  }
+//   if (imu_index < 0 || imu_index >= IMU_COUNT) {
+//     Router::print("Invalid IMU index entered.");
+//     return;
+//   }
 
-  IMUs[imu_index].load_calib(filename);
-}
+//   IMUs[imu_index].load_calib(filename);
+// }
 
-void cmd_write_calib(const char *arg) {
-  char filename[35];
-  int imu_index;
+// void cmd_write_calib(const char *arg) {
+//   char filename[35];
+//   int imu_index;
 
-  sscanf(arg, "%d %34s", &imu_index, filename);
+//   sscanf(arg, "%d %34s", &imu_index, filename);
 
-  if (imu_index < 0 || imu_index >= IMU_COUNT) {
-    Router::print("Invalid IMU index entered.");
-    return;
-  }
+//   if (imu_index < 0 || imu_index >= IMU_COUNT) {
+//     Router::print("Invalid IMU index entered.");
+//     return;
+//   }
 
-  IMUs[imu_index].write_calib(filename);
-}
+//   IMUs[imu_index].write_calib(filename);
+// }
 
 void cmd_output_calib(const char *arg) {
   int imu_index = atoi(arg);
@@ -537,7 +537,7 @@ int IMU::begin() {
   Router::add({cmd_calibrate_gyro, "imu_calibrate_gyro"});
   Router::add({cmd_imu_log, "imu_log"});
   Router::add({cmd_load_custom_calib, "imu_enter_calib"});
-  Router::add({cmd_write_calib, "imu_write_calib"});
+  // Router::add({cmd_write_calib, "imu_write_calib"});
   Router::add({cmd_output_calib, "imu_print_calib"});
   Router::add({cmd_log_accel_for_calibration, "imu_log_accel_for_calib"});
   Router::add({imu_speed_test, "imu_speed_test"});

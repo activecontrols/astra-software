@@ -13,22 +13,22 @@ CString<400> telemCSV;
 
 #define LOG_HEADER ("time,phase,north,west,up")
 
-// logs time, phase, and position data in .csv format
-int print_counter = 0;
-void log_trajectory_csv(float time, int phase, Controller_Input ci, Controller_Output co) {
-  telemCSV.clear();
-  telemCSV << time << "," << phase << "," << ci.target_pos_north << "," << ci.target_pos_west << "," << ci.target_pos_up;
+// // logs time, phase, and position data in .csv format
+// int print_counter = 0;
+// void log_trajectory_csv(float time, int phase, Controller_Input ci, Controller_Output co) {
+//   telemCSV.clear();
+//   telemCSV << time << "," << phase << "," << ci.target_pos_north << "," << ci.target_pos_west << "," << ci.target_pos_up;
 
-  positionLogFile.println(telemCSV.str);
-  positionLogFile.flush();
+//   positionLogFile.println(telemCSV.str);
+//   positionLogFile.flush();
 
-  print_counter++;
-  if (print_counter % 10 == 0) {
-    telemCSV.clear();
-    telemCSV << time << "  " << ci.target_pos_north << "  " << ci.target_pos_west << "  " << ci.target_pos_up;
-    Router::print(telemCSV.str);
-  }
-}
+//   print_counter++;
+//   if (print_counter % 10 == 0) {
+//     telemCSV.clear();
+//     telemCSV << time << "  " << ci.target_pos_north << "  " << ci.target_pos_west << "  " << ci.target_pos_up;
+//     Router::print(telemCSV.str);
+//   }
+// }
 
 struct __packed MeasurementFlags {
   bool new_imu_packet : 1;
@@ -101,18 +101,20 @@ void log_trajectory_flash(float time, int phase, Controller_Input ci, Controller
 
   Logging::write((uint8_t *)&entryBase, sizeof(entryBase));
 
-  SensorEntry sensorData{};
-  sensorData.accel_x = ci.accel_x;
-  sensorData.accel_y = ci.accel_y;
-  sensorData.accel_z = ci.accel_z;
-  sensorData.gyro_yaw = ci.gyro_yaw;
-  sensorData.gyro_pitch = ci.gyro_pitch;
-  sensorData.gyro_roll = ci.gyro_roll;
-  sensorData.mag_x = ci.mag_x;
-  sensorData.mag_y = ci.mag_y;
-  sensorData.mag_z = ci.mag_z;
+  if (ci.new_imu_packet) {
+    SensorEntry sensorData{};
+    sensorData.accel_x = ci.accel_x;
+    sensorData.accel_y = ci.accel_y;
+    sensorData.accel_z = ci.accel_z;
+    sensorData.gyro_yaw = ci.gyro_yaw;
+    sensorData.gyro_pitch = ci.gyro_pitch;
+    sensorData.gyro_roll = ci.gyro_roll;
+    sensorData.mag_x = ci.mag_x;
+    sensorData.mag_y = ci.mag_y;
+    sensorData.mag_z = ci.mag_z;
 
-  Logging::write((uint8_t *)&sensorData, sizeof(sensorData));
+    Logging::write((uint8_t *)&sensorData, sizeof(sensorData));
+  }
 
   if (ci.new_gps_packet) {
     GpsEntry gpsData{};
@@ -141,6 +143,7 @@ void log_trajectory_flash(float time, int phase, Controller_Input ci, Controller
     Logging::write((uint8_t *)&gpsData, sizeof(gpsData));
   }
 
+  static_assert(sizeof(co) == 16);
   // log controller output
   Logging::write((uint8_t *)&co, sizeof(co));
 
@@ -148,8 +151,7 @@ void log_trajectory_flash(float time, int phase, Controller_Input ci, Controller
 }
 
 // write IMU calib, MAG calib to flash
-void log_calib_flash()
-{
+void log_calib_flash() {
   // some checks to make sure the compiler isn't adding weird padding
   static_assert(sizeof(IMU::Calib) == 8 * 9);
   static_assert(sizeof(Mag::calibration) == 12 * 8);
@@ -165,15 +167,15 @@ void log_calib_flash()
 }
 
 // creates a log file for the current trajectory and prints csv header
-void create_trajectory_log(const char *filename) {
-  positionLogFile = SDCard::open(filename, FILE_WRITE);
-  positionLogFile.println(LOG_HEADER);
-}
+// void create_trajectory_log(const char *filename) {
+//   positionLogFile = SDCard::open(filename, FILE_WRITE);
+//   positionLogFile.println(LOG_HEADER);
+// }
 
-// close and flush the log file
-void close_trajectory_log() {
-  positionLogFile.flush();
-  positionLogFile.close();
-}
+// // close and flush the log file
+// void close_trajectory_log() {
+//   positionLogFile.flush();
+//   positionLogFile.close();
+// }
 
 } // namespace TrajectoryLogger
