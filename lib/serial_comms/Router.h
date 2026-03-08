@@ -90,6 +90,8 @@ void receive(char msg[], unsigned int len);
 // read a single character
 int read();
 
+void write(uint8_t ch);
+
 // reads a message from the serial port into a string and returns it
 char *readline();
 

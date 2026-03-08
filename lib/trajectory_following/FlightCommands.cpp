@@ -1,4 +1,6 @@
+#include "FlightCommands.h"
 #include "GPS.h"
+#include "Router.h"
 
 namespace FlightCommands {
 bool escaped;
@@ -15,6 +17,7 @@ void reset() {
   escaped = false;
   flight_command_buffer_pos = 0;
   kill_flag = false;
+  arm_flag = false;
 }
 
 void process_cmd(uint8_t *cmd_buf, int cmd_len) {
@@ -34,6 +37,7 @@ void process_cmd(uint8_t *cmd_buf, int cmd_len) {
 void encode(uint8_t c) {
   if (c == END_CHAR && !escaped) { // true end
     process_cmd(flight_command_buffer, flight_command_buffer_pos);
+    flight_command_buffer_pos = 0;
   } else if (c == ESCAPE_CHAR && !escaped) { // true escape start
     escaped = true;
   } else { // we might still be escaped here but if it isn't followed by a special character we will just ignore it...
@@ -44,6 +48,19 @@ void encode(uint8_t c) {
       flight_command_buffer_pos = 0; // something went wrong and we never saw a non-escaped END_CHAR so just go back to 0 and try again
     }
   }
+}
+
+void send_telemetry(flight_packet_t fp) {
+  uint8_t *fp_raw = (uint8_t *)&fp;
+
+  Router::print("tr:");
+  for (int i = 0; i < sizeof(fp); i++) {
+    if (fp_raw[i] == ESCAPE_CHAR || fp_raw[i] == END_CHAR) {
+      Router::print(ESCAPE_CHAR);
+    }
+    Router::write(fp_raw[i]);
+  }
+  Router::print(END_CHAR);
 }
 
 } // namespace FlightCommands

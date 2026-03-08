@@ -55,7 +55,7 @@ void init_controller_and_estimator_constants() {
   ASTRAv2_Controller_reset();
 }
 
-Controller_Output get_controller_output(Controller_Input ci, float dT) {
+Controller_Output get_controller_output(Controller_Input ci, float dT, Controller_State *cs) {
 
   Vector15 z;
   // clang-format off
@@ -96,6 +96,17 @@ Controller_Output get_controller_output(Controller_Input ci, float dT) {
   co.gimbal_pitch_deg = raw_co(1) * 180 / M_PI;
   co.thrust_N = raw_co(2);
   co.roll_rad_sec_squared = raw_co(3);
+
+  cs->state_q_vec_new = x_est(0);
+  cs->state_q_vec_0 = x_est(1);
+  cs->state_q_vec_1 = x_est(2);
+  cs->state_q_vec_2 = x_est(3);
+  cs->state_pos_north = x_est(4);
+  cs->state_pos_west = x_est(5);
+  cs->state_pos_up = x_est(6);
+  cs->state_vel_north = x_est(7);
+  cs->state_vel_west = x_est(8);
+  cs->state_vel_up = x_est(9);
   return co;
 }
-} // namespace Controller
+} // namespace ControllerAndEstimator

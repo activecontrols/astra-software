@@ -7,6 +7,19 @@ struct Controller_Output {
   float gimbal_yaw_deg;
 };
 
+struct Controller_State {
+  float state_q_vec_new;
+  float state_q_vec_0;
+  float state_q_vec_1;
+  float state_q_vec_2;
+  float state_pos_north;
+  float state_pos_west;
+  float state_pos_up;
+  float state_vel_north;
+  float state_vel_west;
+  float state_vel_up;
+};
+
 struct Controller_Input {
   // System Status
   bool GND_val;
@@ -37,5 +50,5 @@ struct Controller_Input {
 
 namespace ControllerAndEstimator {
 void init_controller_and_estimator_constants();
-Controller_Output get_controller_output(Controller_Input ci, float dT);
+Controller_Output get_controller_output(Controller_Input ci, float dT, Controller_State *cs);
 }; // namespace ControllerAndEstimator
