@@ -131,13 +131,6 @@ void follow_trajectory() {
       } else {
         ci.new_gps_packet = false;
       }
-      ci.new_gps_packet = true; // TODO - remove this
-      ci.gps_pos_north = 0;
-      ci.gps_pos_up = 0;
-      ci.gps_pos_west = 0;
-      ci.gps_vel_north = 0;
-      ci.gps_vel_up = 0;
-      ci.gps_vel_west = 0;
 
       ci.GND_val = !has_left_ground;
 
@@ -151,7 +144,7 @@ void follow_trajectory() {
 
       if (flight_armed) {
         // Prop::set_throttle_roll(thrust_perc, diffy_perc); // TODO - re-enable this
-        GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, -co.gimbal_pitch_deg);
+        // GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, -co.gimbal_pitch_deg);
       }
 
       TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
