@@ -66,9 +66,13 @@ Controller_Output get_controller_output(Controller_Input ci, float dT, Controlle
        ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
   // clang-format on
 
-  // Vector9 imu = z.segment<9>(0);
-  //  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
-  //  z.segment<9>(0) = filt_imu;
+  Vector9 imu = z.segment<9>(0);
+  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
+  z.segment<9>(0) = filt_imu;
+
+  for (int i = 0; i < 9; i++) {
+    cs->filter_out[i] = z(i);
+  }
 
   if (!ci.GND_val && last_GND) { // we left GND this frame
     Flight_P = P.block<9, 9>(0, 0);

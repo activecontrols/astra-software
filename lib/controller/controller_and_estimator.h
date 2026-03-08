@@ -27,6 +27,8 @@ struct Controller_State {
   float mag_bias_x;
   float mag_bias_y;
   float mag_bias_z;
+
+  float filter_out[9];
 };
 
 struct Controller_Input {

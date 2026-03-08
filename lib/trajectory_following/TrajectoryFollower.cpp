@@ -157,15 +157,15 @@ void follow_trajectory() {
       TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
 
       if (send_telemetry) {
-        fp.accel_x = ci.accel_x;
-        fp.accel_y = ci.accel_y;
-        fp.accel_z = ci.accel_z;
-        fp.gyro_yaw = ci.gyro_yaw;
-        fp.gyro_pitch = ci.gyro_pitch;
-        fp.gyro_roll = ci.gyro_roll;
-        fp.mag_x = ci.mag_x;
-        fp.mag_y = ci.mag_y;
-        fp.mag_z = ci.mag_z;
+        fp.accel_x = cs.filter_out[0];
+        fp.accel_y = cs.filter_out[1];
+        fp.accel_z = cs.filter_out[2];
+        fp.gyro_yaw = cs.filter_out[3];
+        fp.gyro_pitch = cs.filter_out[4];
+        fp.gyro_roll = cs.filter_out[5];
+        fp.mag_x = cs.filter_out[6];
+        fp.mag_y = cs.filter_out[7];
+        fp.mag_z = cs.filter_out[8];
         fp.gps_pos_north = ci.gps_pos_north;
         fp.gps_pos_west = ci.gps_pos_west;
         fp.gps_pos_up = ci.gps_pos_up;
