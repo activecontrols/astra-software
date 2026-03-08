@@ -46,7 +46,7 @@ struct flight_history_t {
   float gimbal_yaw_raw;
   float gimbal_pitch_raw;
   float thrust_N;
-  float roll_N;
+  float roll_roll_rad_sec_squared;
 
   float target_pos_north;
   float target_pos_west;
@@ -92,7 +92,7 @@ struct flight_packet_t {
   float gimbal_yaw_raw;
   float gimbal_pitch_raw;
   float thrust_N;
-  float roll_N;
+  float roll_roll_rad_sec_squared;
 
   float target_pos_north;
   float target_pos_west;
@@ -100,11 +100,13 @@ struct flight_packet_t {
 };
 
 extern flight_history_t FlightHistory; // public interface
+extern flight_packet_t active_packet;
 
 void init_flight_data();
 void deinit_flight_data();
 void load_flight_replay();
 void flight_data_periodic();
 void write_serial_to_fv(const char *msg);
+void commit_packet();
 
 #endif

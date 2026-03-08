@@ -103,7 +103,7 @@ void open_serial_port(HANDLE *hSerial, const char *com_port) {
   dcb.DCBlength = sizeof(dcb);
 
   GetCommState(*hSerial, &dcb);
-  dcb.BaudRate = CBR_115200;
+  dcb.BaudRate = CBR_57600; // TODO - set radio baud rate
   dcb.ByteSize = 8;
   dcb.Parity = NOPARITY;
   dcb.StopBits = ONESTOPBIT;

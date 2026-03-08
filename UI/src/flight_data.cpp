@@ -1,4 +1,5 @@
 #include "flight_data.h"
+#include "flight_commands.h"
 #include "flight_data_state.h"
 #include "platform_win.h"
 
@@ -64,7 +65,7 @@ void commit_packet() {
   FlightHistory.gimbal_yaw_raw = active_packet.gimbal_yaw_raw;
   FlightHistory.gimbal_pitch_raw = active_packet.gimbal_pitch_raw;
   FlightHistory.thrust_N = active_packet.thrust_N;
-  FlightHistory.roll_N = active_packet.roll_N;
+  FlightHistory.roll_roll_rad_sec_squared = active_packet.roll_roll_rad_sec_squared;
 
   FlightHistory.target_pos_north = active_packet.target_pos_north;
   FlightHistory.target_pos_west = active_packet.target_pos_west;
@@ -101,6 +102,8 @@ void load_flight_replay() {
 
 #define RTK_READ_SIZE 256
 #define RTK_WRITE_SIZE 64
+#define FV_SERIAL_READ_SIZE 1024
+char fv_read_buf[FV_SERIAL_READ_SIZE];
 char rtk_read_buf[RTK_READ_SIZE];
 char rtk_write_buf[RTK_WRITE_SIZE];
 int rtk_write_pos = 0;
@@ -135,11 +138,17 @@ void flight_data_periodic() {
       read_from_serial_port(&FlightDataState.rtk_serial, &FlightDataState.rtk_serial_port_open, rtk_read_buf, RTK_READ_SIZE, &rtk_bytes_read);
       if (rtk_bytes_read > 0) {
         for (int i = 0; i < rtk_bytes_read; i++) {
+          if (rtk_read_buf[i] == ESCAPE_CHAR || rtk_write_buf[i] == END_CHAR) {
+            rtk_write_buf[rtk_write_pos] = ESCAPE_CHAR;
+            rtk_write_pos++;
+          }
           rtk_write_buf[rtk_write_pos] = rtk_read_buf[i];
           rtk_write_pos++;
-          if (rtk_write_pos == RTK_WRITE_SIZE) {
-            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, "rtk:", 4, false);                    // send "rtk:" prefix
-            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, rtk_write_buf, RTK_WRITE_SIZE, true); // send data and newline suffix
+          if (rtk_write_pos >= RTK_WRITE_SIZE - 1) {
+            // escape newlines and backslashes
+            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, "rtk:", 4, false);                   // send "rtk:" prefix
+            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, rtk_write_buf, rtk_write_pos, true); // send data and newline suffix
+            rtk_write_pos = 0;
           }
         }
       }
@@ -147,7 +156,11 @@ void flight_data_periodic() {
 
     // Flight data parsing
     if (FlightDataState.fv_serial_port_open) {
-      // TODO - this
+      int fv_bytes_read = 0;
+      read_from_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, fv_read_buf, FV_SERIAL_READ_SIZE, &fv_bytes_read);
+      for (int i = 0; i < fv_bytes_read; i++) {
+        flight_command_encode(fv_read_buf[i]);
+      }
     }
 
   } else {

@@ -176,7 +176,7 @@ void controller_output_panel() {
 
   centered_text("Controller Output");
   ImGui::Text("  Target Thrust: %5.2f N", FlightHistory.thrust_N);
-  ImGui::Text("    Target Roll: %5.2f rad/s^2", FlightHistory.roll_N);
+  ImGui::Text("    Target Roll: %5.2f rad/s^2", FlightHistory.roll_roll_rad_sec_squared);
   ImGui::Text("         Thrust: %5.2f %%", 0); // TODO - these
   ImGui::Text("   Differential: %5.2f %%", 0);
 
