@@ -200,6 +200,7 @@ void follow_trajectory() {
         fp.flight_armed = flight_armed;
         fp.thrust_perc = thrust_perc;
         fp.diffy_perc = diffy_perc;
+        fp.rtk_status = (GPS::ubx.pvt_solution.data->flags >> 6) & 0b11;
 
         FlightCommands::send_telemetry(fp);
       }

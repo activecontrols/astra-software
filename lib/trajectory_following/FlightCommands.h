@@ -52,6 +52,7 @@ struct flight_packet_t {
   bool flight_armed;
   float thrust_perc;
   float diffy_perc;
+  int rtk_status;
 };
 
 namespace FlightCommands {
