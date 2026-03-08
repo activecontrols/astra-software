@@ -37,6 +37,7 @@ void follow_trajectory() {
   ControllerAndEstimator::init_controller_and_estimator_constants();
   FlightCommands::reset();
   Controller_State cs;
+  flight_packet_t fp;
 
   while (!Mag::isMeasurementReady()) {
     Router::println("Waiting on mag...");
@@ -138,15 +139,13 @@ void follow_trajectory() {
       Controller_Output co = ControllerAndEstimator::get_controller_output(ci, dT, &cs);
       float thrust_perc;
       float diffy_perc;
-      // Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
+      Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
       // Prop::set_throttle_roll(thrust_perc, diffy_perc);
       // GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
       TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
 
       if (send_telemetry) {
-        flight_packet_t fp;
-
         fp.accel_x = ci.accel_x;
         fp.accel_y = ci.accel_y;
         fp.accel_z = ci.accel_z;
@@ -177,11 +176,17 @@ void follow_trajectory() {
         fp.gimbal_yaw_raw = co.gimbal_yaw_deg;
         fp.gimbal_pitch_raw = co.gimbal_pitch_deg;
         fp.thrust_N = co.thrust_N;
-        fp.roll_N = co.roll_rad_sec_squared;
+        fp.roll_rad_sec_squared = co.roll_rad_sec_squared;
 
         fp.target_pos_north = ci.target_pos_north;
         fp.target_pos_west = ci.target_pos_west;
         fp.target_pos_up = ci.target_pos_up;
+
+        fp.elapsed_time = timer / 1000000.0;
+        fp.GND_flag = ci.GND_val;
+        fp.flight_armed = flight_armed;
+        fp.thrust_perc = thrust_perc;
+        fp.diffy_perc = diffy_perc;
 
         FlightCommands::send_telemetry(fp);
       }
@@ -199,7 +204,8 @@ void follow_trajectory() {
 
   Prop::stop();
 
-  // TODO - log to indicate flight disarm
+  fp.flight_armed = false;
+  FlightCommands::send_telemetry(fp);
 
   Router::print("Finished ");
   Router::print(counter);

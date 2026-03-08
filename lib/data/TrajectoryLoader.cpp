@@ -9,7 +9,8 @@
 namespace TrajectoryLoader {
 
 trajectory_header header;
-traj_point_pos *trajectory;
+// time, north, west, up
+traj_point_pos trajectory[3] = {{0, 0, 0, 0}, {5, 0, 0, 3}, {10, 0, 0, 0}};
 bool loaded_trajectory;
 
 void begin() {
@@ -20,10 +21,6 @@ void begin() {
   // TODO - add these commands back (don't hardcode) once SD card ready
   header.version = CURRENT_TRAJECTORYH_VERSION;
   header.num_points = 3;
-
-  // time, north, west, up
-  traj_point_pos traj[header.num_points] = {{0, 0, 0, 0}, {5, 0, 0, 3}, {10, 0, 0, 0}};
-  trajectory = traj;
 
   loaded_trajectory = true;
 }

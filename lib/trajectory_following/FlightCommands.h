@@ -32,11 +32,17 @@ struct flight_packet_t {
   float gimbal_yaw_raw;
   float gimbal_pitch_raw;
   float thrust_N;
-  float roll_N;
+  float roll_rad_sec_squared;
 
   float target_pos_north;
   float target_pos_west;
   float target_pos_up;
+
+  float elapsed_time;
+  bool GND_flag;
+  bool flight_armed;
+  float thrust_perc;
+  float diffy_perc;
 };
 
 namespace FlightCommands {
