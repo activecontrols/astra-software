@@ -4,6 +4,8 @@
 #define PAGE(addr) ((addr >> 8) & 0xFFFF)
 #define PAGE_SIZE 256
 
+#define FLASH_MAX_ADDR 0xFFFFFF
+
 namespace Flash {
 void begin();
 

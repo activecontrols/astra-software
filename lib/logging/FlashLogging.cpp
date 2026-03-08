@@ -26,7 +26,7 @@ void cmd_log_arm() {
   Router::print("WARNING: Proceeding will permanently delete all data on the flash.\n");
   Router::printf("Enter %d to proceed: ", key);
 
-  char* res = Router::readline();
+  char *res = Router::readline();
 
   if (atoi(res) != key) {
     Router::print("Incorrect key entered.\n");
@@ -49,7 +49,7 @@ void cmd_log_arm() {
   return;
 }
 
-bool is_armed(){
+bool is_armed() {
   return log_enable;
 }
 
@@ -152,11 +152,43 @@ void flash_test() {
   return;
 }
 
+
+// read 256 bytes at a time and send over serial - sender must respond with 'c' to read another 256 bytes
+void cmd_dump_flash() {
+  unsigned long read_addr = 0;
+  uint8_t read_buf[256];
+  while (1) {
+    int c;
+    do
+    {
+      c = Router::read();
+    } while (c < 0);
+
+    if (c != 'c')
+    {
+      break;
+    }
+
+
+    if (read_addr + sizeof(read_buf) > FLASH_MAX_ADDR) {
+      break;
+    }
+    // read next 256 bytes from flash
+    Flash::read(read_addr, sizeof(read_buf), read_buf);
+
+    // send bytes
+    Router::send((char*)read_buf, sizeof(read_buf));
+
+    read_addr += sizeof(read_buf);
+  }
+}
+
 void begin() {
   Flash::begin();
 
   Router::add({cmd_log_arm, "log_arm"});
   Router::add({flash_test, "flash_test"});
+  Router::add({cmd_dump_flash, "dump_flash"});
 }
 
 }; // namespace Logging
