@@ -73,6 +73,8 @@ void follow_trajectory() {
         lastloop = timer;
         counter = 0;
         GPS::set_current_position_as_origin();
+
+        TrajectoryLogger::log_controller_state();
       }
 
       if (timer - lasttelemetry > TELEMETRY_INTERVAL_US) {
@@ -141,7 +143,10 @@ void follow_trajectory() {
       Prop::set_throttle_roll(thrust_perc, diffy_perc);
       GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
 
-      TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
+      if (flight_armed) // we only want to log flight data, not pre-flight
+      {
+        TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
+      }
 
       if (send_telemetry) {
         // TODO - send telemetry here

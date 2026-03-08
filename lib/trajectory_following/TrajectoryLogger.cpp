@@ -30,20 +30,20 @@ CString<400> telemCSV;
 //   }
 // }
 
-struct __packed MeasurementFlags {
+struct __packed EntryFlags {
   bool new_imu_packet : 1;
   bool new_gps_packet : 1;
+  bool controller_state : 1;
 };
 
-static_assert(sizeof(MeasurementFlags) == 1, "sizeof(MeasurementFlags) error");
+static_assert(sizeof(EntryFlags) == 1, "sizeof(MeasurementFlags) error");
 
 struct __packed EntryBase {
-  MeasurementFlags flags;
   float time;
   uint8_t phase;
 };
 
-static_assert(sizeof(EntryBase) == 6, "sizeof(EntryBase) error");
+static_assert(sizeof(EntryBase) == 5, "sizeof(EntryBase) error");
 
 struct __packed SensorEntry {
 
@@ -88,14 +88,30 @@ struct __packed GpsEntry {
 
 static_assert(sizeof(GpsEntry) == 18 * 4, "sizeof(GpsEntry) error");
 
+void log_controller_state() {
+  EntryFlags flags{};
+
+  flags.controller_state = 1;
+
+  Logging::write((uint8_t *)&flags, sizeof(flags));
+
+  // log x_est and flight_P
+  Logging::write((uint8_t *)(ControllerAndEstimator::x_est.data()), sizeof(ControllerAndEstimator::x_est(0)) * (ControllerAndEstimator::x_est.size()));
+
+  Logging::write((uint8_t *)(ControllerAndEstimator::Flight_P.data()), sizeof(ControllerAndEstimator::Flight_P(0)) * (ControllerAndEstimator::Flight_P.size()));
+  
+  return;
+}
+
 void log_trajectory_flash(float time, int phase, Controller_Input ci, Controller_Output co) {
 
-  MeasurementFlags flags{};
+  EntryFlags flags{};
   flags.new_gps_packet = ci.new_gps_packet;
   flags.new_imu_packet = ci.new_imu_packet;
 
+  Logging::write((uint8_t *)&flags, sizeof(flags));
+
   EntryBase entryBase{};
-  entryBase.flags = flags;
   entryBase.time = time;
   entryBase.phase = phase;
 
