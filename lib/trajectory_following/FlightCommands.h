@@ -28,6 +28,15 @@ struct flight_packet_t {
   float state_vel_north;
   float state_vel_west;
   float state_vel_up;
+  float gyro_bias_yaw;
+  float gyro_bias_pitch;
+  float gyro_bias_roll;
+  float accel_bias_x;
+  float accel_bias_y;
+  float accel_bias_z;
+  float mag_bias_x;
+  float mag_bias_y;
+  float mag_bias_z;
 
   float gimbal_yaw_raw;
   float gimbal_pitch_raw;

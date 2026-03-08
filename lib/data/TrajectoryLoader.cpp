@@ -10,7 +10,7 @@ namespace TrajectoryLoader {
 
 trajectory_header header;
 // time, north, west, up
-traj_point_pos trajectory[3] = {{0, 0, 0, 0}, {5, 0, 0, 3}, {10, 0, 0, 0}};
+traj_point_pos trajectory[3] = {{0, 0, 0, 0}, {55, 0, 0, 3}, {60, 0, 0, 0}};
 bool loaded_trajectory;
 
 void begin() {

@@ -15,7 +15,7 @@
 #include "elapsedMillis.h"
 #include "gimbal_servos.h"
 
-#define TELEMETRY_INTERVAL_US 50000
+#define TELEMETRY_INTERVAL_US 100000
 #define COMMAND_INTERVAL_US 1000
 
 namespace TrajectoryFollower {
@@ -58,6 +58,7 @@ void follow_trajectory() {
   unsigned long lastloop = timer;
 
   float last_time_s = timer / 1000000.0;
+  double mx, my, mz;
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (last_time_s < TrajectoryLoader::trajectory[i].time || !flight_armed) {
@@ -71,6 +72,7 @@ void follow_trajectory() {
         FlightCommands::arm_flag = false; // only do this on rising edge
         flight_armed = true;
         timer = elapsedMicros();
+        last_time_s = timer / 1000000.0;
         lasttelemetry = timer;
         lastloop = timer;
         counter = 0;
@@ -89,7 +91,6 @@ void follow_trajectory() {
       has_left_ground = has_left_ground | (TrajectoryLoader::trajectory[i].up > 0);
 
       IMU::Data imu_reading;
-      double mx, my, mz;
       IMU::IMUs[0].read_latest(&imu_reading);
 
       if (Mag::isMeasurementReady()) {
@@ -130,6 +131,13 @@ void follow_trajectory() {
       } else {
         ci.new_gps_packet = false;
       }
+      ci.new_gps_packet = true; // TODO - remove this
+      ci.gps_pos_north = 0;
+      ci.gps_pos_up = 0;
+      ci.gps_pos_west = 0;
+      ci.gps_vel_north = 0;
+      ci.gps_vel_up = 0;
+      ci.gps_vel_west = 0;
 
       ci.GND_val = !has_left_ground;
 
@@ -140,8 +148,11 @@ void follow_trajectory() {
       float thrust_perc;
       float diffy_perc;
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
-      // Prop::set_throttle_roll(thrust_perc, diffy_perc);
-      // GimbalServos::setGimbalAngle(-co.gimbal_yaw_deg, co.gimbal_pitch_deg);
+
+      if (flight_armed) {
+        // Prop::set_throttle_roll(thrust_perc, diffy_perc); // TODO - re-enable this
+        GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, -co.gimbal_pitch_deg);
+      }
 
       TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
 
@@ -172,6 +183,15 @@ void follow_trajectory() {
         fp.state_vel_north = cs.state_vel_north;
         fp.state_vel_west = cs.state_vel_west;
         fp.state_vel_up = cs.state_vel_up;
+        fp.gyro_bias_yaw = cs.gyro_bias_yaw;
+        fp.gyro_bias_pitch = cs.gyro_bias_pitch;
+        fp.gyro_bias_roll = cs.gyro_bias_roll;
+        fp.accel_bias_x = cs.accel_bias_x;
+        fp.accel_bias_y = cs.accel_bias_y;
+        fp.accel_bias_z = cs.accel_bias_z;
+        fp.mag_bias_x = cs.mag_bias_x;
+        fp.mag_bias_y = cs.mag_bias_y;
+        fp.mag_bias_z = cs.mag_bias_z;
 
         fp.gimbal_yaw_raw = co.gimbal_yaw_deg;
         fp.gimbal_pitch_raw = co.gimbal_pitch_deg;
