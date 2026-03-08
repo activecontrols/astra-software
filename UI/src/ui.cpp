@@ -60,6 +60,54 @@ void mag_panel() {
   ImGui::End();
 }
 
+void gyro_bias_panel() {
+  ImGui::Begin(GYRO_BIAS_PANEL);
+
+  scrolling_line_chart_arg_t mag;
+  mag.plot_title = "Gyro Bias";
+  mag.render_title = "##Mag";
+  mag.y1_label = "bias pitch";
+  mag.y2_label = "bias yaw";
+  mag.y3_label = "bias roll";
+  mag.y_max = 0.1;
+  mag.y_min = -0.1;
+  scrolling_line_chart(mag, FlightHistory.gyro_bias_pitch, FlightHistory.gyro_bias_yaw, FlightHistory.gyro_bias_roll);
+
+  ImGui::End();
+}
+
+void accel_bias_panel() {
+  ImGui::Begin(ACCEL_BIAS_PANEL);
+
+  scrolling_line_chart_arg_t mag;
+  mag.plot_title = "Accel Bias";
+  mag.render_title = "##Mag";
+  mag.y1_label = "bias x";
+  mag.y2_label = "bias y";
+  mag.y3_label = "bias z";
+  mag.y_max = 0.1;
+  mag.y_min = -0.1;
+  scrolling_line_chart(mag, FlightHistory.accel_bias_x, FlightHistory.accel_bias_y, FlightHistory.accel_bias_z);
+
+  ImGui::End();
+}
+
+void mag_bias_panel() {
+  ImGui::Begin(MAG_BIAS_PANEL);
+
+  scrolling_line_chart_arg_t mag;
+  mag.plot_title = "Mag Bias";
+  mag.render_title = "##Mag";
+  mag.y1_label = "bias x";
+  mag.y2_label = "bias y";
+  mag.y3_label = "bias z";
+  mag.y_max = 0.5;
+  mag.y_min = -0.5;
+  scrolling_line_chart(mag, FlightHistory.mag_bias_x, FlightHistory.mag_bias_y, FlightHistory.mag_bias_z);
+
+  ImGui::End();
+}
+
 void gps_pos_panel() {
   ImGui::Begin(GPS_POS_PANEL);
 
@@ -176,7 +224,7 @@ void controller_output_panel() {
 
   centered_text("Controller Output");
   ImGui::Text("  Target Thrust: %5.2f N", FlightHistory.thrust_N);
-  ImGui::Text("    Target Roll: %5.2f rad/s^2", FlightHistory.roll_roll_rad_sec_squared);
+  ImGui::Text("    Target Roll: %5.2f rad/s^2", FlightHistory.roll_rad_sec_squared);
   ImGui::Text("         Thrust: %5.2f %%", FlightHistory.thrust_perc);
   ImGui::Text("   Differential: %5.2f %%", FlightHistory.diffy_perc);
 
@@ -197,8 +245,8 @@ void controller_output_panel() {
 void gimbal_output_panel() {
   ImGui::Begin(GIMBAL_OUTPUT_PANEL);
 
-  float x = FlightHistory.gimbal_yaw_raw * 180 / 3.1415;
-  float y = FlightHistory.gimbal_pitch_raw * 180 / 3.1415;
+  float x = FlightHistory.gimbal_yaw_raw;
+  float y = FlightHistory.gimbal_pitch_raw;
 
   centered_text("Gimbal Command");
   if (ImPlot::BeginPlot("##Gimbal Command", ImVec2(-1, 250), ImPlotFlags_NoLegend)) {
@@ -418,6 +466,9 @@ void render_loop() {
   imu_accel_panel();
   imu_gyro_panel();
   mag_panel();
+  // gyro_bias_panel();
+  // accel_bias_panel();
+  // mag_bias_panel();
   gps_pos_panel();
   gps_vel_panel();
   gps_vert_panel();
