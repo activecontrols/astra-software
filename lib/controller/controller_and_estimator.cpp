@@ -15,7 +15,7 @@ bool last_GND;
 void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.2490;
-  constantsASTRA.mag << -0.4512, 0, 0.8924;
+  constantsASTRA.mag << 0.38535, 0.03198, -0.9222;
   constantsASTRA.Q << 1.000017e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0, 0, 0, //
       0, 1.000017e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0, 0,                 //
       0, 0, 1.000017e-06, 0, 0, 0, 0, 0, 0, 0, 0, -2.500000e-07, 0, 0, 0, 0, 0, 0,                 //
@@ -66,9 +66,9 @@ Controller_Output get_controller_output(Controller_Input ci, float dT, Controlle
        ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
   // clang-format on
 
-  Vector9 imu = z.segment<9>(0);
-  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
-  z.segment<9>(0) = filt_imu;
+  // Vector9 imu = z.segment<9>(0);
+  //  Vector9 filt_imu = DigitalNF(imu, ci.GND_val, last_thrust, dT, dnf_X, dnf_Y);
+  //  z.segment<9>(0) = filt_imu;
 
   if (!ci.GND_val && last_GND) { // we left GND this frame
     Flight_P = P.block<9, 9>(0, 0);

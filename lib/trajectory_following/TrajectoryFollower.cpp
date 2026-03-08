@@ -109,9 +109,9 @@ void follow_trajectory() {
       ci.gyro_yaw = -imu_reading.gyro[2];
       ci.gyro_pitch = imu_reading.gyro[1];
       ci.gyro_roll = imu_reading.gyro[0];
-      ci.mag_x = mx;
+      ci.mag_x = -mz;
       ci.mag_y = my;
-      ci.mag_z = -mz;
+      ci.mag_z = mx;
       ci.gps_pos_north = gps_rel_pos.north;
       ci.gps_pos_west = gps_rel_pos.west;
       ci.gps_pos_up = gps_rel_pos.up;
