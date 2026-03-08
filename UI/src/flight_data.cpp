@@ -54,18 +54,35 @@ void commit_packet() {
   FlightHistory.state_q_vec_0 = active_packet.state_q_vec_0;
   FlightHistory.state_q_vec_1 = active_packet.state_q_vec_1;
   FlightHistory.state_q_vec_2 = active_packet.state_q_vec_2;
-
   FlightHistory.state_pos_north = active_packet.state_pos_north;
   FlightHistory.state_pos_west = active_packet.state_pos_west;
   FlightHistory.state_pos_up = active_packet.state_pos_up;
   FlightHistory.state_vel_north = active_packet.state_vel_north;
   FlightHistory.state_vel_west = active_packet.state_vel_west;
   FlightHistory.state_vel_up = active_packet.state_vel_up;
+  FlightHistory.gyro_bias_yaw[FlightHistory.write_pos] = active_packet.gyro_bias_yaw;
+  FlightHistory.gyro_bias_yaw[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gyro_bias_yaw;
+  FlightHistory.gyro_bias_pitch[FlightHistory.write_pos] = active_packet.gyro_bias_pitch;
+  FlightHistory.gyro_bias_pitch[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gyro_bias_pitch;
+  FlightHistory.gyro_bias_roll[FlightHistory.write_pos] = active_packet.gyro_bias_roll;
+  FlightHistory.gyro_bias_roll[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.gyro_bias_roll;
+  FlightHistory.accel_bias_x[FlightHistory.write_pos] = active_packet.accel_bias_x;
+  FlightHistory.accel_bias_x[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.accel_bias_x;
+  FlightHistory.accel_bias_y[FlightHistory.write_pos] = active_packet.accel_bias_y;
+  FlightHistory.accel_bias_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.accel_bias_y;
+  FlightHistory.accel_bias_z[FlightHistory.write_pos] = active_packet.accel_bias_z;
+  FlightHistory.accel_bias_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.accel_bias_z;
+  FlightHistory.mag_bias_x[FlightHistory.write_pos] = active_packet.mag_bias_x;
+  FlightHistory.mag_bias_x[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.mag_bias_x;
+  FlightHistory.mag_bias_y[FlightHistory.write_pos] = active_packet.mag_bias_y;
+  FlightHistory.mag_bias_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.mag_bias_y;
+  FlightHistory.mag_bias_z[FlightHistory.write_pos] = active_packet.mag_bias_z;
+  FlightHistory.mag_bias_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.mag_bias_z;
 
   FlightHistory.gimbal_yaw_raw = active_packet.gimbal_yaw_raw;
   FlightHistory.gimbal_pitch_raw = active_packet.gimbal_pitch_raw;
   FlightHistory.thrust_N = active_packet.thrust_N;
-  FlightHistory.roll_roll_rad_sec_squared = active_packet.roll_roll_rad_sec_squared;
+  FlightHistory.roll_rad_sec_squared = active_packet.roll_rad_sec_squared;
 
   FlightHistory.target_pos_north = active_packet.target_pos_north;
   FlightHistory.target_pos_west = active_packet.target_pos_west;
