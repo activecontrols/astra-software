@@ -71,6 +71,12 @@ void commit_packet() {
   FlightHistory.target_pos_west = active_packet.target_pos_west;
   FlightHistory.target_pos_up = active_packet.target_pos_up;
 
+  FlightHistory.elapsed_time = active_packet.elapsed_time;
+  FlightHistory.GND_flag = active_packet.GND_flag;
+  FlightHistory.flight_armed = active_packet.flight_armed;
+  FlightHistory.thrust_perc = active_packet.thrust_perc;
+  FlightHistory.diffy_perc = active_packet.diffy_perc;
+
   FlightHistory.write_pos += 1;
   FlightHistory.write_pos %= FLIGHT_HISTORY_LENGTH;
   FlightHistory.read_start_pos = FlightHistory.write_pos;

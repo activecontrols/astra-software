@@ -177,8 +177,19 @@ void controller_output_panel() {
   centered_text("Controller Output");
   ImGui::Text("  Target Thrust: %5.2f N", FlightHistory.thrust_N);
   ImGui::Text("    Target Roll: %5.2f rad/s^2", FlightHistory.roll_roll_rad_sec_squared);
-  ImGui::Text("         Thrust: %5.2f %%", 0); // TODO - these
-  ImGui::Text("   Differential: %5.2f %%", 0);
+  ImGui::Text("         Thrust: %5.2f %%", FlightHistory.thrust_perc);
+  ImGui::Text("   Differential: %5.2f %%", FlightHistory.diffy_perc);
+
+  ImGui::Dummy(ImVec2(0, 100));
+
+  ImGui::Text("Elasped Time: %5.2f s", FlightHistory.elapsed_time);
+  colored_flag("    GND Flag", FlightHistory.GND_flag, ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), "##gnd_flag");
+  ImGui::TableSetColumnIndex(1);
+  if (FlightHistory.flight_armed) {
+    colored_flag("       Armed", FlightHistory.flight_armed, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##armed_flag");
+  } else {
+    colored_flag("     Not Armed", FlightHistory.flight_armed, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##armed_flag");
+  }
 
   ImGui::End();
 }

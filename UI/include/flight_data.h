@@ -52,6 +52,12 @@ struct flight_history_t {
   float target_pos_west;
   float target_pos_up;
 
+  float elapsed_time;
+  bool GND_flag;
+  bool flight_armed;
+  float thrust_perc;
+  float diffy_perc;
+
   // points to the oldest stored data
   int read_start_pos;
   // points to the most recently written data
@@ -97,6 +103,12 @@ struct flight_packet_t {
   float target_pos_north;
   float target_pos_west;
   float target_pos_up;
+
+  float elapsed_time;
+  bool GND_flag;
+  bool flight_armed;
+  float thrust_perc;
+  float diffy_perc;
 };
 
 extern flight_history_t FlightHistory; // public interface

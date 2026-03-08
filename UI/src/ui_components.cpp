@@ -39,3 +39,23 @@ bool rounded_button(const char *label, const ImVec2 &size, ImU32 color, float ro
 
   return clicked;
 }
+
+void colored_flag(char *text, bool state, ImVec4 on_color, ImVec4 off_color, char *imgui_id) {
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+  if (state) {
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, on_color);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, on_color);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, on_color);
+  } else {
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, off_color);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, off_color);
+    ImGui::PushStyleColor(ImGuiCol_FrameBgActive, off_color);
+  }
+
+  ImGui::SetNextItemWidth(200.0f); // pixels
+  ImGui::BeginDisabled();          // prevent editing
+  ImGui::InputText(imgui_id, text, ImGuiInputTextFlags_ReadOnly);
+  ImGui::EndDisabled();
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar();
+}
