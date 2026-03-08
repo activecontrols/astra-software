@@ -46,9 +46,9 @@ void commit_packet() {
   FlightHistory.gps_pos_north = active_packet.gps_pos_north;
   FlightHistory.gps_pos_west = active_packet.gps_pos_north;
   FlightHistory.gps_pos_up = active_packet.gps_pos_north;
-  FlightHistory.gps_vel_north = active_packet.gps_pos_north;
-  FlightHistory.gps_vel_west = active_packet.gps_pos_north;
-  FlightHistory.gps_vel_up = active_packet.gps_pos_north;
+  FlightHistory.gps_vel_north = active_packet.gps_vel_north;
+  FlightHistory.gps_vel_west = active_packet.gps_vel_north;
+  FlightHistory.gps_vel_up = active_packet.gps_vel_north;
 
   FlightHistory.state_q_vec_new = active_packet.state_q_vec_new;
   FlightHistory.state_q_vec_0 = active_packet.state_q_vec_0;
@@ -93,6 +93,7 @@ void commit_packet() {
   FlightHistory.flight_armed = active_packet.flight_armed;
   FlightHistory.thrust_perc = active_packet.thrust_perc;
   FlightHistory.diffy_perc = active_packet.diffy_perc;
+  FlightHistory.rtk_status = active_packet.rtk_status;
 
   FlightHistory.write_pos += 1;
   FlightHistory.write_pos %= FLIGHT_HISTORY_LENGTH;

@@ -239,6 +239,14 @@ void controller_output_panel() {
     colored_flag("     Not Armed", FlightHistory.flight_armed, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##armed_flag");
   }
 
+  if (FlightHistory.rtk_status == 0) {
+    colored_flag("     NO RTK", 1, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##rtk_flag");
+  } else if (FlightHistory.rtk_status == 1) {
+    colored_flag(" RTK FLOAT", 1, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##rtk_flag");
+  } else if (FlightHistory.rtk_status == 2) {
+    colored_flag(" RTK FIX", 0, ImVec4(204.0 / 255.0, 0.0f, 0.0f, 1.0f), ImVec4(0.0f, 153.0 / 255.0, 0.0f, 1.0f), "##rtk_flag");
+  }
+
   ImGui::End();
 }
 

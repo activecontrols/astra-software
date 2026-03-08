@@ -66,6 +66,7 @@ struct flight_history_t {
   bool flight_armed;
   float thrust_perc;
   float diffy_perc;
+  int rtk_status;
 
   // points to the oldest stored data
   int read_start_pos;
@@ -127,6 +128,7 @@ struct flight_packet_t {
   bool flight_armed;
   float thrust_perc;
   float diffy_perc;
+  int rtk_status;
 };
 
 extern flight_history_t FlightHistory; // public interface
