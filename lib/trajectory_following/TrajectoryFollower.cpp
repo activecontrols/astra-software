@@ -138,8 +138,8 @@ void follow_trajectory() {
       Prop::get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
 
       if (flight_armed) {
-        // Prop::set_throttle_roll(thrust_perc, diffy_perc); // TODO - re-enable this
-        // GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, -co.gimbal_pitch_deg);
+        Prop::set_throttle_roll(thrust_perc, diffy_perc);
+        GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, -co.gimbal_pitch_deg);
       }
 
       TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
@@ -235,11 +235,10 @@ void start_flight_loop() {
     return;
   }
 
-  // TODO - re-enable this!
-  // if (!Logging::is_armed()) {
-  //   Router::println("FAILURE: Flash logging is not armed. Use command log_arm.");
-  //   return;
-  // }
+  if (!Logging::is_armed()) {
+    CommsSerial.println("FAILURE: Flash logging is not armed. Use command log_arm.");
+    return;
+  }
 
   CommsSerial.println("Flight loop starting. Type arm to start following trajectory.");
   follow_trajectory();
