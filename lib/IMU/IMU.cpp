@@ -7,7 +7,8 @@
 #include "./Invn/Drivers/Icm406xx/Icm406xxTransport.h"
 #include "./Invn/EmbUtils/ErrorHelper.h"
 
-#include "Router.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "SDCard.h"
 #include "fc_pins.h"
 
@@ -72,7 +73,7 @@ int Sensor::init() {
 
   if (status) {
     const char *error_message = inv_error_str(status);
-    Router::printf("Error occurred while initializing IMU: %s\n", error_message);
+    CommsSerial.printf("Error occurred while initializing IMU: %s\n", error_message);
     return status;
   }
 
@@ -81,7 +82,7 @@ int Sensor::init() {
 
   if (status) {
     const char *error_message = inv_error_str(status);
-    Router::printf("Error occurred while enabling little endian on IMU: %s\n", error_message);
+    CommsSerial.printf("Error occurred while enabling little endian on IMU: %s\n", error_message);
     return status;
   }
 
@@ -133,7 +134,7 @@ int Sensor::init() {
 
   if (status) {
     const char *error_message = inv_error_str(status);
-    Router::printf("Error occurred while enabling anti-alias filter on IMU: %s\n", error_message);
+    CommsSerial.printf("Error occurred while enabling anti-alias filter on IMU: %s\n", error_message);
     return status;
   }
 
@@ -143,7 +144,7 @@ int Sensor::init() {
 
   if (status) {
     const char *error_message = inv_error_str(status);
-    Router::printf("Error occurred while setting odr on IMU: %s\n", error_message);
+    CommsSerial.printf("Error occurred while setting odr on IMU: %s\n", error_message);
     return status;
   }
 
@@ -167,8 +168,8 @@ int Sensor::write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val) {
 // loads three doubles from serial and stores them in dest
 int load_calibration_helper(double *dest) {
   char buf[3][100];
-  char *line = Router::readline();
-  Router::println(line);
+  char *line = CommsSerial.readline();
+  CommsSerial.println(line);
   int read = sscanf(line, "%99s %99s %99s", buf[0], buf[1], buf[2]);
   if (read != 3) {
     return read;
@@ -186,16 +187,16 @@ void Sensor::load_custom_calib() {
   double *destinations[] = {new_calib.gyro_bias, new_calib.accel_correction_bias, new_calib.accel_correction_gain};
 
   for (int i = 0; i < 3; ++i) {
-    Router::printf("Enter %s (X Y Z) separated by spaces: ", prompts[i].c_str());
+    CommsSerial.printf("Enter %s (X Y Z) separated by spaces: ", prompts[i].c_str());
     int read = load_calibration_helper(destinations[i]);
     if (read != 3) {
-      Router::printf("Only %d inputs read. Not saving calibration. Quitting.\n", read);
+      CommsSerial.printf("Only %d inputs read. Not saving calibration. Quitting.\n", read);
       return;
     }
   }
 
   memcpy(&this->calib, &new_calib, sizeof(Sensor::calib));
-  Router::printf("Calibration written in memory. Remember to save calibration data to SD Card!!!");
+  CommsSerial.printf("Calibration written in memory. Remember to save calibration data to SD Card!!!");
 }
 
 int Sensor::read_accel_config(uint8_t *value) {
@@ -385,14 +386,14 @@ void cmd_calibrate_gyro() {
   IMU::calibrate_gyroscope();
 
   for (int i = 0; i < IMU_COUNT; ++i) {
-    Router::printf(" [%d] Gyro Biases (X, Y, Z) (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", i, IMUs[i].calib.gyro_bias[0], IMUs[i].calib.gyro_bias[1], IMUs[i].calib.gyro_bias[2]);
+    CommsSerial.printf(" [%d] Gyro Biases (X, Y, Z) (degrees/s): [%7.3lf, %7.3lf, %7.3lf]\n", i, IMUs[i].calib.gyro_bias[0], IMUs[i].calib.gyro_bias[1], IMUs[i].calib.gyro_bias[2]);
   }
 }
 
 void cmd_log_accel_for_calibration(const char *param) {
   int imu_index = atoi(param);
   if (imu_index < 0 || imu_index >= IMU_COUNT) {
-    Router::print("Invalid IMU number entered. Assuming index=0.\n");
+    CommsSerial.print("Invalid IMU number entered. Assuming index=0.\n");
     imu_index = 0;
   }
 
@@ -401,10 +402,10 @@ void cmd_log_accel_for_calibration(const char *param) {
   Data last_packet;
 
   while (1) {
-    while (!Router::available()) {
+    while (!CommsSerial.available()) {
       delay(100);
     }
-    char *serial_input = Router::readline();
+    char *serial_input = CommsSerial.readline();
     if (!strcmp(serial_input, "stop")) {
       break;
     }
@@ -426,7 +427,7 @@ void cmd_log_accel_for_calibration(const char *param) {
       delay(5);
     }
 
-    Router::printf("%lf,%lf,%lf\n", accumulator[0] / count, accumulator[1] / count, accumulator[2] / count);
+    CommsSerial.printf("%lf,%lf,%lf\n", accumulator[0] / count, accumulator[1] / count, accumulator[2] / count);
 
     delay(30);
   }
@@ -434,29 +435,29 @@ void cmd_log_accel_for_calibration(const char *param) {
 
 void cmd_imu_log() {
   Data last_packet;
-  Router::print("Time (s)");
+  CommsSerial.print("Time (s)");
 
   for (int i = 0; i < IMU_COUNT; ++i) {
-    Router::printf(
+    CommsSerial.printf(
         ", (%d) Acceleration X (m/s^2), (%d) Acceleration Y (m/s^2), (%d) Acceleration Z (m/s^2), (%d) Angular Velocity X (rad/s), (%d) Angular Velocity Y (rad/s), (%d) Angular Velocity Z (rad/s)", i,
         i, i, i, i, i);
   }
 
-  Router::print('\n');
+  CommsSerial.print('\n');
 
   unsigned long start_time = micros();
   // run until the user presses enter
-  while (!Router::available()) {
+  while (!CommsSerial.available()) {
     double t = (micros() - start_time) * 1e-6;
 
-    Router::printf("%lf", t);
+    CommsSerial.printf("%lf", t);
     for (int i = 0; i < IMU_COUNT; ++i) {
       IMUs[i].read_latest(&last_packet);
 
-      Router::printf(", %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf", last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1], last_packet.gyro[2]);
+      CommsSerial.printf(", %.15lf, %.15lf, %.15lf, %.15lf, %.15lf, %.15lf", last_packet.acc[0], last_packet.acc[1], last_packet.acc[2], last_packet.gyro[0], last_packet.gyro[1], last_packet.gyro[2]);
     }
 
-    Router::print('\n');
+    CommsSerial.print('\n');
 
     // target about 100 hz?
     delayMicroseconds(10000);
@@ -466,7 +467,7 @@ void cmd_imu_log() {
 void cmd_load_custom_calib(const char *arg) {
   int index = atoi(arg);
   if (index < 0 || index >= IMU_COUNT) {
-    Router::print("Invalid imu index. Assuming index=0.\n");
+    CommsSerial.print("Invalid imu index. Assuming index=0.\n");
     index = 0;
   }
 
@@ -480,7 +481,7 @@ void cmd_load_custom_calib(const char *arg) {
 //   sscanf(arg, "%d %34s", &imu_index, filename);
 
 //   if (imu_index < 0 || imu_index >= IMU_COUNT) {
-//     Router::print("Invalid IMU index entered.");
+//     CommsSerial.print("Invalid IMU index entered.");
 //     return;
 //   }
 
@@ -494,7 +495,7 @@ void cmd_load_custom_calib(const char *arg) {
 //   sscanf(arg, "%d %34s", &imu_index, filename);
 
 //   if (imu_index < 0 || imu_index >= IMU_COUNT) {
-//     Router::print("Invalid IMU index entered.");
+//     CommsSerial.print("Invalid IMU index entered.");
 //     return;
 //   }
 
@@ -509,10 +510,10 @@ void cmd_output_calib(const char *arg) {
 
   Sensor *imu = &IMUs[imu_index];
 
-  Router::printf("Calibration for IMU %d:\n", imu_index);
-  Router::printf("Gyro Bias (deg/s) (X, Y, Z): %lf, %lf, %lf\n", imu->calib.gyro_bias[0], imu->calib.gyro_bias[1], imu->calib.gyro_bias[2]);
-  Router::printf("Accelerometer Bias (g) (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_bias[0], imu->calib.accel_correction_bias[1], imu->calib.accel_correction_bias[2]);
-  Router::printf("Accelerometer Gain (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_gain[0], imu->calib.accel_correction_gain[1], imu->calib.accel_correction_gain[2]);
+  CommsSerial.printf("Calibration for IMU %d:\n", imu_index);
+  CommsSerial.printf("Gyro Bias (deg/s) (X, Y, Z): %lf, %lf, %lf\n", imu->calib.gyro_bias[0], imu->calib.gyro_bias[1], imu->calib.gyro_bias[2]);
+  CommsSerial.printf("Accelerometer Bias (g) (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_bias[0], imu->calib.accel_correction_bias[1], imu->calib.accel_correction_bias[2]);
+  CommsSerial.printf("Accelerometer Gain (X, Y, Z): %lf, %lf, %lf\n", imu->calib.accel_correction_gain[0], imu->calib.accel_correction_gain[1], imu->calib.accel_correction_gain[2]);
 }
 
 void imu_speed_test() {
@@ -525,7 +526,7 @@ void imu_speed_test() {
   }
 
   double delta_ms = (micros() - begin_time) / 1000.0;
-  Router::printf("IMU Speed Test Finished\nTransactions: %d\nAverage transaction time (ms): %lf\n", transaction_count, delta_ms / transaction_count);
+  CommsSerial.printf("IMU Speed Test Finished\nTransactions: %d\nAverage transaction time (ms): %lf\n", transaction_count, delta_ms / transaction_count);
 }
 
 int IMU::begin() {
@@ -534,13 +535,13 @@ int IMU::begin() {
   error |= IMUs[0].enable_accel();
   error |= IMUs[0].enable_gyro();
 
-  Router::add({cmd_calibrate_gyro, "imu_calibrate_gyro"});
-  Router::add({cmd_imu_log, "imu_log"});
-  Router::add({cmd_load_custom_calib, "imu_enter_calib"});
-  // Router::add({cmd_write_calib, "imu_write_calib"});
-  Router::add({cmd_output_calib, "imu_print_calib"});
-  Router::add({cmd_log_accel_for_calibration, "imu_log_accel_for_calib"});
-  Router::add({imu_speed_test, "imu_speed_test"});
+  CommandRouter::add(cmd_calibrate_gyro, "imu_calibrate_gyro");
+  CommandRouter::add(cmd_imu_log, "imu_log");
+  CommandRouter::add(cmd_load_custom_calib, "imu_enter_calib");
+  // CommandRouter::add(cmd_write_calib, "imu_write_calib");
+  CommandRouter::add(cmd_output_calib, "imu_print_calib");
+  CommandRouter::add(cmd_log_accel_for_calibration, "imu_log_accel_for_calib");
+  CommandRouter::add(imu_speed_test, "imu_speed_test");
 
   return error;
 }

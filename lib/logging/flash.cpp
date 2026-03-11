@@ -1,10 +1,10 @@
+#include "flash.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
+#include "fc_pins.h"
+#include "flash_defs.h"
 #include <Arduino.h>
 #include <stm32h747xx.h>
-
-#include "Router.h"
-#include "flash.h"
-
-#include "flash_defs.h"
 
 #define FREQ_MAX 50'000'000
 
@@ -264,44 +264,44 @@ bool _initialize() {
   HAL_StatusTypeDef status = HAL_QSPI_Init(&hqspi);
 
   if (status != HAL_OK) {
-    Router::print("HAL_QSPI_Init failed.\n");
+    CommsSerial.print("HAL_QSPI_Init failed.\n");
     return false;
   }
 
-  Router::print("QSPI Peripheral Initialized.\n");
-  Router::printf("HCLK Frequency: %d\n", f_hclk);
-  Router::printf("QSPI Prescaler: %d\n", hqspi.Init.ClockPrescaler);
-  Router::print("QSPI Frequency: ");
-  Router::print(f_hclk / (hqspi.Init.ClockPrescaler + 1) * 1e-6, 2);
-  Router::print(" MHz\n");
+  CommsSerial.print("QSPI Peripheral Initialized.\n");
+  CommsSerial.printf("HCLK Frequency: %d\n", f_hclk);
+  CommsSerial.printf("QSPI Prescaler: %d\n", hqspi.Init.ClockPrescaler);
+  CommsSerial.print("QSPI Frequency: ");
+  CommsSerial.print(f_hclk / (hqspi.Init.ClockPrescaler + 1) * 1e-6, 2);
+  CommsSerial.print(" MHz\n");
 
   if (!enable_qspi()) {
-    Router::print("Flash enable QPIO command (EQIO) failed.\n");
+    CommsSerial.print("Flash enable QPIO command (EQIO) failed.\n");
     return false;
   }
 
   HAL_QSPI_StateTypeDef state = HAL_QSPI_GetState(&hqspi);
 
-  Router::print("QSPI Peripheral State: ");
-  Router::print(state, HEX);
-  Router::print('\n');
+  CommsSerial.print("QSPI Peripheral State: ");
+  CommsSerial.print(state, HEX);
+  CommsSerial.print('\n');
 
   uint8_t qpiid[3];
   const uint8_t correct_qpiid[3] = {0xC2, 0x20, 0x18};
   if (!read_qpiid(qpiid)) {
-    Router::print("Read QPIID failed.\n");
+    CommsSerial.print("Read QPIID failed.\n");
     return false;
   }
 
-  Router::print("QPIID: ");
+  CommsSerial.print("QPIID: ");
   for (int i = 0; i < sizeof(qpiid); ++i) {
-    Router::print(qpiid[i], HEX);
-    Router::print(' ');
+    CommsSerial.print(qpiid[i], HEX);
+    CommsSerial.print(' ');
   }
-  Router::print('\n');
+  CommsSerial.print('\n');
 
   if (memcmp(qpiid, correct_qpiid, sizeof(correct_qpiid)) != 0) {
-    Router::print("QPIID response invalid.\n");
+    CommsSerial.print("QPIID response invalid.\n");
     return false;
   }
 
@@ -318,13 +318,13 @@ void rw_test() {
   const uint32_t sector = SECTOR(addr);
   const uint32_t page = PAGE(addr);
 
-  Router::printf("Erasing Sector %d\n", sector);
+  CommsSerial.printf("Erasing Sector %d\n", sector);
   if (!sector_erase(addr)) {
-    Router::print("Sector erase command failed.\n");
-    Router::printf("HAL Error: %X\n", HAL_QSPI_GetError(&hqspi));
+    CommsSerial.print("Sector erase command failed.\n");
+    CommsSerial.printf("HAL Error: %X\n", HAL_QSPI_GetError(&hqspi));
     return;
   }
-  Router::print("Sector erased and WIP unset.\n");
+  CommsSerial.print("Sector erased and WIP unset.\n");
 
   // program sector
   char program_data[256];
@@ -332,40 +332,40 @@ void rw_test() {
   memset(program_data, 0, sizeof(program_data));
   memcpy(program_data, str, sizeof(str));
 
-  Router::printf("Programming page %d\n", page);
+  CommsSerial.printf("Programming page %d\n", page);
   unsigned long start_micros = micros();
 
   if (!page_program(addr, reinterpret_cast<uint8_t *>(program_data), sizeof(program_data))) {
-    Router::print("Page program command Failed.\n");
+    CommsSerial.print("Page program command Failed.\n");
     return;
   }
 
   // wait for write operation to finish
   // DS says this could take up to 1.2 ms
   if (!wait_for_wip(1500)) {
-    Router::print("wait_for_wip failed\n");
+    CommsSerial.print("wait_for_wip failed\n");
     return;
   }
   unsigned long delta_t = micros() - start_micros;
-  Router::print("Page program command succeeded.\n");
-  Router::print("WIP Unset.\n");
-  Router::printf("Single page write time (us): %d\n", delta_t);
+  CommsSerial.print("Page program command succeeded.\n");
+  CommsSerial.print("WIP Unset.\n");
+  CommsSerial.printf("Single page write time (us): %d\n", delta_t);
 
-  Router::printf("Reading page %d\n", page);
+  CommsSerial.printf("Reading page %d\n", page);
 
   char data_read[sizeof(program_data)];
   if (!read(addr, sizeof(data_read), reinterpret_cast<uint8_t *>(data_read))) {
-    Router::print("4READ command failed\n");
+    CommsSerial.print("4READ command failed\n");
     return;
   }
 
   if (memcmp(data_read, program_data, sizeof(program_data)) != 0) {
-    Router::print("Error: 4READ data does not match program data.\n");
+    CommsSerial.print("Error: 4READ data does not match program data.\n");
   }
 
-  Router::printf("Page %d contents: ", page);
-  Router::print(data_read);
-  Router::print('\n');
+  CommsSerial.printf("Page %d contents: ", page);
+  CommsSerial.print(data_read);
+  CommsSerial.print('\n');
 }
 
 void write_speed_test() {
@@ -376,32 +376,32 @@ void write_speed_test() {
 
   for (unsigned long i = 5; i < sizeof(program_data); i += 10) {
     if (!sector_erase(addr)) {
-      Router::print("Sector Erase Failed\n");
+      CommsSerial.print("Sector Erase Failed\n");
       return;
     }
 
     unsigned long start_micros = micros();
     if (!page_program(addr, program_data, i)) {
-      Router::print("Page Program Failed\n");
+      CommsSerial.print("Page Program Failed\n");
       return;
     }
 
     if (!wait_for_wip(2'400)) {
-      Router::print("wait_for_wip failed.\n");
+      CommsSerial.print("wait_for_wip failed.\n");
       return;
     }
 
     unsigned long delta_micros = micros() - start_micros;
 
     if (is_write_enable()) {
-      Router::print("Error: write is still enabled\n");
+      CommsSerial.print("Error: write is still enabled\n");
       return;
     }
 
-    Router::print(i);
-    Router::print(", ");
-    Router::print(delta_micros);
-    Router::print('\n');
+    CommsSerial.print(i);
+    CommsSerial.print(", ");
+    CommsSerial.print(delta_micros);
+    CommsSerial.print('\n');
 
     delay(10);
   }
@@ -411,14 +411,14 @@ void begin() {
 
   if (!_initialize()) {
     while (1) {
-      Router::print("QSPI Init Failed\n");
+      CommsSerial.print("QSPI Init Failed\n");
       delay(1000);
     }
   }
 
-  Router::print("Flash driver ready.\n");
-  Router::add({rw_test, "rw_test"});
-  Router::add({write_speed_test, "write_speed_test"});
+  CommsSerial.print("Flash driver ready.\n");
+  CommandRouter::add(rw_test, "rw_test");
+  CommandRouter::add(write_speed_test, "write_speed_test");
 
   return;
 }

@@ -1,7 +1,8 @@
-#include "gimbal_servos.h"
-#include "Router.h"
-#include "Servo.h"
+#include "GimbalServos.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "fc_pins.h"
+#include <Servo.h>
 
 namespace GimbalServos {
 
@@ -37,19 +38,20 @@ void centerGimbal() {
 }
 
 void setGimbalAngleCmd(const char *args) {
-  double inner_outer_angle[2];
-  if (!Router::parse_doubles(args, inner_outer_angle, 2)) {
-    Router::printf("Usage: gimbal_set_angle_inout 0.00 0.00\n");
+  double inner_angle;
+  double outer_angle;
+  if (sscanf(args, "%ld %ld", &inner_angle, &outer_angle) != 2) {
+    CommsSerial.printf("Usage: gimbal_set_angle_inout 0.00 0.00\n");
     return;
   }
-  setGimbalAngle(inner_outer_angle[0], inner_outer_angle[1]);
+  setGimbalAngle(inner_angle, outer_angle);
 }
 
 void begin() {
   inner_servo.attach(INNER_SERVO_PIN);
   outer_servo.attach(OUTER_SERVO_PIN);
   centerGimbal();
-  Router::add({setGimbalAngleCmd, "gimbal_set_angle_inout"});
-  Router::add({centerGimbal, "gimbal_center"});
+  CommandRouter::add(setGimbalAngleCmd, "gimbal_set_angle_inout");
+  CommandRouter::add(centerGimbal, "gimbal_center");
 }
 } // namespace GimbalServos

@@ -1,6 +1,7 @@
 #include <Mag.h>
 
-#include <Router.h>
+#include <CommandRouter.h>
+#include <CommsSerial.h>
 #include <SDCard.h>
 #include <Wire.h>
 
@@ -140,14 +141,14 @@ double read_x[1000], read_y[1000], read_z[1000];
 
 // populates read_x, read_y, read_z with 1000 samples
 void collect_samples() {
-  Router::println("Collecting calibration data...");
-  Router::println("Move the sensor around in all orientations until done. Waiting 5 seconds to start...");
+  CommsSerial.println("Collecting calibration data...");
+  CommsSerial.println("Move the sensor around in all orientations until done. Waiting 5 seconds to start...");
   delay(5000);
   // record 1000 centered readings
   for (int i = 0; i < 1000; i++) {
     int mx, my, mz;
     if (!get_centered_reading_blocking(mx, my, mz)) {
-      Router::println("Mag read failed. collect_samples failed.");
+      CommsSerial.println("Mag read failed. collect_samples failed.");
       return;
     }
     read_x[i] = (double)mx;
@@ -155,27 +156,27 @@ void collect_samples() {
     read_z[i] = (double)mz;
     delay(100);
     if (i % 10 == 0) { // every second, print progress
-      Router::mprintln(i, " samples recorded ", i / 1000.0 * 100.0, "%");
+      CommsSerial.mprintln(i, " samples recorded ", i / 1000.0 * 100.0, "%");
     }
   }
-  Router::println("Done recording calibration data.");
+  CommsSerial.println("Done recording calibration data.");
   double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, identity_calib);
-  Router::mprintln("Sphere fit goodness of raw data: ", goodness, "%");
+  CommsSerial.mprintln("Sphere fit goodness of raw data: ", goodness, "%");
   goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, calib);
-  Router::mprintln("Sphere fit goodness of current calibration: ", goodness, "%");
+  CommsSerial.mprintln("Sphere fit goodness of current calibration: ", goodness, "%");
 }
 
 // Router commands -------------------------------------------------------------
 // void mag_rawprint() {
 //   double mx, my, mz;
 //   read_xyz(mx, my, mz);
-//   Router::println(String(mx, 6) + "," + String(my, 6) + "," + String(mz, 6));
+//   CommsSerial.println(String(mx, 6) + "," + String(my, 6) + "," + String(mz, 6));
 // }
 
 void mag_heading() {
-  while (!Router::available()) {
+  while (!CommsSerial.available()) {
     double heading = get_heading();
-    Router::println(heading);
+    CommsSerial.println(heading);
   }
 }
 
@@ -207,12 +208,12 @@ void mag_test_read_time() {
     }
   }
   double average_ms = (double)(micros() - start_time) / count / 1000.0;
-  Router::printf("Test concluded.\nAverage loop time (ms): %lf\nAverage time spend reading per iteration (ms): %lf\nCount Reads: %d\n", average_ms, read_time / 1000.0 / count, count_non_stale);
+  CommsSerial.printf("Test concluded.\nAverage loop time (ms): %lf\nAverage time spend reading per iteration (ms): %lf\nCount Reads: %d\n", average_ms, read_time / 1000.0 / count, count_non_stale);
 }
 
 // void write_samples(const char *filename) {
 //   if (filename == nullptr) {
-//     Router::print("Call with filename to save to.\n");
+//     CommsSerial.print("Call with filename to save to.\n");
 //     return;
 //   }
 //   collect_samples();
@@ -229,26 +230,26 @@ void mag_test_read_time() {
 //     f.println(read_z[i]);
 //   }
 //   f.close();
-//   Router::mprintln("Done writing calibration data to ", filename);
-//   Router::println("Use final.m in mag_calib/ to compute calibration parameters");
+//   CommsSerial.mprintln("Done writing calibration data to ", filename);
+//   CommsSerial.println("Use final.m in mag_calib/ to compute calibration parameters");
 // }
 
 void print_calibration() {
-  Router::println("Current calibration:");
-  Router::println("Hard iron offsets:");
+  CommsSerial.println("Current calibration:");
+  CommsSerial.println("Hard iron offsets:");
 
-  Router::printf("x: %.4f y: %.4f z: %.4f\n", calib.hard_x, calib.hard_y, calib.hard_z);
+  CommsSerial.printf("x: %.4f y: %.4f z: %.4f\n", calib.hard_x, calib.hard_y, calib.hard_z);
 
-  Router::println("Soft iron correction matrix:");
+  CommsSerial.println("Soft iron correction matrix:");
   for (int i = 0; i < 3; i++) {
-    Router::printf("%.4f %.4f %.4f\n", calib.soft[i][0], calib.soft[i][1], calib.soft[i][2]);
+    CommsSerial.printf("%.4f %.4f %.4f\n", calib.soft[i][0], calib.soft[i][1], calib.soft[i][2]);
   }
 }
 
 void hard_reset() {
   mag.performResetOperation();
   delay(100);
-  Router::println("Magnetometer hard reset performed.");
+  CommsSerial.println("Magnetometer hard reset performed.");
 }
 
 void do_instant_calib() {
@@ -258,11 +259,11 @@ void do_instant_calib() {
   bool success = get_centered_reading_blocking(sX, sY, sZ);
   success = success && get_centered_reading_blocking(sX, sY, sZ); // for some reason the demo does it twice apparently to avoid noise (??)
   if (!success) {
-    Router::println("Set operation failed.");
+    CommsSerial.println("Set operation failed.");
     return;
   }
-  Router::println("Set operation done. Values:");
-  Router::mprintln(sX, ",", sY, ",", sZ);
+  CommsSerial.println("Set operation done. Values:");
+  CommsSerial.mprintln(sX, ",", sY, ",", sZ);
 
   mag.performResetOperation();
   int rX, rY, rZ;
@@ -270,12 +271,12 @@ void do_instant_calib() {
   success = success && get_centered_reading_blocking(rX, rY, rZ);
 
   if (!success) {
-    Router::println("Reset operation on mag failed. Instant calibration failed.");
+    CommsSerial.println("Reset operation on mag failed. Instant calibration failed.");
     return;
   }
 
-  Router::println("Reset operation done. Values:");
-  Router::mprintln(rX, ",", rY, ",", rZ);
+  CommsSerial.println("Reset operation done. Values:");
+  CommsSerial.mprintln(rX, ",", rY, ",", rZ);
 
   // hard iron offset is average of set and reset
   calibration cnew;
@@ -289,14 +290,14 @@ void do_instant_calib() {
     }
   }
   calib = cnew; // set new calibration
-  Router::println("Instant calibration done.");
+  CommsSerial.println("Instant calibration done.");
   print_calibration();
 }
 
 void do_simple_calib() {
   hard_reset();
 
-  Router::println("Starting simple calibration.");
+  CommsSerial.println("Starting simple calibration.");
 
   collect_samples();
   // compute hard iron offsets as average of min and max
@@ -327,46 +328,39 @@ void do_simple_calib() {
   }
 
   double goodness = calc_sphere_fit_goodness(read_x, read_y, read_z, 1000, cnew);
-  Router::mprintln("Sphere fit goodness after simple calibration: ", goodness, "%");
+  CommsSerial.mprintln("Sphere fit goodness after simple calibration: ", goodness, "%");
 
   calib = cnew; // set new calibration
-  Router::println("Simple calibration done.");
+  CommsSerial.println("Simple calibration done.");
   print_calibration();
 }
 
 void custom_calib() {
-  Router::println("Enter hard iron offsets separated by spaces (x y z): ");
-  char *line = Router::readline();
-
+  CommsSerial.println("Enter hard iron offsets separated by spaces (x y z): ");
   double vals[3];
-  if (!Router::parse_doubles(line, vals, 3)) {
-    Router::println("Error parsing input. Expected 3 numbers.");
+  if (CommsSerial.scanf("%ld %ld %ld", &vals[0], &vals[1], &vals[2]) != 3) {
+    CommsSerial.println("Error parsing input. Expected 3 numbers.");
     return;
   }
+
   calib.hard_x = vals[0];
   calib.hard_y = vals[1];
   calib.hard_z = vals[2];
 
-  Router::println("Enter soft iron correction matrix (or hit enter for identity): ");
-  char *matline = Router::readline();
-
-  if (matline[0] == '\0') { // len is 0
+  CommsSerial.println("Enter soft iron correction matrix (or hit enter for identity): ");
+  double m[9];
+  if (CommsSerial.scanf("%ld %ld %ld %ld %ld %ld %ld %ld %ld", &m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &m[6], &m[7], &m[8], &m[9]) != 9) {
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {
         calib.soft[i][j] = (i == j) ? 1.0 : 0.0;
       }
     }
-    Router::println("Set soft iron correction matrix to identity.");
+    CommsSerial.println("Set soft iron correction matrix to identity.");
   } else {
-    double m[9];
-    if (!Router::parse_doubles(matline, m, 9)) {
-      Router::println("Error parsing input. Expected 9 numbers.");
-      return;
-    }
     for (int i = 0; i < 9; i++) {
       calib.soft[i / 3][i % 3] = m[i];
     }
-    Router::println("Set soft iron correction matrix to input values.");
+    CommsSerial.println("Set soft iron correction matrix to input values.");
   }
 
   print_calibration();
@@ -376,10 +370,10 @@ void show_centered_reading() {
   for (int i = 0; i < 100; i++) {
     int mx, my, mz;
     if (!get_centered_reading_blocking(mx, my, mz)) {
-      Router::println("Get centered reading failed.");
+      CommsSerial.println("Get centered reading failed.");
       return;
     }
-    Router::mprintln(mx, ",", my, ",", mz);
+    CommsSerial.mprintln(mx, ",", my, ",", mz);
     delay(100);
   }
 }
@@ -387,18 +381,18 @@ void show_centered_reading() {
 void show_normalized_reading() {
   mag.beginMeasurement();
   delay(1);
-  while (!Router::available()) {
+  while (!CommsSerial.available()) {
     if (mag.isMeasurementReady()) {
       double mx, my, mz;
       if (read_xyz_normalized(mx, my, mz)) {
-        Router::printf("%lf, %lf, %lf\n", mx, my, mz);
+        CommsSerial.printf("%lf, %lf, %lf\n", mx, my, mz);
       }
       mag.beginMeasurement();
     }
     delay(5);
   }
 
-  while (Router::read() != '\n')
+  while (CommsSerial.read() != '\n')
     ;
 }
 
@@ -406,7 +400,7 @@ void show_normalized_reading() {
 //   if (filename == nullptr) {
 //     filename = main_calib_name;
 //   }
-//   Router::mprintln("Saving calibration to ", filename);
+//   CommsSerial.mprintln("Saving calibration to ", filename);
 //   SDCard::write_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
 // }
 
@@ -414,14 +408,14 @@ void show_normalized_reading() {
 //   if (filename == nullptr) {
 //     filename = main_calib_name;
 //   }
-//   Router::mprintln("Loading calibration from ", filename);
+//   CommsSerial.mprintln("Loading calibration from ", filename);
 //   SDCard::load_bytes(filename, (uint8_t *)&calib, sizeof(calibration));
 //   print_calibration();
 // }
 
 void no_calib() {
   calib = identity_calib;
-  Router::println("Calibration set to identity (no calibration).");
+  CommsSerial.println("Calibration set to identity (no calibration).");
   print_calibration();
 }
 // -----------------------------------------------------------------------------
@@ -434,15 +428,15 @@ void mag_record_test(const char *arg) {
   }
 
   mag.setFilterBandwidth(new_filter_bw);
-  Router::println("<<< CSV BEGIN >>>");
-  Router::println();
-  Router::println();
-  Router::print(new_filter_bw);
-  Router::print("\nTime (s),X reading,Y reading,Z reading\n");
+  CommsSerial.println("<<< CSV BEGIN >>>");
+  CommsSerial.println();
+  CommsSerial.println();
+  CommsSerial.print(new_filter_bw);
+  CommsSerial.print("\nTime (s),X reading,Y reading,Z reading\n");
 
   unsigned long start_micros = micros();
 
-  while (!Router::available()) {
+  while (!CommsSerial.available()) {
 
     double x, y, z;
     x = y = z = 0;
@@ -455,23 +449,23 @@ void mag_record_test(const char *arg) {
     double t = (micros() - start_micros) / 1000000.0;
     read_xyz_normalized(x, y, z);
 
-    Router::print(t, 6);
-    Router::print(',');
-    Router::print(x, 8);
-    Router::print(',');
-    Router::print(y, 8);
-    Router::print(',');
-    Router::print(z, 8);
-    Router::print('\n');
+    CommsSerial.print(t, 6);
+    CommsSerial.print(',');
+    CommsSerial.print(x, 8);
+    CommsSerial.print(',');
+    CommsSerial.print(y, 8);
+    CommsSerial.print(',');
+    CommsSerial.print(z, 8);
+    CommsSerial.print('\n');
     delay(1);
   }
 
-  while (Router::read() != '\n')
+  while (CommsSerial.read() != '\n')
     ;
 
-  Router::println();
-  Router::println();
-  Router::println("<<< CSV END >>>");
+  CommsSerial.println();
+  CommsSerial.println();
+  CommsSerial.println("<<< CSV END >>>");
 
   mag.setFilterBandwidth(old_filter_bw);
 }
@@ -482,7 +476,7 @@ void begin() {
   // Initialize the magnetometer
   if (!mag.begin()) {
     while (true) {
-      Router::println("Magnetometer not found, reboot once magnetometer connected...");
+      CommsSerial.println("Magnetometer not found, reboot once magnetometer connected...");
       delay(1000);
     }
   }
@@ -495,26 +489,26 @@ void begin() {
   mag.setPeriodicSetSamples(25);
   mag.enablePeriodicSet();
 
-  // Router::add({mag_rawprint, "mag_raw"});
-  Router::add({mag_heading, "mag_heading"});
+  // CommandRouter::add(mag_rawprint, "mag_raw");
+  CommandRouter::add(mag_heading, "mag_heading");
 
-  Router::add({print_calibration, "mag_print_calib"});
-  Router::add({show_normalized_reading, "mag_show_normalized_reading"});
-  Router::add({mag_test_read_time, "mag_test_read_time"});
-  // Router::add({write_samples, "mag_write_samples"});
-  Router::add({do_simple_calib, "mag_do_simple_calib"}); // todo: add a way to save samples to a file when doing simple calib
-  Router::add({do_instant_calib, "mag_do_instant_calib"});
-  Router::add({custom_calib, "mag_custom_calib"});
-  Router::add({hard_reset, "mag_hard_reset"});
-  Router::add({show_centered_reading, "mag_show_centered"});
-  Router::add({no_calib, "mag_no_calib"});
-  // Router::add({save_calib, "mag_save_calib"});
-  // Router::add({load_calib, "mag_load_calib"});
-  Router::add({mag_record_test, "mag_record_test"});
+  CommandRouter::add(print_calibration, "mag_print_calib");
+  CommandRouter::add(show_normalized_reading, "mag_show_normalized_reading");
+  CommandRouter::add(mag_test_read_time, "mag_test_read_time");
+  // CommandRouter::add({write_samples, "mag_write_samples");
+  CommandRouter::add(do_simple_calib, "mag_do_simple_calib"); // todo: add a way to save samples to a file when doing simple calib
+  CommandRouter::add(do_instant_calib, "mag_do_instant_calib");
+  CommandRouter::add(custom_calib, "mag_custom_calib");
+  CommandRouter::add(hard_reset, "mag_hard_reset");
+  CommandRouter::add(show_centered_reading, "mag_show_centered");
+  CommandRouter::add(no_calib, "mag_no_calib");
+  // CommandRouter::add(save_calib, "mag_save_calib");
+  // CommandRouter::add(load_calib, "mag_load_calib");
+  CommandRouter::add(mag_record_test, "mag_record_test");
 
   do_instant_calib();
 
-  Router::println("Magnetometer initialized.");
+  CommsSerial.println("Magnetometer initialized.");
 }
 
 } // namespace Mag

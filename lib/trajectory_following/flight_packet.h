@@ -1,5 +1,5 @@
 #pragma once
-#include "stdint.h"
+// TODO - just point this to the UI code
 
 struct flight_packet_t {
   float accel_x;
@@ -54,13 +54,3 @@ struct flight_packet_t {
   float diffy_perc;
   int rtk_status;
 };
-
-namespace FlightCommands {
-extern bool kill_flag;
-extern bool arm_flag;
-
-void reset();
-void process_cmd(uint8_t *cmd_buf, int cmd_len);
-void encode(uint8_t c);
-void send_telemetry(flight_packet_t fp);
-} // namespace FlightCommands

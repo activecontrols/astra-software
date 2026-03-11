@@ -3,6 +3,6 @@
 namespace TrajectoryFollower {
 
 void begin();
-void arm(const char *);
+void start_flight_loop();
 
 }; // namespace TrajectoryFollower

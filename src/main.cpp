@@ -1,25 +1,30 @@
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "FlashLogging.h"
 #include "GPS.h"
+#include "GimbalServos.h"
 #include "IMU.h"
 #include "Mag.h"
 #include "Prop.h"
-#include "Router.h"
+#include "SPI.h"
 #include "TrajectoryFollower.h"
 #include "TrajectoryLoader.h"
-#include "gimbal_servos.h"
 #include <Arduino.h>
 
+CommsSerial_t<HardwareSerial> HW_CommsSerial(Serial6);
+CommsSerial_t<USBSerial> USB_CommsSerial;
+
 void ping(const char *args) {
-  Router::println("pong");
-  Router::print("args: ");
-  Router::println(args == nullptr ? "null" : args);
+  CommsSerial.println("pong");
+  CommsSerial.print("args: ");
+  CommsSerial.println(args == nullptr ? "null" : args);
 }
 
 void setup() {
   delay(3000);
   SPI.begin(); // spi is a shared interface, so we always begin here
-  Router::begin();
-  Router::println("Controller started.");
+  CommsSerial.begin(115200);
+  CommsSerial.println("Controller started.");
 
   // TODO - configure CS somewhere else!
   digitalWrite(PB7, HIGH);
@@ -46,6 +51,7 @@ void setup() {
 
   pinMode(PB6, OUTPUT);
 
+  CommandRouter::begin();
   Prop::begin();
   Mag::begin();
   GPS::begin();
@@ -53,13 +59,13 @@ void setup() {
   GimbalServos::begin();
   TrajectoryLoader::begin();
   TrajectoryFollower::begin();
-
   Logging::begin();
 
-  Router::add({ping, "ping"}); // example registration
-  Router::add({Router::print_all_cmds, "help"});
+  CommandRouter::add(ping, "ping"); // example registration
 }
 
 void loop() {
-  Router::run(); // loop only runs once, since there is an internal loop in Router::run()
+  while (CommsSerial.available()) {
+    CommandRouter::receive_byte(CommsSerial.read());
+  }
 }

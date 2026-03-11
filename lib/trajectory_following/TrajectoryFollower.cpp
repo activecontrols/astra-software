@@ -1,32 +1,33 @@
 #include "TrajectoryFollower.h"
-
-#include "Arduino.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "FlashLogging.h"
-#include "FlightCommands.h"
 #include "GPS.h"
+#include "GimbalServos.h"
 #include "IMU.h"
 #include "Mag.h"
 #include "Prop.h"
-#include "Router.h"
 #include "SDCard.h"
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
 #include "controller_and_estimator.h"
 #include "elapsedMillis.h"
-#include "gimbal_servos.h"
+#include "flight_packet.h"
+#include <Arduino.h>
 
 #define TELEMETRY_INTERVAL_US 100000
 #define COMMAND_INTERVAL_US 1000
 
 namespace TrajectoryFollower {
 
-/**
- * Follows a trajectory by interpolating between position values.
- */
+bool kill_flag;
+bool arm_flag;
+
 void follow_trajectory() {
   bool has_left_ground = false;
   bool flight_armed = false;
-  bool send_telemetry = false;
+  kill_flag = false;
+  arm_flag = false;
 
   long counter = 0;
 
@@ -35,17 +36,16 @@ void follow_trajectory() {
 
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
   ControllerAndEstimator::init_controller_and_estimator_constants();
-  FlightCommands::reset();
   Controller_State cs;
   flight_packet_t fp;
 
   while (!Mag::isMeasurementReady()) {
-    Router::println("Waiting on mag...");
+    CommsSerial.println("Waiting on mag...");
     delay(100);
   }
   while (!GPS::has_valid_recent_pos()) {
     GPS::pump_events();
-    Router::println("Waiting on gps...");
+    CommsSerial.println("Waiting on gps...");
     delay(100);
   }
 
@@ -62,14 +62,16 @@ void follow_trajectory() {
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (last_time_s < TrajectoryLoader::trajectory[i].time || !flight_armed) {
-      while (Router::available()) {
-        FlightCommands::encode(Router::read());
+      while (CommsSerial.available()) {
+        CommandRouter::receive_byte(CommsSerial.read());
       }
-      if (FlightCommands::kill_flag) {
+
+      if (kill_flag) {
         break;
       }
-      if (FlightCommands::arm_flag) {
-        FlightCommands::arm_flag = false; // only do this on rising edge
+
+      if (arm_flag) {
+        arm_flag = false; // only do this on rising edge
         flight_armed = true;
         timer = elapsedMicros();
         last_time_s = timer / 1000000.0;
@@ -77,13 +79,6 @@ void follow_trajectory() {
         lastloop = timer;
         counter = 0;
         GPS::set_current_position_as_origin();
-      }
-
-      if (timer - lasttelemetry > TELEMETRY_INTERVAL_US) {
-        lasttelemetry = timer;
-        send_telemetry = true;
-      } else {
-        send_telemetry = false;
       }
 
       Controller_Input ci;
@@ -149,7 +144,9 @@ void follow_trajectory() {
 
       TrajectoryLogger::log_trajectory_flash(timer, i, ci, co);
 
-      if (send_telemetry) {
+      if (timer - lasttelemetry > TELEMETRY_INTERVAL_US) {
+        lasttelemetry = timer;
+
         fp.accel_x = cs.filter_out[0];
         fp.accel_y = cs.filter_out[1];
         fp.accel_z = cs.filter_out[2];
@@ -202,7 +199,7 @@ void follow_trajectory() {
         fp.diffy_perc = diffy_perc;
         fp.rtk_status = (GPS::ubx.pvt_solution.data->flags >> 6) & 0b11;
 
-        FlightCommands::send_telemetry(fp);
+        CommandRouter::send_command("tr", fp);
       }
       counter++;
 
@@ -211,7 +208,7 @@ void follow_trajectory() {
       lastloop += COMMAND_INTERVAL_US;
       last_time_s = time_s;
     }
-    if (FlightCommands::kill_flag) {
+    if (kill_flag) {
       break;
     }
   }
@@ -219,42 +216,34 @@ void follow_trajectory() {
   Prop::stop();
 
   fp.flight_armed = false;
-  FlightCommands::send_telemetry(fp);
+  CommandRouter::send_command("tr", fp);
 
-  Router::print("Finished ");
-  Router::print(counter);
-  Router::println(" loop iterations.");
+  CommsSerial.printf("Finished %ld loop iterations.", counter);
 }
 
 // add relevant router cmds
 void begin() {
-  Router::add({arm, "arm"});
+  CommandRouter::add(start_flight_loop, "start_flight_loop");
+  CommandRouter::add_flag(&kill_flag, "k", "terminate the flight loop early");
+  CommandRouter::add_flag(&arm_flag, "arm", "start following a trajectory");
 }
 
 // prompt user for log file name, then follow trajectory
-void arm(const char *) {
+void start_flight_loop() {
   if (!TrajectoryLoader::loaded_trajectory) {
-    Router::println("ARMING FAILURE: no trajectory loaded.");
+    CommsSerial.println("FAILURE: no trajectory loaded.");
     return;
   }
 
   // TODO - re-enable this!
   // if (!Logging::is_armed()) {
-  //   Router::println("ARMING FAILURE: Flash logging is not armed. Use command log_arm.");
+  //   Router::println("FAILURE: Flash logging is not armed. Use command log_arm.");
   //   return;
   // }
 
-  // filenames use DOS 8.3 standard
-  // Router::print("Enter log filename (1-8 chars + '.' + 3 chars): ");
-  // char *log_file_name = Router::readline();
-  // TrajectoryLogger::create_trajectory_log(log_file_name); // lower case files have issues on teensy
-
-  Router::print("ARMING COMPLETE. Type `y` and press enter to confirm. ");
-
+  CommsSerial.println("Flight loop starting. Type arm to start following trajectory.");
   follow_trajectory();
-
-  Router::println("Finished following trajectory!");
-  // TrajectoryLogger::close_trajectory_log();
+  CommsSerial.println("Finished following trajectory!");
 }
 
 } // namespace TrajectoryFollower

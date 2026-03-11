@@ -1,5 +1,6 @@
 #include "FlashLogging.h"
-#include "Router.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "flash.h"
 
 #include <string.h>
@@ -16,32 +17,32 @@ bool log_enable = false;
 
 void cmd_log_arm() {
   if (log_enable) {
-    Router::print("Log is already enabled.\n");
+    CommsSerial.print("Log is already enabled.\n");
     return;
   }
   const int key_min = 1000;
   const int key_max = 10000;
   srand(millis());
   int key = rand() % (key_max - key_min) + key_min;
-  Router::print("WARNING: Proceeding will permanently delete all data on the flash.\n");
-  Router::printf("Enter %d to proceed: ", key);
+  CommsSerial.print("WARNING: Proceeding will permanently delete all data on the flash.\n");
+  CommsSerial.printf("Enter %d to proceed: ", key);
 
-  char* res = Router::readline();
+  char *res = CommsSerial.readline();
 
   if (atoi(res) != key) {
-    Router::print("Incorrect key entered.\n");
+    CommsSerial.print("Incorrect key entered.\n");
     return;
   }
 
-  Router::print("Erasing flash. This may take up to 1 minute.\n");
+  CommsSerial.print("Erasing flash. This may take up to 1 minute.\n");
 
   if (!Flash::chip_erase()) {
-    Router::print("Chip erase failed.\n");
+    CommsSerial.print("Chip erase failed.\n");
     return;
   }
 
-  Router::print("Flash erased.\n");
-  Router::print("Logging enabled.\n");
+  CommsSerial.print("Flash erased.\n");
+  CommsSerial.print("Logging enabled.\n");
 
   log_enable = true;
   buf_index = 0;
@@ -49,7 +50,7 @@ void cmd_log_arm() {
   return;
 }
 
-bool is_armed(){
+bool is_armed() {
   return log_enable;
 }
 
@@ -73,7 +74,7 @@ void write(uint8_t *data, unsigned int len) {
     if (buf_index >= sizeof(write_buf)) {
       // write data to a new page in the flash
       if (!Flash::page_program(program_addr, write_buf, sizeof(write_buf))) {
-        Router::print("Page Program Failed\n");
+        CommsSerial.print("Page Program Failed\n");
         return;
       }
       program_addr += sizeof(write_buf);
@@ -101,7 +102,7 @@ void complete() {
 
 void flash_test() {
   if (!log_enable) {
-    Router::println("Log is disabled. Use command log_arm before running the flash test.");
+    CommsSerial.println("Log is disabled. Use command log_arm before running the flash test.");
     return;
   }
   static uint8_t write_buf[PAGE_SIZE * 30 + 213];
@@ -110,7 +111,7 @@ void flash_test() {
     write_buf[i] = (i % 10) + '0';
   }
 
-  Router::printf("\nWriting %d bytes to flash.\n", sizeof(write_buf));
+  CommsSerial.printf("\nWriting %d bytes to flash.\n", sizeof(write_buf));
 
   unsigned long start_time = micros();
 
@@ -119,14 +120,14 @@ void flash_test() {
 
   unsigned long delta = micros() - start_time;
 
-  Router::println("\nWrite complete.");
-  Router::printf("Time taken (ms): %.2lf\nWrite Speed: %.2lf B/s\n\n", delta * 1e-3, sizeof(write_buf) * 1e6 / delta);
+  CommsSerial.println("\nWrite complete.");
+  CommsSerial.printf("Time taken (ms): %.2lf\nWrite Speed: %.2lf B/s\n\n", delta * 1e-3, sizeof(write_buf) * 1e6 / delta);
 
   // now read back the data and compare
 
   static uint8_t read_buf[PAGE_SIZE];
 
-  Router::println("Reading data back to verify integrity...");
+  CommsSerial.println("Reading data back to verify integrity...");
 
   for (uint32_t addr = 0; addr < sizeof(write_buf); addr += PAGE_SIZE) {
     Flash::read(addr, PAGE_SIZE, read_buf);
@@ -135,19 +136,19 @@ void flash_test() {
     size_t compare_count = min((unsigned long)PAGE_SIZE, sizeof(write_buf) - addr);
 
     if (memcmp(read_buf, write_buf + addr, compare_count)) {
-      Router::printf("Data comparison failed. Page address: %X\n", addr);
+      CommsSerial.printf("Data comparison failed. Page address: %X\n", addr);
 
       for (int i = 0; i < sizeof(read_buf); ++i) {
-        Router::print(read_buf[i]);
-        Router::print(' ');
+        CommsSerial.print(read_buf[i]);
+        CommsSerial.print(' ');
       }
 
-      Router::println();
+      CommsSerial.println();
       return;
     }
   }
 
-  Router::printf("Flash Read/Write test succeeded!\nBytes written/read back: %d\n", sizeof(write_buf));
+  CommsSerial.printf("Flash Read/Write test succeeded!\nBytes written/read back: %d\n", sizeof(write_buf));
 
   return;
 }
@@ -155,8 +156,8 @@ void flash_test() {
 void begin() {
   Flash::begin();
 
-  Router::add({cmd_log_arm, "log_arm"});
-  Router::add({flash_test, "flash_test"});
+  CommandRouter::add(cmd_log_arm, "log_arm");
+  CommandRouter::add(flash_test, "flash_test");
 }
 
 }; // namespace Logging

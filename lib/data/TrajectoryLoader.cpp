@@ -3,7 +3,7 @@
 //
 
 #include "TrajectoryLoader.h"
-#include "Router.h"
+#include "CommandRouter.h"
 #include "SDCard.h"
 
 namespace TrajectoryLoader {
@@ -14,9 +14,9 @@ traj_point_pos trajectory[3] = {{0, 0, 0, 0}, {55, 0, 0, 3}, {60, 0, 0, 0}};
 bool loaded_trajectory;
 
 void begin() {
-  // Router::add({load_trajectory_serial, "load_trajectory_serial"});
-  // Router::add({load_trajectory_sd_cmd, "load_trajectory_sd"});
-  // Router::add({write_trajectory_sd, "write_trajectory_sd"});
+  // CommandRouter::add({load_trajectory_serial, "load_trajectory_serial"});
+  // CommandRouter::add({load_trajectory_sd_cmd, "load_trajectory_sd"});
+  // CommandRouter::add({write_trajectory_sd, "write_trajectory_sd"});
 
   // TODO - add these commands back (don't hardcode) once SD card ready
   header.version = CURRENT_TRAJECTORYH_VERSION;

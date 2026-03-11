@@ -1,9 +1,8 @@
-#include "Servo.h"
+#include "Prop.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "fc_pins.h"
-#include <Prop.h>
-#include <Router.h>
-
-#include <Arduino.h>
+#include <Servo.h>
 
 #define MIN_PULSE 1000
 #define MAX_PULSE 2000
@@ -154,47 +153,49 @@ bool is_armed() {
 // Router commands -------------------------------------------------------------
 
 void cmd_set_both(const char *args) {
-  double vals[2];
-  if (!Router::parse_doubles(args, vals, 2)) {
-    Router::println("Usage: prop_set_both <prop1 %> <prop2 %>");
+  double prop1;
+  double prop2;
+  if (sscanf(args, "%ld %ld", &prop1, &prop2) != 2) {
+    CommsSerial.println("Usage: prop_set_both <prop1 %> <prop2 %>");
     return;
   }
 
-  set_throttle(vals[0], vals[1]);
-  Router::mprintln("Throttle set to: ", vals[0], "% ", vals[1], "%");
+  set_throttle(prop1, prop2);
+  CommsSerial.mprintln("Throttle set to: ", prop1, "% ", prop2, "%");
 }
 
 void cmd_set(const char *args) {
-  double vals[2];
-  if (!Router::parse_doubles(args, vals, 2)) {
-    if (!Router::parse_doubles(args, vals, 1)) {
-      Router::println("Usage: prop_set <throttle %> [<roll %>]");
+  double overall;
+  double differential;
+  if (sscanf(args, "%ld %ld", &overall, &differential) != 2) {
+    if (sscanf(args, "%ld", &overall) != 1) {
+      CommsSerial.println("Usage: prop_set <throttle %> [<roll %>]");
       return;
     }
-    vals[1] = 0.0; // default roll to 0
+    differential = 0.0; // default roll to 0
   }
 
-  set_throttle_roll(vals[0], vals[1]);
-  Router::mprintln("Throttle set to: ", vals[0], "% ", " differential ", vals[1], "%");
+  set_throttle_roll(overall, differential);
+  CommsSerial.mprintln("Throttle set to: ", overall, "% ", " differential ", differential, "%");
 }
 
 void cmd_stop() {
   stop();
-  Router::println("Stopped.");
+  CommsSerial.println("Stopped.");
 }
 
 void cmd_arm() {
-  Router::println("Arming...");
+  CommsSerial.println("Arming...");
   arm();
-  Router::println("Armed.");
+  CommsSerial.println("Armed.");
 }
 
 void cmd_status() {
-  Router::mprintln("Manually armed: ", armed ? "Yes" : "No");
+  CommsSerial.mprintln("Manually armed: ", armed ? "Yes" : "No");
   float p1 = (current_throttle_1 - MIN_PULSE) * 100.0 / (MAX_PULSE - MIN_PULSE);
   float p2 = (current_throttle_2 - MIN_PULSE) * 100.0 / (MAX_PULSE - MIN_PULSE);
-  Router::mprintln("prop 1: ", p1, "%");
-  Router::mprintln("prop 2: ", p2, "%");
+  CommsSerial.mprintln("prop 1: ", p1, "%");
+  CommsSerial.mprintln("prop 2: ", p2, "%");
 }
 
 void cmd_ramp_test(const char *args) {
@@ -203,28 +204,28 @@ void cmd_ramp_test(const char *args) {
     max_pct = atoi(args);
   }
 
-  Router::mprintln("Ramping to ", max_pct, "% over 5 seconds...");
+  CommsSerial.mprintln("Ramping to ", max_pct, "% over 5 seconds...");
 
   for (int i = 0; i <= max_pct; i++) {
     set_throttle(i, i);
     delay(5000 / max_pct);
   }
 
-  Router::println("Holding for 2 seconds...");
+  CommsSerial.println("Holding for 2 seconds...");
   delay(2000);
 
-  Router::println("Ramping down...");
+  CommsSerial.println("Ramping down...");
   for (int i = max_pct; i >= 0; i--) {
     set_throttle(i, i);
     delay(2000 / max_pct);
   }
 
   stop();
-  Router::println("Ramp test complete.");
+  CommsSerial.println("Ramp test complete.");
 }
 
 void cmd_contra_test() {
-  Router::println("Testing contra...");
+  CommsSerial.println("Testing contra...");
   float base = 30.0;
   float maxdiff = 20.0;
   for (int i = 0; i <= 100; i++) {
@@ -232,7 +233,7 @@ void cmd_contra_test() {
     delay(100);
   }
   stop();
-  Router::println("Contra test complete.");
+  CommsSerial.println("Contra test complete.");
 }
 
 // -----------------------------------------------------------------------------
@@ -242,16 +243,16 @@ void begin() {
   esc2.attach(PROP2_PIN);
   set_throttle_micros(MIN_PULSE, MIN_PULSE); // this is pretty much arming assuming no commands are run for a couple seconds
 
-  Router::add({cmd_arm, "prop_arm"});
-  Router::add({cmd_stop, "prop_stop"});
-  Router::add({cmd_set_both, "prop_set_both"});
-  Router::add({cmd_set, "prop_set"});
-  Router::add({cmd_status, "prop_status"});
-  Router::add({cmd_ramp_test, "prop_ramp"});
-  Router::add({cmd_contra_test, "prop_contra"});
+  CommandRouter::add(cmd_arm, "prop_arm");
+  CommandRouter::add(cmd_stop, "prop_stop");
+  CommandRouter::add(cmd_set_both, "prop_set_both");
+  CommandRouter::add(cmd_set, "prop_set");
+  CommandRouter::add(cmd_status, "prop_status");
+  CommandRouter::add(cmd_ramp_test, "prop_ramp");
+  CommandRouter::add(cmd_contra_test, "prop_contra");
 
-  // Router::mprintln("Initialized on pins ", PROP1_PIN, " and ", PROP2_PIN, ".");
-  // Router::println("Run 'prop_arm' to arm ESCs.");
+  // CommandRouter::mprintln("Initialized on pins ", PROP1_PIN, " and ", PROP2_PIN, ".");
+  // CommandRouter::println("Run 'prop_arm' to arm ESCs.");
 }
 
 } // namespace Prop

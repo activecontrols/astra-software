@@ -1,9 +1,7 @@
 #pragma once
+#include "UBX.h" // trajectorylogger needs access to UBX.h for pos and vel covariance struct
 #include "matlab_funcs.h"
 #include <Arduino.h>
-#include "UBX.h" // trajectorylogger needs access to UBX.h for pos and vel covariance struct
-
-extern HardwareSerial gps_uart;
 
 #define EARTH_RADIUS_M 6371001.0
 

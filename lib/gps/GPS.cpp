@@ -1,5 +1,6 @@
 #include "GPS.h"
-#include "Router.h"
+#include "CommandRouter.h"
+#include "CommsSerial.h"
 #include "UBX.h"
 #include "fc_pins.h"
 
@@ -22,15 +23,15 @@ void gps_speed_test() {
     pump_events();
     unsigned long delta_micros = micros() - start_micros;
 
-    Router::printf("(%d, %d),", ubx.pvt_solution.updated, delta_micros);
+    CommsSerial.printf("(%d, %d),", ubx.pvt_solution.updated, delta_micros);
     ubx.pvt_solution.updated = false;
     delay(1);
   }
-  Router::println();
+  CommsSerial.println();
 }
 
 void output_gps_inf_cbk(uint8_t id, const char *msg) {
-  Router::printf(" -GPS INFO- [%s]: %s\n", UBX::inf_message_name(id), msg);
+  CommsSerial.printf(" -GPS INFO- [%s]: %s\n", UBX::inf_message_name(id), msg);
 }
 
 // outputs gps info messages
@@ -38,19 +39,19 @@ void output_gps_inf() {
   void (*old_cbk)(uint8_t, const char *) = ubx.inf_msg_cbk;
   ubx.inf_msg_cbk = output_gps_inf_cbk;
 
-  while (!Router::available()) {
+  while (!CommsSerial.available()) {
     pump_events();
 
     delay(20);
   }
 
-  while (Router::read() != '\n')
+  while (CommsSerial.read() != '\n')
     ;
   ubx.inf_msg_cbk = old_cbk;
 }
 
 void print_gps_events() {
-  while (!Router::available()) {
+  while (!CommsSerial.available()) {
     pump_events();
 
     if (ubx.pvt_solution.updated && has_valid_recent_pos()) {
@@ -67,62 +68,66 @@ void print_gps_events() {
 
       double altitude = ubx.pvt_solution.data->hMSL * 1e-3; // convert mm to meters
 
-      Router::println("================");
-      Router::printf("Satellite Count: %d\n", ubx.pvt_solution.data->numSV);
-      Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.data->lat, ubx.pvt_solution.data->lon);
-      Router::printf("Latitude  (deg):  %lf\n", real_lat);
-      Router::printf("Longitude (deg): %lf\n", real_lon);
-      Router::printf("Velocity North (m/s): %lf\n", velocity_north);
-      Router::printf("Velocity East  (m/s): %lf\n", velocity_east);
-      Router::printf("Velocity Down  (m/s): %lf\n", velocity_down);
-      Router::printf("Altitude (m): %lf\n", altitude);
-      Router::printf("Horizontal Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->hAcc / 1000.0);
-      Router::printf("Vertical Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->vAcc / 1000.0);
+      CommsSerial.println("================");
+      CommsSerial.printf("Satellite Count: %d\n", ubx.pvt_solution.data->numSV);
+      CommsSerial.printf("Lat Lon: %d %d\n", ubx.pvt_solution.data->lat, ubx.pvt_solution.data->lon);
+      CommsSerial.printf("Latitude  (deg):  %lf\n", real_lat);
+      CommsSerial.printf("Longitude (deg): %lf\n", real_lon);
+      CommsSerial.printf("Velocity North (m/s): %lf\n", velocity_north);
+      CommsSerial.printf("Velocity East  (m/s): %lf\n", velocity_east);
+      CommsSerial.printf("Velocity Down  (m/s): %lf\n", velocity_down);
+      CommsSerial.printf("Altitude (m): %lf\n", altitude);
+      CommsSerial.printf("Horizontal Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->hAcc / 1000.0);
+      CommsSerial.printf("Vertical Accuracy Estimate (m): %lf\n", ubx.pvt_solution.data->vAcc / 1000.0);
 
-      Router::println("================");
+      CommsSerial.println("================");
     }
 
     if (ubx.cov.updated) {
       ubx.cov.updated = false;
 
       // output covariance matrices
-      Router::print("================\n");
-      Router::print("Position covariance (m^2)\n");
-      Router::printf("%9.3f %9.3f %9.3f\n", ubx.cov.data->posCovNN, -ubx.cov.data->posCovNE, -ubx.cov.data->posCovND);
-      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->posCovNE, ubx.cov.data->posCovEE, ubx.cov.data->posCovED);
-      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->posCovND, ubx.cov.data->posCovED, ubx.cov.data->posCovDD);
+      CommsSerial.print("================\n");
+      CommsSerial.print("Position covariance (m^2)\n");
+      CommsSerial.printf("%9.3f %9.3f %9.3f\n", ubx.cov.data->posCovNN, -ubx.cov.data->posCovNE, -ubx.cov.data->posCovND);
+      CommsSerial.printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->posCovNE, ubx.cov.data->posCovEE, ubx.cov.data->posCovED);
+      CommsSerial.printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->posCovND, ubx.cov.data->posCovED, ubx.cov.data->posCovDD);
 
-      Router::print("Velocity Covariance (m^2/s^2)\n");
-      Router::printf("%9.3f %9.3f %9.3f\n", ubx.cov.data->velCovNN, -ubx.cov.data->velCovNE, -ubx.cov.data->velCovND);
-      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->velCovNE, ubx.cov.data->velCovEE, ubx.cov.data->velCovED);
-      Router::printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->velCovND, ubx.cov.data->velCovED, ubx.cov.data->velCovDD);
-      Router::print("================\n");
+      CommsSerial.print("Velocity Covariance (m^2/s^2)\n");
+      CommsSerial.printf("%9.3f %9.3f %9.3f\n", ubx.cov.data->velCovNN, -ubx.cov.data->velCovNE, -ubx.cov.data->velCovND);
+      CommsSerial.printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->velCovNE, ubx.cov.data->velCovEE, ubx.cov.data->velCovED);
+      CommsSerial.printf("%9.3f %9.3f %9.3f\n", -ubx.cov.data->velCovND, ubx.cov.data->velCovED, ubx.cov.data->velCovDD);
+      CommsSerial.print("================\n");
     }
 
     delay(10);
   }
 
-  while (Router::read() != '\n')
+  while (CommsSerial.read() != '\n')
     ;
 }
 
-void begin() {
+void rcv_rtk(const uint8_t *rtk_data, size_t len) {
+  gps_uart.write(rtk_data, len);
+}
 
+void begin() {
   gps_uart.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
 
 #ifdef DEBUG_GPS_MSG
-  Router::println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
+  CommsSerial.println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");
 #endif
 
   ubx.inf_msg_cbk = output_gps_inf_cbk;
 
-  Router::add({print_gps_pos, "gps_print_pos"});
-  Router::add({print_rel_pos, "gps_print_rel_pos"});
-  Router::add({set_current_position_as_origin, "gps_set_origin"});
-  Router::add({pump_events, "pump_events"});
-  Router::add({gps_speed_test, "gps_speed_test"});
-  Router::add({print_gps_events, "print_gps_events"});
-  Router::add({output_gps_inf, "gps_print_info"});
+  CommandRouter::add(print_gps_pos, "gps_print_pos");
+  CommandRouter::add(print_rel_pos, "gps_print_rel_pos");
+  CommandRouter::add(set_current_position_as_origin, "gps_set_origin");
+  CommandRouter::add(pump_events, "pump_events");
+  CommandRouter::add(gps_speed_test, "gps_speed_test");
+  CommandRouter::add(print_gps_events, "print_gps_events");
+  CommandRouter::add(output_gps_inf, "gps_print_info");
+  CommandRouter::add(rcv_rtk, "rtk", "send rtk updates to the gps module, called automatically by the UI");
 }
 
 bool is_vel_cov_valid() {
@@ -166,7 +171,7 @@ void pump_events() {
     ubx.encode(c);
 
 #ifdef DEBUG_GPS_MSG
-    Router::print(c);
+    CommsSerial.print(c);
 #endif
   }
 
@@ -183,16 +188,16 @@ void pump_events() {
 
     double altitude = ubx.pvt_solution.data->hMSL * 1e-3; // convert mm to meters
 
-    Router::println("================");
-    Router::printf("Satellite Count: %d\n", ubx.pvt_solution.data->numSV);
-    Router::printf("Lat Lon: %d %d\n", ubx.pvt_solution.data->lat, ubx.pvt_solution.data->lon);
-    Router::printf("Latitude  (deg):  %lf\n", real_lat);
-    Router::printf("Longitude (deg): %lf\n", real_lon);
-    Router::printf("Velocity North (m/s): %lf\n", velocity_north);
-    Router::printf("Velocity East  (m/s): %lf\n", velocity_east);
-    Router::printf("Velocity Down  (m/s): %lf\n", velocity_down);
-    Router::printf("Altitude (m): %lf\n", altitude);
-    Router::println("================");
+    CommsSerial.println("================");
+    CommsSerial.printf("Satellite Count: %d\n", ubx.pvt_solution.data->numSV);
+    CommsSerial.printf("Lat Lon: %d %d\n", ubx.pvt_solution.data->lat, ubx.pvt_solution.data->lon);
+    CommsSerial.printf("Latitude  (deg):  %lf\n", real_lat);
+    CommsSerial.printf("Longitude (deg): %lf\n", real_lon);
+    CommsSerial.printf("Velocity North (m/s): %lf\n", velocity_north);
+    CommsSerial.printf("Velocity East  (m/s): %lf\n", velocity_east);
+    CommsSerial.printf("Velocity Down  (m/s): %lf\n", velocity_down);
+    CommsSerial.printf("Altitude (m): %lf\n", altitude);
+    CommsSerial.println("================");
   }
 #endif
 }
@@ -211,7 +216,7 @@ GPS_Velocity get_velocity() {
 
 void set_current_position_as_origin() {
   if (!has_valid_recent_pos()) {
-    Router::print("Warning - tried to set current position as origin without valid GPS position.");
+    CommsSerial.print("Warning - tried to set current position as origin without valid GPS position.");
   } else {
     origin = get_lat_lon_alt();
   }
@@ -235,20 +240,20 @@ Point get_rel_xyz_pos() {
 void print_gps_pos() {
   pump_events();
   if (!has_valid_recent_pos()) {
-    Router::printf("GPS does not have valid position.\n");
+    CommsSerial.printf("GPS does not have valid position.\n");
   } else {
     GPS_Coord c = get_lat_lon_alt();
-    Router::printf("GPS Lat:%.6f Lon:%.6f Alt:%.3f\n", c.lat, c.lon, c.alt);
+    CommsSerial.printf("GPS Lat:%.6f Lon:%.6f Alt:%.3f\n", c.lat, c.lon, c.alt);
   }
 }
 
 void print_rel_pos() {
   pump_events();
   if (!has_valid_recent_pos()) {
-    Router::printf("GPS does not have valid position.\n");
+    CommsSerial.printf("GPS does not have valid position.\n");
   } else {
     Point p = get_rel_xyz_pos();
-    Router::printf("GPS relative position north:%.3f west:%.3f up:%.3f\n", p.north, p.west, p.up);
+    CommsSerial.printf("GPS relative position north:%.3f west:%.3f up:%.3f\n", p.north, p.west, p.up);
   }
 }
 

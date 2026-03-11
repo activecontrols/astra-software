@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define SECTOR(addr) ((addr >> 12) & 0xFFF)
 #define PAGE(addr) ((addr >> 8) & 0xFFFF)
 #define PAGE_SIZE 256
