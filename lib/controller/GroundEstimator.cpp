@@ -20,6 +20,8 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
   z.segment<3>(0) = z.segment<3>(0) - x_est.segment<3>(13);
   z.segment<3>(3) = z.segment<3>(3) - x_est.segment<3>(10);
   z.segment<3>(6) = z.segment<3>(6) - x_est.segment<3>(16);
+  float mag_norm = z.segment<3>(6).norm();
+  z.segment<3>(6).normalize();
 
   // Extract quaternion
   Vector18 dx = Vector18::Zero();
@@ -51,8 +53,11 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
   Matrix6_6 R = constantsASTRA.R;
 
   // Process Noise Covariance and a-priori propagation step
-  Q = 0.5 * Q;
+  // Q = 0.5 * Q;
+  Matrix3_3 mag_matrix = (Matrix3_3::Identity() - z.segment<3>(6) * z.segment<3>(6).transpose()) / mag_norm;
+  R.block<3, 3>(3, 3) = 2e-3 * mag_matrix + 1e-5 * z.segment<3>(6) * z.segment<3>(6).transpose();
   P = Phi * P * Phi.transpose() + Q;
+  P = (P + P.transpose()) / 2;
 
   // IMU Update
   if (new_imu_packet) {
@@ -61,7 +66,7 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
     H.block<3, 3>(0, 0) = zetaCross(R_b2i.transpose() * (Vector3() << 0, 0, constantsASTRA.g).finished());
     H.block<3, 3>(0, 12) = Matrix3_3::Identity();
     H.block<3, 3>(3, 0) = zetaCross(R_b2i.transpose() * constantsASTRA.mag);
-    H.block<3, 3>(3, 15) = Matrix3_3::Identity();
+    H.block<3, 3>(3, 15) = mag_matrix;
 
     // A priori covariance and Kalman gain
     Matrix18_6 L = P * H.transpose() * (H * P * H.transpose() + R).inverse();
@@ -72,6 +77,7 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
     // Kalman Gain Weighting based on predicted acceleration
     Matrix18_18 ILH = (Matrix18_18::Identity() - L * H);
     P = ILH * P * ILH.transpose() + L * R * L.transpose();
+    P = (P + P.transpose()) / 2;
     Vector6 residual = ((Vector6() << z.segment<3>(0), z.segment<3>(6)).finished() - z_hat);
     dx = dx + L * residual;
   }
@@ -97,6 +103,7 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
     // Kalman Gain Weighting based on predicted acceleration
     Matrix18_18 ILH = (Matrix18_18::Identity() - L * H);
     P = ILH * P * ILH.transpose() + L * R * L.transpose();
+    P = (P + P.transpose()) / 2;
     Vector6 residual = (z.segment<6>(9) - z_hat);
     Vector18 inn = L * residual;
     dx = dx + inn;

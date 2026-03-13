@@ -121,6 +121,15 @@ void follow_trajectory() {
       ci.gps_vel_west = gps_vel.west;
       ci.gps_vel_up = gps_vel.up;
 
+      // GPS lock
+      // ci.gps_pos_north = 0;
+      // ci.gps_pos_west = 0;
+      // ci.gps_pos_up = 0;
+      // ci.gps_vel_north = 0;
+      // ci.gps_vel_west = 0;
+      // ci.gps_vel_up = 0;
+      // ci.new_gps_packet = true;
+
       ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
       ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
       ci.target_pos_up = TrajectoryLoader::trajectory[i].up;

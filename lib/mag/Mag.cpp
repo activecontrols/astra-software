@@ -79,7 +79,7 @@ bool read_xyz(double &mx, double &my, double &mz) {
   mz = (double)rz;
   apply_calibration(mx, my, mz);
 
-  double half = 131072.0; // all values after dividing are in +/- 1.0 range (sensor is 18 bit)
+  double half = 16384.0; // all values after dividing are in +/- 1.0 range (sensor is 18 bit)
   mx /= half;
   my /= half;
   mz /= half;
@@ -91,10 +91,11 @@ bool read_xyz_normalized(double &mx, double &my, double &mz) {
     return false;
   }
 
-  double sqrt_ssq = sqrt(mx * mx + my * my + mz * mz);
-  mx /= sqrt_ssq;
-  my /= sqrt_ssq;
-  mz /= sqrt_ssq;
+  // Note - don't normalize for ekf
+  // double sqrt_ssq = sqrt(mx * mx + my * my + mz * mz);
+  // mx /= sqrt_ssq;
+  // my /= sqrt_ssq;
+  // mz /= sqrt_ssq;
   return true;
 }
 

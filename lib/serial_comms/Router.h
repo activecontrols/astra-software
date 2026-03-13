@@ -14,8 +14,8 @@ struct func_no_args;
 
 namespace Router {
 
-#define COMMS_SERIAL SerialUSB
-#define COMMS_RATE 115200
+#define COMMS_SERIAL Serial6
+#define COMMS_RATE 57600
 
 // TODO - enable radio before flight
 // #define COMMS_SERIAL Serial6
