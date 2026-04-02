@@ -10,15 +10,45 @@
 #include "TrajectoryFollower.h"
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
+#include "gimbal_servos.h"
+
 #include <Arduino.h>
 
 CommsSerial_t<HardwareSerial> HW_CommsSerial(PIN_SERIAL_RX, PIN_SERIAL_TX);
 CommsSerial_t<USBSerial> USB_CommsSerial;
 
 void ping(const char *args) {
-  CommsSerial.println("pong");
-  CommsSerial.print("args: ");
-  CommsSerial.println(args == nullptr ? "null" : args);
+  Router::println("pong");
+  Router::print("args: ");
+  Router::println(args == nullptr ? "null" : args);
+}
+
+void cmd_emi_test() {
+  if (!Prop::is_armed()) {
+    Prop::arm();
+  }
+  Prop::set_throttle(50.0, 50.0);
+
+  Mag::beginMeasurement();
+
+  while (!COMMS_SERIAL.available()) {
+    while (!Mag::isMeasurementReady) {
+      delay(1);
+    }
+
+    double x, y, z;
+
+    Mag::read_xyz(x, y, z);
+    Mag::beginMeasurement();
+
+    COMMS_SERIAL.print(x, 4);
+    COMMS_SERIAL.print(',');
+    COMMS_SERIAL.print(y, 4);
+    COMMS_SERIAL.print(',');
+    COMMS_SERIAL.print(z, 4);
+    COMMS_SERIAL.print('\n');
+  }
+  return;
 }
 
 void setup() {
