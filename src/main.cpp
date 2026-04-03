@@ -23,14 +23,24 @@ void ping(const char *args) {
   Router::println(args == nullptr ? "null" : args);
 }
 
+#define RADIO_SERIAL Serial6
+
 void cmd_emi_test() {
   if (!Prop::is_armed()) {
     Prop::arm();
   }
-  Prop::set_throttle(50.0, 50.0);
+
+  Serial6.begin(57600);
+  Prop::set_throttle(0.0, 0.0);
 
   Mag::beginMeasurement();
 
+  COMMS_SERIAL.print("Time (s),Throttle %,Mag X,Mag Y,Mag Z,Accel X (m/s^2),Accel Y (m/s^2),Accel Z (m/s^2),Gyro X (rad/s),Gyro Y (rad/s),Gyro Z (rad/s)\n");
+
+
+  uint8_t b = 0;
+  unsigned long start_t = micros();
+  double last_t = start_t * 1e-6;
   while (!COMMS_SERIAL.available()) {
     while (!Mag::isMeasurementReady) {
       delay(1);
@@ -38,15 +48,48 @@ void cmd_emi_test() {
 
     double x, y, z;
 
+    double t = (micros() - start_t) * 1e-6;
+
+    float throttle = 0.0 + 50.0 * (t > 5.0); // throttle on props after 5 seconds
+
+    Prop::set_throttle(throttle, throttle);
+
+    IMU::Data imu_measurement;
+
+    IMU::IMUs[0].read_latest(&imu_measurement);
+
     Mag::read_xyz(x, y, z);
     Mag::beginMeasurement();
 
+    COMMS_SERIAL.print(t, 4);
+    COMMS_SERIAL.print(',');
+    COMMS_SERIAL.print(throttle, 2);
+    COMMS_SERIAL.print(',');
     COMMS_SERIAL.print(x, 4);
     COMMS_SERIAL.print(',');
     COMMS_SERIAL.print(y, 4);
     COMMS_SERIAL.print(',');
     COMMS_SERIAL.print(z, 4);
+
+    for (int i = 0; i < 3; ++i) {
+      COMMS_SERIAL.print(',');
+      COMMS_SERIAL.print(imu_measurement.acc[i], 5);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+      COMMS_SERIAL.print(',');
+      COMMS_SERIAL.print(imu_measurement.gyro[i], 5);
+    }
+
     COMMS_SERIAL.print('\n');
+
+    // send incremental data over radio link to also test emi
+    for (int i = 0; i < (int)((t - last_t) * 5000); ++i)
+    {
+      RADIO_SERIAL.write(b++);
+    }
+
+    last_t = t;
   }
   return;
 }
@@ -85,13 +128,13 @@ void setup() {
   CommandRouter::begin();
   Prop::begin();
   Mag::begin();
-  GPS::begin();
+  // GPS::begin();
   IMU::begin();
-  GimbalServos::begin();
-  TrajectoryLoader::begin();
-  TrajectoryFollower::begin();
-  Logging::begin();
-  TrajectoryLogger::begin();
+  // GimbalServos::begin();
+  // TrajectoryLoader::begin();
+  // TrajectoryFollower::begin();
+
+  // Logging::begin();
 
   CommandRouter::add(ping, "ping"); // example registration
 }
