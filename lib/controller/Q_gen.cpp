@@ -9,7 +9,7 @@ Matrix18_18 Q_gen() {
   float mag_bias_cov = 1e-12; // * 3000;
 
   // Init constants
-  float dt = 0.001;
+  float dt = 0.002;
 
   // body vectors, defined from flight computer notation
   Vector3 f_global_body = (Vector3() << 0, 0, -9.81).finished(); // Expected gravity vector from 0 (standing upright)

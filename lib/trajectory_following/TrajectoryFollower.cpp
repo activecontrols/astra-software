@@ -16,7 +16,7 @@
 #include <Arduino.h>
 
 #define TELEMETRY_INTERVAL_US 100000
-#define COMMAND_INTERVAL_US 1000
+#define COMMAND_INTERVAL_US 2000
 #define LOG_X_EST_INTERVAL_US 100000
 
 namespace TrajectoryFollower {
@@ -59,12 +59,14 @@ void follow_trajectory() {
   unsigned long lasttelemetry = timer;
   unsigned long lastloop = timer;
   unsigned long lastlogx_est = timer;
+  unsigned long prog_time = 0;
 
   float last_time_s = timer / 1000000.0;
   float mx, my, mz;
 
   for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
     while (last_time_s < TrajectoryLoader::trajectory[i].time || !flight_armed) {
+
       while (CommsSerial.available()) {
         CommandRouter::receive_byte(CommsSerial.read());
       }
@@ -82,6 +84,7 @@ void follow_trajectory() {
         lastloop = timer;
         lastlogx_est = timer;
         counter = 0;
+        prog_time = 0;
         GPS::set_current_position_as_origin();
 
         TrajectoryLogger::log_x_est(); // only log initial controller state, this is too much data to log every frame
@@ -95,9 +98,11 @@ void follow_trajectory() {
       IMU::IMUs[0].read_latest(&imu_reading);
 
       if (Mag::isMeasurementReady()) {
+        long long start = millis();
         ci.new_imu_packet = true;
         Mag::read_xyz_calibrated(mx, my, mz);
         Mag::beginMeasurement();
+        prog_time += millis() - start;
       } else {
         ci.new_imu_packet = false;
       }
@@ -229,6 +234,7 @@ void follow_trajectory() {
         GPS::get_gps_precision(&hor, &ver);
         fp.gps_hor_prec = hor;
         fp.gps_ver_prec = ver;
+        fp.prog_time = prog_time / 1000.0;
 
         CommandRouter::send_command("tr", fp);
       }

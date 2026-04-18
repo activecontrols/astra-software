@@ -55,4 +55,5 @@ struct flight_packet_t {
   int rtk_status;
   float gps_hor_prec;
   float gps_ver_prec;
+  float prog_time;
 };
