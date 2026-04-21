@@ -95,9 +95,9 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   last_GND = ci.GND_val;
 
   Controller_Output co;
-  co.gimbal_yaw_deg = raw_co(0) * 180 / M_PI;
-  co.gimbal_pitch_deg = raw_co(1) * 180 / M_PI;
-  co.thrust_N = raw_co(2);
+  co.gimbal_yaw_deg = 0;
+  co.gimbal_pitch_deg = 0;
+  co.thrust_N = 6.0;
   co.roll_rad_sec_squared = raw_co(3);
 
   cs->state_q_vec_new = x_est(0);

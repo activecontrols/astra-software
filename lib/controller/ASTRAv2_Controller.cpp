@@ -70,7 +70,7 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
 
   // Integrator
   K_I = K_I.cwiseProduct(Gate);
-  VelErrorI = VelErrorI + K_I.cwiseProduct(VelError) * dT;
+  VelErrorI = VelErrorI + K_I.cwiseProduct(VelError) * dT * 0;
   VelErrorI = VelErrorI.cwiseMin(Clamp).cwiseMax(-Clamp);
   K_P = (Vector3() << 2.4, 2.4, 5).finished();
 
@@ -114,7 +114,7 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
   lastAttError = AttError.segment<3>(1);
 
   // Error accumulation and clamping
-  Clamp = (Vector3() << 3, 3, 0.4).finished();
+  Clamp = (Vector3() << 0, 0, 0.4).finished();
   AttErrorI = AttErrorI + AttError.segment<3>(1) * dT;
   AttErrorI = AttErrorI.cwiseMin(Clamp).cwiseMax(-Clamp);
 

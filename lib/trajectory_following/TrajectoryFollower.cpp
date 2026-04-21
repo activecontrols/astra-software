@@ -131,7 +131,7 @@ void follow_trajectory() {
 
       ci.GND_val = !has_left_ground;
 
-      if (ci.GND_val) { // GPS lock
+      if (1) { // GPS lock
         ci.gps_pos_north = 0;
         ci.gps_pos_west = 0;
         ci.gps_pos_up = 0;
