@@ -20,22 +20,7 @@ struct __packed LoopState {
 
 static_assert(sizeof(LoopState) == 5, "sizeof(LoopState) error");
 
-struct __packed SensorEntry {
-
-  float accel_x;
-  float accel_y;
-  float accel_z;
-
-  float gyro_yaw;
-  float gyro_pitch;
-  float gyro_roll;
-
-  float mag_x;
-  float mag_y;
-  float mag_z;
-};
-
-static_assert(sizeof(SensorEntry) == 36, "sizeof(SensorEntry) error");
+static_assert(sizeof(IMU_MAG_State) == 36, "sizeof(SensorEntry) error");
 
 struct __packed GpsEntry {
 

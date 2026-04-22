@@ -17,6 +17,7 @@
 
 #define FLIGHT_HISTORY_LENGTH 1000
 
+// TODO - clean up these names
 struct flight_history_t {
   float accel_x[FLIGHT_HISTORY_LENGTH * 2];
   float accel_y[FLIGHT_HISTORY_LENGTH * 2];

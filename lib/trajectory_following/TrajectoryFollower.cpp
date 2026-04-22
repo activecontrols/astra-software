@@ -38,7 +38,7 @@ void follow_trajectory() {
 
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
   ControllerAndEstimator::init_controller_and_estimator_constants();
-  Controller_State cs;
+  Controller_Internals cs;
   telemetry_packet_t fp;
 
   while (!Mag::isMeasurementReady()) {
@@ -121,15 +121,15 @@ void follow_trajectory() {
       GPS::get_pos_cov(ci.gps_pos_covar);
       GPS::get_vel_cov(ci.gps_vel_covar);
 
-      ci.accel_x = -imu_reading.acc[2];
-      ci.accel_y = imu_reading.acc[1];
-      ci.accel_z = imu_reading.acc[0];
-      ci.gyro_yaw = -imu_reading.gyro[2];
-      ci.gyro_pitch = imu_reading.gyro[1];
-      ci.gyro_roll = imu_reading.gyro[0];
-      ci.mag_x = -mz;
-      ci.mag_y = my;
-      ci.mag_z = mx;
+      ci.imu_mag_state.accel_x = -imu_reading.acc[2];
+      ci.imu_mag_state.accel_y = imu_reading.acc[1];
+      ci.imu_mag_state.accel_z = imu_reading.acc[0];
+      ci.imu_mag_state.gyro_yaw = -imu_reading.gyro[2];
+      ci.imu_mag_state.gyro_pitch = imu_reading.gyro[1];
+      ci.imu_mag_state.gyro_roll = imu_reading.gyro[0];
+      ci.imu_mag_state.mag_x = -mz;
+      ci.imu_mag_state.mag_y = my;
+      ci.imu_mag_state.mag_z = mx;
       ci.gps_pos_north = gps_rel_pos.north;
       ci.gps_pos_west = gps_rel_pos.west;
       ci.gps_pos_up = gps_rel_pos.up;
@@ -184,15 +184,15 @@ void follow_trajectory() {
       if (timer - lasttelemetry > TELEMETRY_INTERVAL_US) {
         lasttelemetry = timer;
 
-        fp.accel_x = cs.filter_out[0];
-        fp.accel_y = cs.filter_out[1];
-        fp.accel_z = cs.filter_out[2];
-        fp.gyro_yaw = cs.filter_out[3];
-        fp.gyro_pitch = cs.filter_out[4];
-        fp.gyro_roll = cs.filter_out[5];
-        fp.mag_x = cs.filter_out[6];
-        fp.mag_y = cs.filter_out[7];
-        fp.mag_z = cs.filter_out[8];
+        fp.imu_mag_state.accel_x = cs.filter_out[0];
+        fp.imu_mag_state.accel_y = cs.filter_out[1];
+        fp.imu_mag_state.accel_z = cs.filter_out[2];
+        fp.imu_mag_state.gyro_yaw = cs.filter_out[3];
+        fp.imu_mag_state.gyro_pitch = cs.filter_out[4];
+        fp.imu_mag_state.gyro_roll = cs.filter_out[5];
+        fp.imu_mag_state.mag_x = cs.filter_out[6];
+        fp.imu_mag_state.mag_y = cs.filter_out[7];
+        fp.imu_mag_state.mag_z = cs.filter_out[8];
         fp.gps_pos_north = ci.gps_pos_north;
         fp.gps_pos_west = ci.gps_pos_west;
         fp.gps_pos_up = ci.gps_pos_up;
@@ -200,26 +200,7 @@ void follow_trajectory() {
         fp.gps_vel_west = ci.gps_vel_west;
         fp.gps_vel_up = ci.gps_vel_up;
 
-        fp.state_q_vec_new = cs.state_q_vec_new;
-        fp.state_q_vec_0 = cs.state_q_vec_0;
-        fp.state_q_vec_1 = cs.state_q_vec_1;
-        fp.state_q_vec_2 = cs.state_q_vec_2;
-        fp.state_pos_north = cs.state_pos_north;
-        fp.state_pos_west = cs.state_pos_west;
-        fp.state_pos_up = cs.state_pos_up;
-        fp.state_vel_north = cs.state_vel_north;
-        fp.state_vel_west = cs.state_vel_west;
-        fp.state_vel_up = cs.state_vel_up;
-        fp.gyro_bias_yaw = cs.gyro_bias_yaw;
-        fp.gyro_bias_pitch = cs.gyro_bias_pitch;
-        fp.gyro_bias_roll = cs.gyro_bias_roll;
-        fp.accel_bias_x = cs.accel_bias_x;
-        fp.accel_bias_y = cs.accel_bias_y;
-        fp.accel_bias_z = cs.accel_bias_z;
-        fp.mag_bias_x = cs.mag_bias_x;
-        fp.mag_bias_y = cs.mag_bias_y;
-        fp.mag_bias_z = cs.mag_bias_z;
-
+        fp.x_est = cs.x_est;
         fp.co = co;
 
         fp.target_pos_north = ci.target_pos_north;

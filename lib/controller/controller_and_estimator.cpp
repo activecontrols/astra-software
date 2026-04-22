@@ -44,13 +44,13 @@ void init_controller_and_estimator_constants() {
   ASTRAv2_Controller_reset();
 }
 
-Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, float loop_dT, Controller_State *cs) {
+Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, float loop_dT, Controller_Internals *cs) {
 
   Vector15 z;
   // clang-format off
-  z << ci.accel_x, ci.accel_y, ci.accel_z, 
-       ci.gyro_yaw, ci.gyro_pitch, ci.gyro_roll,
-       ci.mag_x, ci.mag_y, ci.mag_z,
+  z << ci.imu_mag_state.accel_x, ci.imu_mag_state.accel_y, ci.imu_mag_state.accel_z, 
+       ci.imu_mag_state.gyro_yaw, ci.imu_mag_state.gyro_pitch, ci.imu_mag_state.gyro_roll,
+       ci.imu_mag_state.mag_x, ci.imu_mag_state.mag_y, ci.imu_mag_state.mag_z,
        ci.gps_pos_north, ci.gps_pos_west, ci.gps_pos_up, 
        ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
   // clang-format on
@@ -107,25 +107,25 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   co.thrust_N = raw_co(2);
   co.roll_rad_sec_squared = raw_co(3);
 
-  cs->state_q_vec_new = x_est(0);
-  cs->state_q_vec_0 = x_est(1);
-  cs->state_q_vec_1 = x_est(2);
-  cs->state_q_vec_2 = x_est(3);
-  cs->state_pos_north = x_est(4);
-  cs->state_pos_west = x_est(5);
-  cs->state_pos_up = x_est(6);
-  cs->state_vel_north = x_est(7);
-  cs->state_vel_west = x_est(8);
-  cs->state_vel_up = x_est(9);
-  cs->gyro_bias_yaw = x_est(10);
-  cs->gyro_bias_pitch = x_est(11);
-  cs->gyro_bias_roll = x_est(12);
-  cs->accel_bias_x = x_est(13);
-  cs->accel_bias_y = x_est(14);
-  cs->accel_bias_z = x_est(15);
-  cs->mag_bias_x = x_est(16);
-  cs->mag_bias_y = x_est(17);
-  cs->mag_bias_z = x_est(18);
+  cs->x_est.q_vec_w = x_est(0);
+  cs->x_est.q_vec_x = x_est(1);
+  cs->x_est.q_vec_y = x_est(2);
+  cs->x_est.q_vec_z = x_est(3);
+  cs->x_est.est_pos_north = x_est(4);
+  cs->x_est.est_pos_west = x_est(5);
+  cs->x_est.est_pos_up = x_est(6);
+  cs->x_est.est_vel_north = x_est(7);
+  cs->x_est.est_vel_west = x_est(8);
+  cs->x_est.est_vel_up = x_est(9);
+  cs->x_est.gyro_bias_yaw = x_est(10);
+  cs->x_est.gyro_bias_pitch = x_est(11);
+  cs->x_est.gyro_bias_roll = x_est(12);
+  cs->x_est.accel_bias_x = x_est(13);
+  cs->x_est.accel_bias_y = x_est(14);
+  cs->x_est.accel_bias_z = x_est(15);
+  cs->x_est.mag_bias_x = x_est(16);
+  cs->x_est.mag_bias_y = x_est(17);
+  cs->x_est.mag_bias_z = x_est(18);
   return co;
 }
 } // namespace ControllerAndEstimator

@@ -1,8 +1,7 @@
-#define __packed __attribute__((__packed__)) // patch this in
 #include "Trajectory.h"
 #include "TrajectoryLogger.h"
-#include "controller_and_estimator.h"
 #include "astra_structs.h"
+#include "controller_and_estimator.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -68,31 +67,12 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
   }
 
   case ENTRY_SENSOR: {
-    SensorEntry se;
-    fread(&se, sizeof(SensorEntry), 1, compressed_bin);
+    IMU_MAG_State imu_mag_state;
+    fread(&imu_mag_state, sizeof(IMU_MAG_State), 1, compressed_bin);
 
-    // TODO - ci should just use this struct
     ci.new_imu_packet = true;
-    ci.accel_x = se.accel_x;
-    ci.accel_y = se.accel_y;
-    ci.accel_z = se.accel_z;
-    ci.gyro_yaw = se.gyro_yaw;
-    ci.gyro_pitch = se.gyro_pitch;
-    ci.gyro_roll = se.gyro_roll;
-    ci.mag_x = se.mag_x;
-    ci.mag_y = se.mag_y;
-    ci.mag_z = se.mag_z;
-
-    // TODO - flight packet should just use these structs
-    fp.accel_x = ci.accel_x;
-    fp.accel_y = ci.accel_y;
-    fp.accel_z = ci.accel_z;
-    fp.gyro_yaw = ci.gyro_yaw;
-    fp.gyro_pitch = ci.gyro_pitch;
-    fp.gyro_roll = ci.gyro_roll;
-    fp.mag_x = ci.mag_x;
-    fp.mag_y = ci.mag_y;
-    fp.mag_z = ci.mag_z;
+    ci.imu_mag_state = imu_mag_state;
+    fp.imu_mag_state = imu_mag_state;
     break;
   }
 
@@ -100,6 +80,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     GpsEntry gps;
     fread(&gps, sizeof(GpsEntry), 1, compressed_bin);
 
+    // TODO - so much redundancy
     ci.new_gps_packet = true;
     ci.gps_pos_north = gps.gps_pos_north;
     ci.gps_pos_west = gps.gps_pos_west;
@@ -123,12 +104,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     Controller_Output logged_co;
     fread(&logged_co, sizeof(Controller_Output), 1, compressed_bin);
 
-    fp.co.gimbal_yaw_deg = logged_co.gimbal_yaw_deg;
-    fp.co.gimbal_pitch_deg = logged_co.gimbal_pitch_deg;
-    fp.co.thrust_N = logged_co.thrust_N;
-    fp.co.roll_rad_sec_squared = logged_co.roll_rad_sec_squared;
-
-    Controller_State cs;
+    Controller_Internals cs;
     float loop_dT = this_time - last_time;
     last_time = this_time;
     float ideal_dT = 1 / 1000.0;
@@ -139,25 +115,8 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     // printf("Logged co: %f %f %f %f\n", logged_co.gimbal_pitch_deg, logged_co.gimbal_yaw_deg, logged_co.thrust_N, logged_co.roll_rad_sec_squared);
     // printf("Constructed co: %f %f %f %f\n", constructed_co.gimbal_pitch_deg, constructed_co.gimbal_yaw_deg, constructed_co.thrust_N, constructed_co.roll_rad_sec_squared);
 
-    fp.state_q_vec_new = cs.state_q_vec_new;
-    fp.state_q_vec_0 = cs.state_q_vec_0;
-    fp.state_q_vec_1 = cs.state_q_vec_1;
-    fp.state_q_vec_2 = cs.state_q_vec_2;
-    fp.state_pos_north = cs.state_pos_north;
-    fp.state_pos_west = cs.state_pos_west;
-    fp.state_pos_up = cs.state_pos_up;
-    fp.state_vel_north = cs.state_vel_north;
-    fp.state_vel_west = cs.state_vel_west;
-    fp.state_vel_up = cs.state_vel_up;
-    fp.gyro_bias_yaw = cs.gyro_bias_yaw;
-    fp.gyro_bias_pitch = cs.gyro_bias_pitch;
-    fp.gyro_bias_roll = cs.gyro_bias_roll;
-    fp.accel_bias_x = cs.accel_bias_x;
-    fp.accel_bias_y = cs.accel_bias_y;
-    fp.accel_bias_z = cs.accel_bias_z;
-    fp.mag_bias_x = cs.mag_bias_x;
-    fp.mag_bias_y = cs.mag_bias_y;
-    fp.mag_bias_z = cs.mag_bias_z;
+    fp.x_est = cs.x_est;
+    fp.co = logged_co;
     fp.elapsed_time = this_time;
 
     fwrite(&fp, sizeof(fp), 1, reconstructed_bin);
