@@ -234,7 +234,7 @@ void set_current_position_as_origin() {
   }
 }
 
-Point get_rel_xyz_pos() {
+GPS_Point get_rel_xyz_pos() {
   GPS_Coord pos = get_lat_lon_alt();
   double origin_lat_rad = deg_to_rad(origin.lat);
 
@@ -246,7 +246,7 @@ Point get_rel_xyz_pos() {
   double west_m = -east_m;
   double up_m = pos.alt - origin.alt;
 
-  return Point{north : north_m, west : west_m, up : up_m};
+  return GPS_Point{north : north_m, west : west_m, up : up_m};
 }
 
 void print_gps_pos() {
@@ -264,7 +264,7 @@ void print_rel_pos() {
   if (!has_valid_recent_pos()) {
     CommsSerial.printf("GPS does not have valid position.\n");
   } else {
-    Point p = get_rel_xyz_pos();
+    GPS_Point p = get_rel_xyz_pos();
     CommsSerial.printf("GPS relative position north:%.3f west:%.3f up:%.3f\n", p.north, p.west, p.up);
   }
 }

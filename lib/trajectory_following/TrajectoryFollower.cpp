@@ -36,7 +36,7 @@ void follow_trajectory() {
   GimbalServos::centerGimbal();
   Mag::beginMeasurement();
 
-  Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
+  GPS_Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
   ControllerAndEstimator::init_controller_and_estimator_constants();
   Controller_Internals cs;
   telemetry_packet_t fp;
@@ -115,7 +115,7 @@ void follow_trajectory() {
       }
 
       GPS::pump_events();
-      Point gps_rel_pos = GPS::get_rel_xyz_pos();
+      GPS_Point gps_rel_pos = GPS::get_rel_xyz_pos();
       GPS_Velocity gps_vel = GPS::get_velocity();
 
       GPS::get_pos_cov(ci.gps_pos_covar);
@@ -130,12 +130,8 @@ void follow_trajectory() {
       ci.imu_mag_state.mag_x = -mz;
       ci.imu_mag_state.mag_y = my;
       ci.imu_mag_state.mag_z = mx;
-      ci.gps_pos_north = gps_rel_pos.north;
-      ci.gps_pos_west = gps_rel_pos.west;
-      ci.gps_pos_up = gps_rel_pos.up;
-      ci.gps_vel_north = gps_vel.north;
-      ci.gps_vel_west = gps_vel.west;
-      ci.gps_vel_up = gps_vel.up;
+      ci.gps_pos = gps_rel_pos;
+      ci.gps_vel = gps_vel;
 
       ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
       ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
@@ -144,12 +140,12 @@ void follow_trajectory() {
       ci.GND_val = !has_left_ground;
 
       if (ci.GND_val) { // GPS lock
-        ci.gps_pos_north = 0;
-        ci.gps_pos_west = 0;
-        ci.gps_pos_up = 0.31;
-        ci.gps_vel_north = 0;
-        ci.gps_vel_west = 0;
-        ci.gps_vel_up = 0;
+        ci.gps_pos.north = 0;
+        ci.gps_pos.west = 0;
+        ci.gps_pos.up = 0.31;
+        ci.gps_vel.north = 0;
+        ci.gps_vel.west = 0;
+        ci.gps_vel.up = 0;
         ci.new_gps_packet = true;
       } else if (gps_rel_pos.north != last_gps_pos.north || gps_rel_pos.west != last_gps_pos.west || gps_rel_pos.up != last_gps_pos.up) {
         ci.new_gps_packet = true;
@@ -193,12 +189,8 @@ void follow_trajectory() {
         fp.imu_mag_state.mag_x = cs.filter_out[6];
         fp.imu_mag_state.mag_y = cs.filter_out[7];
         fp.imu_mag_state.mag_z = cs.filter_out[8];
-        fp.gps_pos_north = ci.gps_pos_north;
-        fp.gps_pos_west = ci.gps_pos_west;
-        fp.gps_pos_up = ci.gps_pos_up;
-        fp.gps_vel_north = ci.gps_vel_north;
-        fp.gps_vel_west = ci.gps_vel_west;
-        fp.gps_vel_up = ci.gps_vel_up;
+        fp.gps_pos = ci.gps_pos;
+        fp.gps_vel = ci.gps_vel;
 
         fp.x_est = cs.x_est;
         fp.co = co;

@@ -51,8 +51,8 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   z << ci.imu_mag_state.accel_x, ci.imu_mag_state.accel_y, ci.imu_mag_state.accel_z, 
        ci.imu_mag_state.gyro_yaw, ci.imu_mag_state.gyro_pitch, ci.imu_mag_state.gyro_roll,
        ci.imu_mag_state.mag_x, ci.imu_mag_state.mag_y, ci.imu_mag_state.mag_z,
-       ci.gps_pos_north, ci.gps_pos_west, ci.gps_pos_up, 
-       ci.gps_vel_north, ci.gps_vel_west, ci.gps_vel_up;
+       ci.gps_pos.north, ci.gps_pos.west, ci.gps_pos.up, 
+       ci.gps_vel.north, ci.gps_vel.west, ci.gps_vel.up;
   // clang-format on
 
   Vector9 imu = z.segment<9>(0);

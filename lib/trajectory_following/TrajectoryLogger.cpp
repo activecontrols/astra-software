@@ -60,13 +60,13 @@ void flash_log_sensor(float time, int phase, Controller_Input ci, Controller_Out
     Logging::write(ENTRY_GPS);
 
     GpsEntry gpsData{};
-    gpsData.gps_pos_north = ci.gps_pos_north;
-    gpsData.gps_pos_west = ci.gps_pos_west;
-    gpsData.gps_pos_up = ci.gps_pos_up;
+    gpsData.gps_pos_north = ci.gps_pos.north;
+    gpsData.gps_pos_west = ci.gps_pos.west;
+    gpsData.gps_pos_up = ci.gps_pos.up;
 
-    gpsData.gps_vel_north = ci.gps_vel_north;
-    gpsData.gps_vel_west = ci.gps_vel_west;
-    gpsData.gps_vel_up = ci.gps_vel_up;
+    gpsData.gps_vel_north = ci.gps_vel.north;
+    gpsData.gps_vel_west = ci.gps_vel.west;
+    gpsData.gps_vel_up = ci.gps_vel.up;
 
     gpsData.posCovNN = GPS::ubx.cov.data->posCovNN;
     gpsData.posCovNE = GPS::ubx.cov.data->posCovNE;

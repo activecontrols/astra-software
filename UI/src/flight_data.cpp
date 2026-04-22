@@ -44,12 +44,12 @@ void commit_packet() {
   FlightHistory.mag_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.mag_y;
   FlightHistory.mag_z[FlightHistory.write_pos] = active_packet.imu_mag_state.mag_z;
   FlightHistory.mag_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.mag_z;
-  FlightHistory.gps_pos_north = active_packet.gps_pos_north;
-  FlightHistory.gps_pos_west = active_packet.gps_pos_west;
-  FlightHistory.gps_pos_up = active_packet.gps_pos_up;
-  FlightHistory.gps_vel_north = active_packet.gps_vel_north;
-  FlightHistory.gps_vel_west = active_packet.gps_vel_west;
-  FlightHistory.gps_vel_up = active_packet.gps_vel_up;
+  FlightHistory.gps_pos_north = active_packet.gps_pos.north;
+  FlightHistory.gps_pos_west = active_packet.gps_pos.west;
+  FlightHistory.gps_pos_up = active_packet.gps_pos.up;
+  FlightHistory.gps_vel_north = active_packet.gps_vel.north;
+  FlightHistory.gps_vel_west = active_packet.gps_vel.west;
+  FlightHistory.gps_vel_up = active_packet.gps_vel.up;
 
   FlightHistory.state_q_vec_new = active_packet.x_est.q_vec_w;
   FlightHistory.state_q_vec_0 = active_packet.x_est.q_vec_x;

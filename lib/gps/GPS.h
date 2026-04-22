@@ -2,6 +2,7 @@
 
 // TODO - get rid of this dependency
 #include "UBX.h" // trajectorylogger needs access to UBX.h for pos and vel covariance struct
+#include "astra_structs.h"
 
 #include <Arduino.h>
 
@@ -11,18 +12,6 @@ struct GPS_Coord {
   double lat; // deg lat
   double lon; // deg lon
   double alt; // meters
-};
-
-struct GPS_Velocity {
-  double north; // m/s velocity north
-  double west;  // m/s velocity west
-  double up;    // m/s velocity up
-};
-
-struct Point {
-  double north; // meters
-  double west;  // meters
-  double up;    // meters
 };
 
 namespace GPS {
@@ -50,7 +39,7 @@ GPS_Coord get_lat_lon_alt();
 void set_current_position_as_origin();
 
 // uses get_lat_lon_alt() and origin to get the relative north/west/up in meters
-Point get_rel_xyz_pos();
+GPS_Point get_rel_xyz_pos();
 
 // gets the latest lat/lon/alt vel sent by the GPS
 // only safe to call if has_valid_recent_pos() = true

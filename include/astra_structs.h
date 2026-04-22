@@ -3,7 +3,33 @@
 
 // this file contains shared structs for use across the embedded code and UI
 
+struct GPS_Point {
+  double north; // meters
+  double west;  // meters
+  double up;    // meters
+};
+
+struct GPS_Velocity {
+  double north; // m/s velocity north
+  double west;  // m/s velocity west
+  double up;    // m/s velocity up
+};
+
 struct __packed IMU_MAG_State {
+  float accel_x;
+  float accel_y;
+  float accel_z;
+
+  float gyro_yaw;
+  float gyro_pitch;
+  float gyro_roll;
+
+  float mag_x;
+  float mag_y;
+  float mag_z;
+};
+
+struct __packed GPS_State {
   float accel_x;
   float accel_y;
   float accel_z;
@@ -25,12 +51,8 @@ struct Controller_Input {
 
   // Sensor Inputs
   IMU_MAG_State imu_mag_state;
-  float gps_pos_north;
-  float gps_pos_west;
-  float gps_pos_up;
-  float gps_vel_north;
-  float gps_vel_west;
-  float gps_vel_up;
+  GPS_Point gps_pos;
+  GPS_Velocity gps_vel;
 
   float gps_pos_covar[3][3];
   float gps_vel_covar[3][3];
@@ -78,13 +100,8 @@ struct Controller_Output {
 // also used by the UI save format
 struct telemetry_packet_t {
   IMU_MAG_State imu_mag_state;
-
-  float gps_pos_north;
-  float gps_pos_west;
-  float gps_pos_up;
-  float gps_vel_north;
-  float gps_vel_west;
-  float gps_vel_up;
+  GPS_Point gps_pos;
+  GPS_Velocity gps_vel;
 
   Controller_X_Est x_est;
   Controller_Output co;

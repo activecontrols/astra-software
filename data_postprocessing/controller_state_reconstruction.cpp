@@ -82,21 +82,17 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
 
     // TODO - so much redundancy
     ci.new_gps_packet = true;
-    ci.gps_pos_north = gps.gps_pos_north;
-    ci.gps_pos_west = gps.gps_pos_west;
-    ci.gps_pos_up = gps.gps_pos_up;
-    ci.gps_vel_north = gps.gps_vel_north;
-    ci.gps_vel_west = gps.gps_vel_west;
-    ci.gps_vel_up = gps.gps_vel_up;
+    ci.gps_pos.north = gps.gps_pos_north;
+    ci.gps_pos.west = gps.gps_pos_west;
+    ci.gps_pos.up = gps.gps_pos_up;
+    ci.gps_vel.north = gps.gps_vel_north;
+    ci.gps_vel.west = gps.gps_vel_west;
+    ci.gps_vel.up = gps.gps_vel_up;
 
     // TODO - covariances
 
-    fp.gps_pos_north = ci.gps_pos_north;
-    fp.gps_pos_west = ci.gps_pos_west;
-    fp.gps_pos_up = ci.gps_pos_up;
-    fp.gps_vel_north = ci.gps_vel_north;
-    fp.gps_vel_west = ci.gps_vel_west;
-    fp.gps_vel_up = ci.gps_vel_up;
+    fp.gps_pos = ci.gps_pos;
+    fp.gps_vel = ci.gps_vel;
     break;
   }
 
