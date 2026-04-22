@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude -MMD -MP
+CXXFLAGS := -Iimgui -Iimgui/backends -Iimplot -Iimplot3d -Iinclude -I../include -MMD -MP
 
 # the majority of this is just windows libraries
 # the -static is because we were pulling in the wrong C++ .dlls (from the RUST ESP32 project), resulting in crazy crashes

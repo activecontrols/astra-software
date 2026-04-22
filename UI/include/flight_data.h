@@ -1,6 +1,8 @@
 #ifndef ASTRA_GS_FLIGHT_DATA_H
 #define ASTRA_GS_FLIGHT_DATA_H
 
+#include "astra_structs.h"
+
 // we try to keep this a pretty clean file because other tools might import to interface with it
 // so no windows.h or things like that
 
@@ -79,66 +81,8 @@ struct flight_history_t {
   int write_pos;
 };
 
-// a single frame of flight history
-struct flight_packet_t {
-  float accel_x;
-  float accel_y;
-  float accel_z;
-  float gyro_yaw;
-  float gyro_pitch;
-  float gyro_roll;
-  float mag_x;
-  float mag_y;
-  float mag_z;
-  float gps_pos_north;
-  float gps_pos_west;
-  float gps_pos_up;
-  float gps_vel_north;
-  float gps_vel_west;
-  float gps_vel_up;
-
-  float state_q_vec_new;
-  float state_q_vec_0;
-  float state_q_vec_1;
-  float state_q_vec_2;
-  float state_pos_north;
-  float state_pos_west;
-  float state_pos_up;
-  float state_vel_north;
-  float state_vel_west;
-  float state_vel_up;
-  float gyro_bias_yaw;
-  float gyro_bias_pitch;
-  float gyro_bias_roll;
-  float accel_bias_x;
-  float accel_bias_y;
-  float accel_bias_z;
-  float mag_bias_x;
-  float mag_bias_y;
-  float mag_bias_z;
-
-  float gimbal_yaw_raw;
-  float gimbal_pitch_raw;
-  float thrust_N;
-  float roll_rad_sec_squared;
-
-  float target_pos_north;
-  float target_pos_west;
-  float target_pos_up;
-
-  float elapsed_time;
-  bool GND_flag;
-  bool flight_armed;
-  float thrust_perc;
-  float diffy_perc;
-  int rtk_status;
-  float gps_hor_prec;
-  float gps_ver_prec;
-  int gps_sat_count;
-};
-
 extern flight_history_t FlightHistory; // public interface
-extern flight_packet_t active_packet;
+extern telemetry_packet_t active_packet;
 
 void init_flight_data();
 void deinit_flight_data();

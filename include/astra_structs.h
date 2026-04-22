@@ -1,7 +1,10 @@
 #pragma once
-// TODO - just point this to the UI code
 
-struct flight_packet_t {
+// this file contains shared structs for use across the embedded code and UI
+
+// telemetry packet sent by vehicle to the UI
+// also used by the UI save format
+struct telemetry_packet_t {
   float accel_x;
   float accel_y;
   float accel_z;

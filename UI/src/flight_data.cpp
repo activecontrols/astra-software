@@ -4,7 +4,7 @@
 #include "platform_win.h"
 
 flight_history_t FlightHistory;
-flight_packet_t active_packet; // may be partially filled
+telemetry_packet_t active_packet; // may be partially filled
 flight_data_state_t FlightDataState;
 
 void init_flight_data() {
