@@ -41,6 +41,7 @@ public:
 
   GPS_Packet<UBX_NAV_PVT> pvt_solution;
   GPS_Packet<UBX_NAV_COV> cov;
+  GPS_Packet<UBX_RXM_RTCM> rxm_rtcm;
 
   UBX();
 

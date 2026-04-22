@@ -3,17 +3,21 @@
 
 #define CLASS_NAV 0x01
 #define CLASS_INF 0x04
+#define CLASS_RXM 0x02
 
 // class NAV
-#define ID_PVT 0x07
-#define ID_COV 0x36
+#define ID_NAV_PVT 0x07
+#define ID_NAV_COV 0x36
 
 // class INF
-#define ID_DEBUG 0x04
-#define ID_ERROR 0x00
-#define ID_NOTICE 0x02
-#define ID_TEST 0x03
-#define ID_WARNING 0x01
+#define ID_INF_DEBUG 0x04
+#define ID_INF_ERROR 0x00
+#define ID_INF_NOTICE 0x02
+#define ID_INF_TEST 0x03
+#define ID_INF_WARNING 0x01
+
+// class RXM
+#define ID_RXM_RTCM 0x32
 
 struct __attribute__((packed)) UBX_NAV_PVT {
   uint32_t iTOW; // ms
@@ -71,4 +75,17 @@ struct __attribute__((packed)) UBX_NAV_COV {
   float velCovED; // m^2/s^2
   float velCovDD; // m^2/s^2
 };
-static_assert(sizeof(UBX_NAV_COV) == 64, "UBX_NAV_COV packet payload must be 64 bytes.");
+static_assert(sizeof(UBX_NAV_COV) == 64U, "UBX_NAV_COV packet payload must be 64 bytes.");
+
+struct __attribute__((packed)) UBX_RXM_RTCM { // this packet is sent whenever the gps receiver receives an rtcm message
+  struct Flags {
+    uint8_t crcFailed : 1; // 1 when failed
+    uint8_t msgUsed : 2;   // 2 means used, 1 means not used, 0 means don't know
+  };
+  uint8_t version;
+  Flags flags;
+  uint16_t subType;
+  uint16_t refStation;
+  uint16_t msgType;
+};
+static_assert(sizeof(UBX_RXM_RTCM) == 8U, "UBX_RXM_RTCM packet payload must be 6 bytes.");

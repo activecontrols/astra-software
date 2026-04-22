@@ -52,29 +52,28 @@ void UBX::encode_payload(uint8_t x) {
 
   if (message_class == CLASS_NAV) // UBX-NAV
   {
-    if (message_id == ID_PVT) { // ie. UBX-NAV-PVT
+    if (message_id == ID_NAV_PVT) { // ie. UBX-NAV-PVT
       state = ENCODE_TERM;
       term_index = 0;
 
       term_location = pvt_solution.new_data;
       term_size = sizeof(UBX_NAV_PVT);
       encode_term(x);
-    } else if (message_id == ID_COV) {
+    } else if (message_id == ID_NAV_COV) {
       state = ENCODE_TERM;
       term_index = 0;
 
       term_location = cov.new_data;
       term_size = sizeof(UBX_NAV_COV);
       encode_term(x);
-    }
-    else
-    {
+    } else {
       state = SKIP;
       return;
     }
   } else if (message_class == CLASS_INF) {
     if (payload_position != 0) {
-      // this indicates that the term has finished parsing, which means the length of the message exceeds the size of the buffer. info messages aren't very important so we will skip the rest of the data
+      // this indicates that the term has finished parsing, which means the length of the message exceeds the size of the buffer. info messages aren't very important so we will skip the rest of the
+      // data
       state = SKIP;
       return;
     }
@@ -91,6 +90,23 @@ void UBX::encode_payload(uint8_t x) {
     term_size = copy_length;
 
     encode_term(x);
+  }
+  else if (message_class == CLASS_RXM)
+  {
+    if (message_id == ID_RXM_RTCM)
+    {
+      state = ENCODE_TERM;
+      term_index = 0;
+
+      term_location = rxm_rtcm.new_data;
+      term_size = sizeof(rxm_rtcm.new_data);
+      encode_term(x);
+    }
+    else
+    {
+      state == SKIP;
+      return;
+    }
   }
 }
 
@@ -119,9 +135,9 @@ void UBX::checksum(uint8_t x) {
   }
   if (message_class == CLASS_NAV) // UBX-NAV-PVT
   {
-    if (message_id == ID_PVT) {
+    if (message_id == ID_NAV_PVT) {
       pvt_solution.swap();
-    } else if (message_id == ID_COV) {
+    } else if (message_id == ID_NAV_COV) {
       cov.swap();
     }
   } else if (message_class == CLASS_INF) {
@@ -168,15 +184,15 @@ void UBX::encode(uint8_t x) {
 
 const char *UBX::inf_message_name(uint8_t id) {
   switch (id) {
-  case ID_DEBUG:
+  case ID_INF_DEBUG:
     return "DEBUG";
-  case ID_ERROR:
+  case ID_INF_ERROR:
     return "ERROR";
-  case ID_NOTICE:
+  case ID_INF_NOTICE:
     return "NOTICE";
-  case ID_TEST:
+  case ID_INF_TEST:
     return "TEST";
-  case ID_WARNING:
+  case ID_INF_WARNING:
     return "WARNING";
   default:
     return "UNKNOWN";

@@ -8,8 +8,9 @@
 HardwareSerial gps_uart(GPS_UART_RX, GPS_UART_TX);
 
 namespace GPS {
-UBX ubx;
-GPS_Coord origin;
+UBX ubx{};
+GPS_Coord origin{};
+UBX_Stats ubx_stats{};
 
 double deg_to_rad(double degrees) {
   return degrees * (PI / 180.0);
@@ -170,10 +171,29 @@ void get_gps_precision(float *hor, float *ver) {
   *ver = ubx.pvt_solution.data->vAcc / 1000.0;
 }
 
+UBX_Stats get_ubx_stats() {
+  return ubx_stats;
+}
+
 void pump_events() {
   while (gps_uart.available() > 0) { // https://github.com/mikalhart/TinyGPSPlus/blob/master/examples/DeviceExample/DeviceExample.ino
     char c = gps_uart.read();
     ubx.encode(c);
+
+    if (ubx.rxm_rtcm.updated) {
+      ubx.rxm_rtcm.updated = false;
+      ++ubx_stats.received_packets;
+
+      if (ubx.rxm_rtcm.data->flags.msgUsed == 2) {
+        ++ubx_stats.valid_packets;
+      } else {
+        ++ubx_stats.invalid_packets;
+      }
+
+      if (ubx.rxm_rtcm.data->flags.crcFailed) {
+        ++ubx_stats.crc_fails;
+      }
+    }
 
 #ifdef DEBUG_GPS_MSG
     CommsSerial.print(c);

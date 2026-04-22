@@ -25,6 +25,14 @@ struct Point {
   double up;    // meters
 };
 
+struct UBX_Stats
+{
+  unsigned int received_packets;
+  unsigned int valid_packets;
+  unsigned int invalid_packets;
+  unsigned int crc_fails;
+};
+
 namespace GPS {
 
 extern UBX ubx;
@@ -59,6 +67,8 @@ GPS_Velocity get_velocity();
 // router functions
 void print_gps_pos();
 void print_rel_pos();
+
+UBX_Stats get_ubx_stats();
 
 void get_vel_cov(float out[3][3]);
 void get_pos_cov(float out[3][3]);
