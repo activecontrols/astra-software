@@ -80,10 +80,10 @@ void commit_packet() {
   FlightHistory.mag_bias_z[FlightHistory.write_pos] = active_packet.mag_bias_z;
   FlightHistory.mag_bias_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.mag_bias_z;
 
-  FlightHistory.gimbal_yaw_raw = active_packet.gimbal_yaw_raw;
-  FlightHistory.gimbal_pitch_raw = active_packet.gimbal_pitch_raw;
-  FlightHistory.thrust_N = active_packet.thrust_N;
-  FlightHistory.roll_rad_sec_squared = active_packet.roll_rad_sec_squared;
+  FlightHistory.gimbal_yaw_raw = active_packet.co.gimbal_yaw_deg;
+  FlightHistory.gimbal_pitch_raw = active_packet.co.gimbal_pitch_deg;
+  FlightHistory.thrust_N = active_packet.co.thrust_N;
+  FlightHistory.roll_rad_sec_squared = active_packet.co.roll_rad_sec_squared;
 
   FlightHistory.target_pos_north = active_packet.target_pos_north;
   FlightHistory.target_pos_west = active_packet.target_pos_west;

@@ -123,10 +123,10 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     Controller_Output logged_co;
     fread(&logged_co, sizeof(Controller_Output), 1, compressed_bin);
 
-    fp.gimbal_yaw_raw = logged_co.gimbal_yaw_deg;
-    fp.gimbal_pitch_raw = logged_co.gimbal_pitch_deg;
-    fp.thrust_N = logged_co.thrust_N;
-    fp.roll_rad_sec_squared = logged_co.roll_rad_sec_squared;
+    fp.co.gimbal_yaw_deg = logged_co.gimbal_yaw_deg;
+    fp.co.gimbal_pitch_deg = logged_co.gimbal_pitch_deg;
+    fp.co.thrust_N = logged_co.thrust_N;
+    fp.co.roll_rad_sec_squared = logged_co.roll_rad_sec_squared;
 
     Controller_State cs;
     float loop_dT = this_time - last_time;
