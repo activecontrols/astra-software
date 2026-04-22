@@ -2,6 +2,13 @@
 
 // this file contains shared structs for use across the embedded code and UI
 
+struct Controller_Output {
+  float thrust_N;
+  float roll_rad_sec_squared;
+  float gimbal_pitch_deg;
+  float gimbal_yaw_deg;
+};
+
 // telemetry packet sent by vehicle to the UI
 // also used by the UI save format
 struct telemetry_packet_t {
@@ -41,10 +48,7 @@ struct telemetry_packet_t {
   float mag_bias_y;
   float mag_bias_z;
 
-  float gimbal_yaw_raw;
-  float gimbal_pitch_raw;
-  float thrust_N;
-  float roll_rad_sec_squared;
+  Controller_Output co;
 
   float target_pos_north;
   float target_pos_west;

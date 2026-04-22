@@ -10,9 +10,9 @@
 #include "SDCard.h"
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
+#include "astra_structs.h"
 #include "controller_and_estimator.h"
 #include "elapsedMillis.h"
-#include "flight_packet.h"
 #include <Arduino.h>
 #include "fc_pins.h"
 
@@ -39,7 +39,7 @@ void follow_trajectory() {
   Point last_gps_pos = {-1, -1, -1}; // first packet will be marked as new
   ControllerAndEstimator::init_controller_and_estimator_constants();
   Controller_State cs;
-  flight_packet_t fp;
+  telemetry_packet_t fp;
 
   while (!Mag::isMeasurementReady()) {
     CommsSerial.println("Waiting on mag...");
@@ -220,10 +220,7 @@ void follow_trajectory() {
         fp.mag_bias_y = cs.mag_bias_y;
         fp.mag_bias_z = cs.mag_bias_z;
 
-        fp.gimbal_yaw_raw = co.gimbal_yaw_deg;
-        fp.gimbal_pitch_raw = co.gimbal_pitch_deg;
-        fp.thrust_N = co.thrust_N;
-        fp.roll_rad_sec_squared = co.roll_rad_sec_squared;
+        fp.co = co;
 
         fp.target_pos_north = ci.target_pos_north;
         fp.target_pos_west = ci.target_pos_west;

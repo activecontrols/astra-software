@@ -1,13 +1,7 @@
 #pragma once
 
+#include "astra_structs.h"
 #include "matlab_funcs.h"
-
-struct Controller_Output {
-  float thrust_N;
-  float roll_rad_sec_squared;
-  float gimbal_pitch_deg;
-  float gimbal_yaw_deg;
-};
 
 struct Controller_State {
   float state_q_vec_new;
