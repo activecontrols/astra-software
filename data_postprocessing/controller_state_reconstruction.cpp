@@ -2,7 +2,7 @@
 #include "Trajectory.h"
 #include "TrajectoryLogger.h"
 #include "controller_and_estimator.h"
-#include "flight_data.h"
+#include "astra_structs.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,7 +19,7 @@ struct Mag_Calib {
   float soft[3][3];
 };
 
-flight_packet_t fp; // allows this to persist across calls
+telemetry_packet_t fp; // allows this to persist across calls
 float last_time;
 float this_time;
 Controller_Input ci;

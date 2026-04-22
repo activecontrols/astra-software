@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -I../lib/trajectory_following/ -I../lib/controller/ -I../lib/data/ -I../UI/include -I./ -Ieigen/ -MMD -MP
+CXXFLAGS := -I../lib/trajectory_following/ -I../lib/controller/ -I../lib/data/ -I../include -I./ -Ieigen/ -MMD -MP
 LDFLAGS  := 
 
 VPATH     := ../lib/controller
