@@ -115,6 +115,7 @@ void load_flight_replay() {
 
   // determine file length
   if (FlightDataState.input_file != NULL) {
+    FlightDataState.file_length = 0;
     while (true) {
       size_t read_size = fread(&active_packet, sizeof(active_packet), 1, FlightDataState.input_file);
       if (read_size == 1) {
