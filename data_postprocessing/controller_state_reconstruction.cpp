@@ -187,6 +187,33 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     printf("Error - invalid entry type.\n");
     break;
   }
+    break;
+  }
+
+  case ENTRY_CALIB: { // TODO - use this data
+    fread(&ical, sizeof(IMU_Calib), 1, compressed_bin);
+    fread(&mcal, sizeof(Mag_Calib), 1, compressed_bin);
+    break;
+  }
+
+  case ENTRY_X_EST: { // TODO - check x_est for drift
+    fread((uint8_t *)(ControllerAndEstimator::x_est.data()), sizeof(ControllerAndEstimator::x_est(0)), ControllerAndEstimator::x_est.size(), compressed_bin);
+    break;
+  }
+
+  case ENTRY_FLIGHT_P: {
+    fread((uint8_t *)(ControllerAndEstimator::Flight_P.data()), sizeof(ControllerAndEstimator::Flight_P(0)), ControllerAndEstimator::Flight_P.size(), compressed_bin);
+    break;
+  }
+
+  case 0xFF: {
+    return false; // end of log reached
+  }
+
+  default: {
+    printf("Error - invalid entry type.\n");
+    break;
+  }
   }
 
   return true;
@@ -208,6 +235,7 @@ int main() {
 
   last_time = 0;
   ControllerAndEstimator::init_controller_and_estimator_constants();
+
 
   while (parse_log_entry(compressed_bin, reconstructed_bin)) {
   };
