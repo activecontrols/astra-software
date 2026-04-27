@@ -117,19 +117,19 @@ void follow_trajectory() {
       GPS::pump_events();
       GPS_Point gps_rel_pos = GPS::get_rel_xyz_pos();
       GPS_Velocity gps_vel = GPS::get_velocity();
-      GPS::fill_covariances(&ci.gps_state);
+      GPS::fill_covariances(&ci.gps);
 
-      ci.imu_mag_state.accel_x = -imu_reading.acc[2];
-      ci.imu_mag_state.accel_y = imu_reading.acc[1];
-      ci.imu_mag_state.accel_z = imu_reading.acc[0];
-      ci.imu_mag_state.gyro_yaw = -imu_reading.gyro[2];
-      ci.imu_mag_state.gyro_pitch = imu_reading.gyro[1];
-      ci.imu_mag_state.gyro_roll = imu_reading.gyro[0];
-      ci.imu_mag_state.mag_x = -mz;
-      ci.imu_mag_state.mag_y = my;
-      ci.imu_mag_state.mag_z = mx;
-      ci.gps_state.gps_pos = gps_rel_pos;
-      ci.gps_state.gps_vel = gps_vel;
+      ci.imu.accel_x = -imu_reading.acc[2];
+      ci.imu.accel_y = imu_reading.acc[1];
+      ci.imu.accel_z = imu_reading.acc[0];
+      ci.imu.gyro_yaw = -imu_reading.gyro[2];
+      ci.imu.gyro_pitch = imu_reading.gyro[1];
+      ci.imu.gyro_roll = imu_reading.gyro[0];
+      ci.mag.mag_x = -mz;
+      ci.mag.mag_y = my;
+      ci.mag.mag_z = mx;
+      ci.gps.pos = gps_rel_pos;
+      ci.gps.vel = gps_vel;
 
       ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
       ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
@@ -138,12 +138,8 @@ void follow_trajectory() {
       ci.GND_val = !has_left_ground;
 
       if (ci.GND_val) { // GPS lock
-        ci.gps_state.gps_pos.north = 0;
-        ci.gps_state.gps_pos.west = 0;
-        ci.gps_state.gps_pos.up = 0.31;
-        ci.gps_state.gps_vel.north = 0;
-        ci.gps_state.gps_vel.west = 0;
-        ci.gps_state.gps_vel.up = 0;
+        ci.gps.pos = {north : 0, west : 0, up : 0.31};
+        ci.gps.vel = {north : 0, west : 0, up : 0};
         ci.new_gps_packet = true;
       } else if (gps_rel_pos.north != last_gps_pos.north || gps_rel_pos.west != last_gps_pos.west || gps_rel_pos.up != last_gps_pos.up) {
         ci.new_gps_packet = true;
@@ -178,25 +174,20 @@ void follow_trajectory() {
       if (timer - lasttelemetry > TELEMETRY_INTERVAL_US) {
         lasttelemetry = timer;
 
-        fp.imu_mag_state.accel_x = cs.filter_out[0];
-        fp.imu_mag_state.accel_y = cs.filter_out[1];
-        fp.imu_mag_state.accel_z = cs.filter_out[2];
-        fp.imu_mag_state.gyro_yaw = cs.filter_out[3];
-        fp.imu_mag_state.gyro_pitch = cs.filter_out[4];
-        fp.imu_mag_state.gyro_roll = cs.filter_out[5];
-        fp.imu_mag_state.mag_x = cs.filter_out[6];
-        fp.imu_mag_state.mag_y = cs.filter_out[7];
-        fp.imu_mag_state.mag_z = cs.filter_out[8];
-        fp.gps_state = ci.gps_state;
+        fp.ci = ci;
+        fp.ci.imu.accel_x = cs.filter_out[0];
+        fp.ci.imu.accel_y = cs.filter_out[1];
+        fp.ci.imu.accel_z = cs.filter_out[2];
+        fp.ci.imu.gyro_yaw = cs.filter_out[3];
+        fp.ci.imu.gyro_pitch = cs.filter_out[4];
+        fp.ci.imu.gyro_roll = cs.filter_out[5];
+        fp.ci.mag.mag_x = cs.filter_out[6];
+        fp.ci.mag.mag_y = cs.filter_out[7];
+        fp.ci.mag.mag_z = cs.filter_out[8];
         fp.x_est = cs.x_est;
         fp.co = co;
 
-        fp.target_pos_north = ci.target_pos_north;
-        fp.target_pos_west = ci.target_pos_west;
-        fp.target_pos_up = ci.target_pos_up;
-
         fp.elapsed_time = timer / 1000000.0;
-        fp.GND_flag = ci.GND_val;
         fp.flight_armed = flight_armed;
         fp.thrust_perc = thrust_perc;
         fp.diffy_perc = diffy_perc;

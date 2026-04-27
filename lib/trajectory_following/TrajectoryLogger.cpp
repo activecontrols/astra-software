@@ -51,14 +51,17 @@ void flash_log_sensor(float time, int phase, Controller_Input ci, Controller_Out
 
   Logging::write((uint8_t *)&loopState, sizeof(loopState));
 
+  Logging::write(ENTRY_IMU);
+  Logging::write((uint8_t *)&ci.imu, sizeof(ci.imu));
+
   if (ci.new_mag_packet) {
-    Logging::write(ENTRY_SENSOR);
-    Logging::write((uint8_t *)&ci.imu_mag_state, sizeof(ci.imu_mag_state));
+    Logging::write(ENTRY_MAG);
+    Logging::write((uint8_t *)&ci.mag, sizeof(ci.mag));
   }
 
   if (ci.new_gps_packet) {
     Logging::write(ENTRY_GPS);
-    Logging::write((uint8_t *)&ci.gps_state, sizeof(ci.gps_state));
+    Logging::write((uint8_t *)&ci.gps, sizeof(ci.gps));
   }
 
   static_assert(sizeof(co) == 16);

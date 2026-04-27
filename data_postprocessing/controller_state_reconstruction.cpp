@@ -18,7 +18,6 @@ struct Mag_Calib {
   float soft[3][3];
 };
 
-telemetry_packet_t fp; // allows this to persist across calls
 float last_time;
 float this_time;
 Controller_Input ci;
@@ -34,9 +33,6 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
   }
 
   // printf("Read log entry.\n");
-
-  fp.GND_flag = false;
-  fp.flight_armed = true;
 
   switch (entry_type) {
 
@@ -55,34 +51,28 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
 
     // start the CI entry
     ci.GND_val = false;
-    ci.new_imu_packet = false;
+    ci.new_mag_packet = false;
     ci.new_gps_packet = false;
     ci.target_pos_north = traj[ls.phase].north;
     ci.target_pos_west = traj[ls.phase].west;
     ci.target_pos_up = traj[ls.phase].up;
-    fp.target_pos_north = ci.target_pos_north;
-    fp.target_pos_west = ci.target_pos_west;
-    fp.target_pos_up = ci.target_pos_up;
     break;
   }
 
-  case ENTRY_SENSOR: {
-    IMU_MAG_State imu_mag_state;
-    fread(&imu_mag_state, sizeof(IMU_MAG_State), 1, compressed_bin);
+  case ENTRY_IMU: {
+    fread(&ci.imu, sizeof(IMU_State), 1, compressed_bin);
+    break;
+  }
 
-    ci.new_imu_packet = true;
-    ci.imu_mag_state = imu_mag_state;
-    fp.imu_mag_state = imu_mag_state;
+  case ENTRY_MAG: {
+    fread(&ci.mag, sizeof(MAG_State), 1, compressed_bin);
+    ci.new_mag_packet = true;
     break;
   }
 
   case ENTRY_GPS: {
-    GPS_State gps_state;
-    fread(&gps_state, sizeof(GPS_State), 1, compressed_bin);
-
+    fread(&ci.gps, sizeof(GPS_State), 1, compressed_bin);
     ci.new_gps_packet = true;
-    ci.gps_state = gps_state;
-    fp.gps_state = gps_state;
     break;
   }
 
@@ -101,9 +91,13 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     // printf("Logged co: %f %f %f %f\n", logged_co.gimbal_pitch_deg, logged_co.gimbal_yaw_deg, logged_co.thrust_N, logged_co.roll_rad_sec_squared);
     // printf("Constructed co: %f %f %f %f\n", constructed_co.gimbal_pitch_deg, constructed_co.gimbal_yaw_deg, constructed_co.thrust_N, constructed_co.roll_rad_sec_squared);
 
+    telemetry_packet_t fp;
+    fp.ci = ci;
     fp.x_est = cs.x_est;
     fp.co = logged_co;
     fp.elapsed_time = this_time;
+    fp.flight_armed = true;
+    // TODO - would be nice to have the thrust / diffy percentages from the prop library
 
     fwrite(&fp, sizeof(fp), 1, reconstructed_bin);
     break;

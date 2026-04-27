@@ -15,7 +15,7 @@ struct GPS_Velocity {
   float up;    // m/s velocity up
 };
 
-struct __packed IMU_MAG_State {
+struct __packed IMU_State {
   float accel_x;
   float accel_y;
   float accel_z;
@@ -23,15 +23,17 @@ struct __packed IMU_MAG_State {
   float gyro_yaw;
   float gyro_pitch;
   float gyro_roll;
+};
 
+struct __packed MAG_State {
   float mag_x;
   float mag_y;
   float mag_z;
 };
 
 struct __packed GPS_State {
-  GPS_Point gps_pos;
-  GPS_Velocity gps_vel;
+  GPS_Point pos;
+  GPS_Velocity vel;
 
   float posCovNN; // m^2
   float posCovNE; // m^2
@@ -50,12 +52,13 @@ struct __packed GPS_State {
 struct Controller_Input {
   // System Status
   bool GND_val;
-  bool new_imu_packet;
+  bool new_mag_packet;
   bool new_gps_packet;
 
   // Sensor Inputs
-  IMU_MAG_State imu_mag_state;
-  GPS_State gps_state;
+  IMU_State imu;
+  MAG_State mag;
+  GPS_State gps;
 
   float target_pos_north;
   float target_pos_west;
@@ -99,17 +102,11 @@ struct Controller_Output {
 // telemetry packet sent by vehicle to the UI
 // also used by the UI save format
 struct telemetry_packet_t {
-  IMU_MAG_State imu_mag_state;
-  GPS_State gps_state;
+  Controller_Input ci;
   Controller_X_Est x_est;
   Controller_Output co;
 
-  float target_pos_north;
-  float target_pos_west;
-  float target_pos_up;
-
   float elapsed_time;
-  bool GND_flag;
   bool flight_armed;
   float thrust_perc;
   float diffy_perc;

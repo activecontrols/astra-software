@@ -77,11 +77,11 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
 
   Vector15 z;
   // clang-format off
-  z << ci.imu_mag_state.accel_x, ci.imu_mag_state.accel_y, ci.imu_mag_state.accel_z, 
-       ci.imu_mag_state.gyro_yaw, ci.imu_mag_state.gyro_pitch, ci.imu_mag_state.gyro_roll,
-       ci.imu_mag_state.mag_x, ci.imu_mag_state.mag_y, ci.imu_mag_state.mag_z,
-       ci.gps_state.gps_pos.north, ci.gps_state.gps_pos.west, ci.gps_state.gps_pos.up, 
-       ci.gps_state.gps_vel.north, ci.gps_state.gps_vel.west, ci.gps_state.gps_vel.up;
+  z << ci.imu.accel_x, ci.imu.accel_y, ci.imu.accel_z, 
+       ci.imu.gyro_yaw, ci.imu.gyro_pitch, ci.imu.gyro_roll,
+       ci.mag.mag_x, ci.mag.mag_y, ci.mag.mag_z,
+       ci.gps.pos.north, ci.gps.pos.west, ci.gps.pos.up, 
+       ci.gps.vel.north, ci.gps.vel.west, ci.gps.vel.up;
   // clang-format on
 
   Vector9 imu = z.segment<9>(0);
@@ -100,8 +100,8 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
     ASTRAv2_Controller_reset(); // reset integral gains in the controller itself
   }
 
-  Matrix3_3 gps_vel_covar = get_vel_cov_mtx(ci.gps_state);
-  Matrix3_3 gps_pos_covar = get_pos_cov_mtx(ci.gps_state);
+  Matrix3_3 gps_vel_covar = get_vel_cov_mtx(ci.gps);
+  Matrix3_3 gps_pos_covar = get_pos_cov_mtx(ci.gps);
 
   if (ci.GND_val) {
     x_est = GroundEstimator(x_est, constantsASTRA, z, loop_dT, P, ci.new_mag_packet, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
