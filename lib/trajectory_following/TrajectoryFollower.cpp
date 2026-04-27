@@ -14,17 +14,21 @@
 #include "astra_structs.h"
 #include "controller_and_estimator.h"
 #include "elapsedMillis.h"
-#include <Arduino.h>
 #include "fc_pins.h"
+#include "flight_packet.h"
+#include <Arduino.h>
 
 #define TELEMETRY_INTERVAL_US 100000
 #define COMMAND_INTERVAL_US 1000
 #define LOG_X_EST_INTERVAL_US 100000
+#define HB_KILL_INTERVAL_MS 500 // if we don't see a heartbeat command every 0.5 seconds during flight, disable gimbal and props
 
 namespace TrajectoryFollower {
 
 bool kill_flag;
 bool arm_flag;
+unsigned long last_hb;
+elapsedMicros timer;
 
 void follow_trajectory() {
   bool has_left_ground = false;
@@ -57,12 +61,13 @@ void follow_trajectory() {
   TrajectoryLogger::log_calib_flash();
   TrajectoryLogger::log_trajectory();
 
-  elapsedMicros timer = elapsedMicros();
+  timer = elapsedMicros();
   unsigned long lasttelemetry = timer;
   unsigned long lastloop = timer;
   unsigned long lastlogx_est = timer;
   unsigned long led_on_time = 0;
   bool led_on = false;
+  last_hb = timer;
 
   float last_time_s = timer / 1000000.0;
   float mx, my, mz;
@@ -71,6 +76,10 @@ void follow_trajectory() {
     while (last_time_s < TrajectoryLoader::trajectory[i].time || !flight_armed) {
       while (CommsSerial.available()) {
         CommandRouter::receive_byte(CommsSerial.read());
+      }
+
+      if ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS) {
+        kill_flag = true;
       }
 
       if (kill_flag) {
@@ -95,8 +104,7 @@ void follow_trajectory() {
         digitalWrite(PIN_TEST_LED, LOW);
       }
 
-      if (led_on && millis() - led_on_time > 500)
-      {
+      if (led_on && millis() - led_on_time > 500) {
         digitalWrite(PIN_TEST_LED, HIGH);
       }
 
@@ -226,9 +234,14 @@ void follow_trajectory() {
   CommsSerial.printf("Finished %ld loop iterations.\n", counter);
 }
 
+void heartbeat() {
+  last_hb = timer;
+}
+
 // add relevant router cmds
 void begin() {
   CommandRouter::add(start_flight_loop, "start_flight_loop");
+  CommandRouter::add(heartbeat, "hb", "send every 0.5 seconds or flight will terminate");
   CommandRouter::add_flag(&kill_flag, "k", "terminate the flight loop early");
   CommandRouter::add_flag(&arm_flag, "arm", "start following a trajectory");
 }
