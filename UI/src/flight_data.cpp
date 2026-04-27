@@ -26,30 +26,30 @@ void deinit_flight_data() {
 }
 
 void commit_packet() {
-  FlightHistory.accel_x[FlightHistory.write_pos] = active_packet.imu_mag_state.accel_x;
-  FlightHistory.accel_x[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.accel_x;
-  FlightHistory.accel_y[FlightHistory.write_pos] = active_packet.imu_mag_state.accel_y;
-  FlightHistory.accel_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.accel_y;
-  FlightHistory.accel_z[FlightHistory.write_pos] = active_packet.imu_mag_state.accel_z;
-  FlightHistory.accel_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.accel_z;
-  FlightHistory.gyro_yaw[FlightHistory.write_pos] = active_packet.imu_mag_state.gyro_yaw;
-  FlightHistory.gyro_yaw[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.gyro_yaw;
-  FlightHistory.gyro_pitch[FlightHistory.write_pos] = active_packet.imu_mag_state.gyro_pitch;
-  FlightHistory.gyro_pitch[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.gyro_pitch;
-  FlightHistory.gyro_roll[FlightHistory.write_pos] = active_packet.imu_mag_state.gyro_roll;
-  FlightHistory.gyro_roll[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.gyro_roll;
-  FlightHistory.mag_x[FlightHistory.write_pos] = active_packet.imu_mag_state.mag_x;
-  FlightHistory.mag_x[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.mag_x;
-  FlightHistory.mag_y[FlightHistory.write_pos] = active_packet.imu_mag_state.mag_y;
-  FlightHistory.mag_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.mag_y;
-  FlightHistory.mag_z[FlightHistory.write_pos] = active_packet.imu_mag_state.mag_z;
-  FlightHistory.mag_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.imu_mag_state.mag_z;
-  FlightHistory.gps_pos_north = active_packet.gps_pos.north;
-  FlightHistory.gps_pos_west = active_packet.gps_pos.west;
-  FlightHistory.gps_pos_up = active_packet.gps_pos.up;
-  FlightHistory.gps_vel_north = active_packet.gps_vel.north;
-  FlightHistory.gps_vel_west = active_packet.gps_vel.west;
-  FlightHistory.gps_vel_up = active_packet.gps_vel.up;
+  FlightHistory.accel_x[FlightHistory.write_pos] = active_packet.ci.imu.accel_x;
+  FlightHistory.accel_x[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.imu.accel_x;
+  FlightHistory.accel_y[FlightHistory.write_pos] = active_packet.ci.imu.accel_y;
+  FlightHistory.accel_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.imu.accel_y;
+  FlightHistory.accel_z[FlightHistory.write_pos] = active_packet.ci.imu.accel_z;
+  FlightHistory.accel_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.imu.accel_z;
+  FlightHistory.gyro_yaw[FlightHistory.write_pos] = active_packet.ci.imu.gyro_yaw;
+  FlightHistory.gyro_yaw[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.imu.gyro_yaw;
+  FlightHistory.gyro_pitch[FlightHistory.write_pos] = active_packet.ci.imu.gyro_pitch;
+  FlightHistory.gyro_pitch[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.imu.gyro_pitch;
+  FlightHistory.gyro_roll[FlightHistory.write_pos] = active_packet.ci.imu.gyro_roll;
+  FlightHistory.gyro_roll[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.imu.gyro_roll;
+  FlightHistory.mag_x[FlightHistory.write_pos] = active_packet.ci.mag.mag_x;
+  FlightHistory.mag_x[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.mag.mag_x;
+  FlightHistory.mag_y[FlightHistory.write_pos] = active_packet.ci.mag.mag_y;
+  FlightHistory.mag_y[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.mag.mag_y;
+  FlightHistory.mag_z[FlightHistory.write_pos] = active_packet.ci.mag.mag_z;
+  FlightHistory.mag_z[FlightHistory.write_pos + FLIGHT_HISTORY_LENGTH] = active_packet.ci.mag.mag_z;
+  FlightHistory.gps_pos_north = active_packet.ci.gps.pos.north;
+  FlightHistory.gps_pos_west = active_packet.ci.gps.pos.west;
+  FlightHistory.gps_pos_up = active_packet.ci.gps.pos.up;
+  FlightHistory.gps_vel_north = active_packet.ci.gps.vel.north;
+  FlightHistory.gps_vel_west = active_packet.ci.gps.vel.west;
+  FlightHistory.gps_vel_up = active_packet.ci.gps.vel.up;
 
   FlightHistory.state_q_vec_new = active_packet.x_est.q_vec_w;
   FlightHistory.state_q_vec_0 = active_packet.x_est.q_vec_x;
@@ -85,12 +85,12 @@ void commit_packet() {
   FlightHistory.thrust_N = active_packet.co.thrust_N;
   FlightHistory.roll_rad_sec_squared = active_packet.co.roll_rad_sec_squared;
 
-  FlightHistory.target_pos_north = active_packet.target_pos_north;
-  FlightHistory.target_pos_west = active_packet.target_pos_west;
-  FlightHistory.target_pos_up = active_packet.target_pos_up;
+  FlightHistory.target_pos_north = active_packet.ci.target_pos_north;
+  FlightHistory.target_pos_west = active_packet.ci.target_pos_west;
+  FlightHistory.target_pos_up = active_packet.ci.target_pos_up;
 
   FlightHistory.elapsed_time = active_packet.elapsed_time;
-  FlightHistory.GND_flag = active_packet.GND_flag;
+  FlightHistory.GND_flag = active_packet.ci.GND_val;
   FlightHistory.flight_armed = active_packet.flight_armed;
   FlightHistory.thrust_perc = active_packet.thrust_perc;
   FlightHistory.diffy_perc = active_packet.diffy_perc;
