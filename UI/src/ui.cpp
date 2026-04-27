@@ -317,7 +317,10 @@ void data_management_panel() {
         ComPortInfo port = FlightDataState.ports[i];
         const bool is_selected = (FlightDataState.fv_serial_idx == i);
         if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
+        {
           FlightDataState.fv_serial_idx = i;
+          FlightDataState.fv_serial.reset(nullptr);
+        }
 
         // Set the initial focus when opening the combo (scrolling to selection)
         if (is_selected)
@@ -326,7 +329,18 @@ void data_management_panel() {
       ImGui::EndCombo();
     }
     ImGui::SameLine();
-    ImGui::Checkbox("##fv_serial_open", &FlightDataState.fv_serial_port_open);
+    bool fv_serial_open = FlightDataState.fv_serial && FlightDataState.fv_serial->is_open();
+    if (ImGui::Checkbox("##fv_serial_open", &fv_serial_open))
+    {
+      if (fv_serial_open)
+      {
+        FlightDataState.fv_serial.reset(open_serial_port(FlightDataState.ports[FlightDataState.fv_serial_idx].portName.c_str()));
+      }
+      else
+      {
+        FlightDataState.fv_serial.reset(nullptr);
+      }
+    }
     ImGui::SameLine();
     if (ImGui::Button("\uE117")) {
       FlightDataState.ports = enumerate_ports();
@@ -339,7 +353,10 @@ void data_management_panel() {
         ComPortInfo port = FlightDataState.ports[i];
         const bool is_selected = (FlightDataState.rtk_serial_idx == i);
         if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
+        {
           FlightDataState.rtk_serial_idx = i;
+          FlightDataState.rtk_serial.reset(nullptr);
+        }
 
         // Set the initial focus when opening the combo (scrolling to selection)
         if (is_selected)
@@ -348,7 +365,18 @@ void data_management_panel() {
       ImGui::EndCombo();
     }
     ImGui::SameLine();
-    ImGui::Checkbox("##rtk_serial_open", &FlightDataState.rtk_serial_port_open);
+
+    bool rtk_serial_open = FlightDataState.rtk_serial && FlightDataState.rtk_serial->is_open();
+    if (ImGui::Checkbox("##rtk_serial_open", &rtk_serial_open))
+    {
+      if (rtk_serial_open) {
+        FlightDataState.rtk_serial.reset(open_serial_port(FlightDataState.ports[FlightDataState.rtk_serial_idx].portName.c_str()));
+      }
+      else
+      {
+        FlightDataState.rtk_serial.reset(nullptr);
+      }
+    }
 
     ImGui::Dummy(ImVec2(0, 25));
 
