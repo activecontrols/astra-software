@@ -1,9 +1,9 @@
 CXX      := g++
-CXXFLAGS := -I../lib/trajectory_following/ -I../lib/controller/ -I../lib/data/ -I../include -I./ -Ieigen/ -MMD -MP
+CXXFLAGS := -I../lib/trajectory_following/ -I../lib/controller/ -I../lib/data/ -I../lib/prop -I../include -I./ -Ieigen/ -MMD -MP
 LDFLAGS  := 
 
-VPATH     := ../lib/controller
-APP_SRC   := controller_state_reconstruction.cpp $(wildcard ../lib/controller/*.cpp)
+VPATH     := ../lib/controller ../lib/prop
+APP_SRC   := controller_state_reconstruction.cpp $(wildcard ../lib/controller/*.cpp) ../lib/prop/RollControl.cpp
 SRC       := $(APP_SRC)
 BUILD_FOLDER := build
 

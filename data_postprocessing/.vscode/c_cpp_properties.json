@@ -6,6 +6,7 @@
         "${workspaceFolder}/**",
         "${workspaceFolder}/../lib/trajectory_following",
         "${workspaceFolder}/../lib/controller",
+        "${workspaceFolder}/../lib/prop",
         "${workspaceFolder}/../lib/data",
         "${workspaceFolder}/../include"
       ],

@@ -1,6 +1,7 @@
 #include "Trajectory.h"
 #include "TrajectoryLogger.h"
 #include "astra_structs.h"
+#include "RollControl.h"
 #include "controller_and_estimator.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,7 +98,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     fp.co = logged_co;
     fp.elapsed_time = this_time;
     fp.flight_armed = true;
-    // TODO - would be nice to have the thrust / diffy percentages from the prop library
+    get_prop_perc(fp.co.thrust_N, fp.co.roll_rad_sec_squared, &fp.thrust_perc, &fp.diffy_perc); // use thrust table to find these values
 
     fwrite(&fp, sizeof(fp), 1, reconstructed_bin);
     break;
