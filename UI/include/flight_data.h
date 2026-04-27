@@ -91,5 +91,6 @@ void load_flight_replay();
 void flight_data_periodic();
 void write_serial_to_fv(const char *msg);
 void commit_packet();
+void reply_with_heartbeat();
 
 #endif
