@@ -14,7 +14,7 @@ Matrix18_18 GroundStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2
   return F;
 }
 
-Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector15 z, float dT, Matrix18_18 &P, bool new_imu_packet, bool new_gps_packet, Matrix3_3 gps_vel_covar,
+Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector15 z, float dT, Matrix18_18 &P, bool new_mag_packet, bool new_gps_packet, Matrix3_3 gps_vel_covar,
                          Matrix3_3 gps_pos_covar) {
   // M-EKF Implementation
   // Remove bias from IMU
@@ -61,7 +61,7 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
   P = (P + P.transpose()) / 2;
 
   // IMU Update
-  if (new_imu_packet) {
+  if (new_mag_packet) {
     // Measurement matrix
     Matrix6_18 H = Matrix6_18::Zero();
     H.block<3, 3>(0, 0) = zetaCross(R_b2i.transpose() * (Vector3() << 0, 0, constantsASTRA.g).finished());

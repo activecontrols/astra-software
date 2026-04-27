@@ -107,11 +107,11 @@ void follow_trajectory() {
       IMU::IMUs[0].read_latest(&imu_reading);
 
       if (Mag::isMeasurementReady()) {
-        ci.new_imu_packet = true;
+        ci.new_mag_packet = true;
         Mag::read_xyz_calibrated(mx, my, mz);
         Mag::beginMeasurement();
       } else {
-        ci.new_imu_packet = false;
+        ci.new_mag_packet = false;
       }
 
       GPS::pump_events();

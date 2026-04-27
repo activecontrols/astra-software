@@ -104,7 +104,7 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   Matrix3_3 gps_pos_covar = get_pos_cov_mtx(ci.gps_state);
 
   if (ci.GND_val) {
-    x_est = GroundEstimator(x_est, constantsASTRA, z, loop_dT, P, ci.new_imu_packet, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
+    x_est = GroundEstimator(x_est, constantsASTRA, z, loop_dT, P, ci.new_mag_packet, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
   } else {
     x_est = FlightEstimator(x_est, constantsASTRA, z, loop_dT, Flight_P, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
   }

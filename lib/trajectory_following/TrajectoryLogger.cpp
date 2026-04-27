@@ -51,7 +51,7 @@ void flash_log_sensor(float time, int phase, Controller_Input ci, Controller_Out
 
   Logging::write((uint8_t *)&loopState, sizeof(loopState));
 
-  if (ci.new_imu_packet) {
+  if (ci.new_mag_packet) {
     Logging::write(ENTRY_SENSOR);
     Logging::write((uint8_t *)&ci.imu_mag_state, sizeof(ci.imu_mag_state));
   }
