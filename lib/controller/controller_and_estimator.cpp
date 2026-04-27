@@ -13,6 +13,35 @@ float last_thrust;
 bool last_GND;
 const float tau = 0.03; // seconds - time constant for ema low pass filter applied to gimbal angles
 
+Matrix3_3 get_pos_cov_mtx(GPS_State gps_state) {
+  Matrix3_3 pos_cov_mtx;
+  pos_cov_mtx(0, 0) = gps_state.posCovNN;
+  pos_cov_mtx(0, 0) = gps_state.posCovNN;
+  pos_cov_mtx(0, 1) = -gps_state.posCovNE;
+  pos_cov_mtx(0, 2) = -gps_state.posCovND;
+  pos_cov_mtx(1, 0) = -gps_state.posCovNE;
+  pos_cov_mtx(1, 1) = gps_state.posCovEE;
+  pos_cov_mtx(1, 2) = gps_state.posCovED;
+  pos_cov_mtx(2, 0) = -gps_state.posCovND;
+  pos_cov_mtx(2, 1) = gps_state.posCovED;
+  pos_cov_mtx(2, 2) = gps_state.posCovDD;
+  return pos_cov_mtx;
+}
+
+Matrix3_3 get_vel_cov_mtx(GPS_State gps_state) {
+  Matrix3_3 vel_cov_mtx;
+  vel_cov_mtx(0, 2) = gps_state.velCovNN;
+  vel_cov_mtx(0, 2) = -gps_state.velCovNE;
+  vel_cov_mtx(0, 2) = -gps_state.velCovND;
+  vel_cov_mtx(1, 2) = -gps_state.velCovNE;
+  vel_cov_mtx(1, 2) = gps_state.velCovEE;
+  vel_cov_mtx(1, 2) = gps_state.velCovED;
+  vel_cov_mtx(2, 0) = -gps_state.velCovND;
+  vel_cov_mtx(2, 1) = gps_state.velCovED;
+  vel_cov_mtx(2, 2) = gps_state.velCovDD;
+  return vel_cov_mtx;
+}
+
 void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.2490;
@@ -51,8 +80,8 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   z << ci.imu_mag_state.accel_x, ci.imu_mag_state.accel_y, ci.imu_mag_state.accel_z, 
        ci.imu_mag_state.gyro_yaw, ci.imu_mag_state.gyro_pitch, ci.imu_mag_state.gyro_roll,
        ci.imu_mag_state.mag_x, ci.imu_mag_state.mag_y, ci.imu_mag_state.mag_z,
-       ci.gps_pos.north, ci.gps_pos.west, ci.gps_pos.up, 
-       ci.gps_vel.north, ci.gps_vel.west, ci.gps_vel.up;
+       ci.gps_state.gps_pos.north, ci.gps_state.gps_pos.west, ci.gps_state.gps_pos.up, 
+       ci.gps_state.gps_vel.north, ci.gps_state.gps_vel.west, ci.gps_state.gps_vel.up;
   // clang-format on
 
   Vector9 imu = z.segment<9>(0);
@@ -71,9 +100,8 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
     ASTRAv2_Controller_reset(); // reset integral gains in the controller itself
   }
 
-  // TODO - check row major / column major
-  Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>> gps_vel_covar((float *)ci.gps_vel_covar);
-  Eigen::Map<Eigen::Matrix<float, 3, 3, Eigen::RowMajor>> gps_pos_covar((float *)ci.gps_pos_covar);
+  Matrix3_3 gps_vel_covar = get_vel_cov_mtx(ci.gps_state);
+  Matrix3_3 gps_pos_covar = get_pos_cov_mtx(ci.gps_state);
 
   if (ci.GND_val) {
     x_est = GroundEstimator(x_est, constantsASTRA, z, loop_dT, P, ci.new_imu_packet, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);

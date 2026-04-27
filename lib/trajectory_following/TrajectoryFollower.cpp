@@ -117,9 +117,7 @@ void follow_trajectory() {
       GPS::pump_events();
       GPS_Point gps_rel_pos = GPS::get_rel_xyz_pos();
       GPS_Velocity gps_vel = GPS::get_velocity();
-
-      GPS::get_pos_cov(ci.gps_pos_covar);
-      GPS::get_vel_cov(ci.gps_vel_covar);
+      GPS::fill_covariances(&ci.gps_state);
 
       ci.imu_mag_state.accel_x = -imu_reading.acc[2];
       ci.imu_mag_state.accel_y = imu_reading.acc[1];
@@ -130,8 +128,8 @@ void follow_trajectory() {
       ci.imu_mag_state.mag_x = -mz;
       ci.imu_mag_state.mag_y = my;
       ci.imu_mag_state.mag_z = mx;
-      ci.gps_pos = gps_rel_pos;
-      ci.gps_vel = gps_vel;
+      ci.gps_state.gps_pos = gps_rel_pos;
+      ci.gps_state.gps_vel = gps_vel;
 
       ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
       ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
@@ -140,12 +138,12 @@ void follow_trajectory() {
       ci.GND_val = !has_left_ground;
 
       if (ci.GND_val) { // GPS lock
-        ci.gps_pos.north = 0;
-        ci.gps_pos.west = 0;
-        ci.gps_pos.up = 0.31;
-        ci.gps_vel.north = 0;
-        ci.gps_vel.west = 0;
-        ci.gps_vel.up = 0;
+        ci.gps_state.gps_pos.north = 0;
+        ci.gps_state.gps_pos.west = 0;
+        ci.gps_state.gps_pos.up = 0.31;
+        ci.gps_state.gps_vel.north = 0;
+        ci.gps_state.gps_vel.west = 0;
+        ci.gps_state.gps_vel.up = 0;
         ci.new_gps_packet = true;
       } else if (gps_rel_pos.north != last_gps_pos.north || gps_rel_pos.west != last_gps_pos.west || gps_rel_pos.up != last_gps_pos.up) {
         ci.new_gps_packet = true;
@@ -189,9 +187,7 @@ void follow_trajectory() {
         fp.imu_mag_state.mag_x = cs.filter_out[6];
         fp.imu_mag_state.mag_y = cs.filter_out[7];
         fp.imu_mag_state.mag_z = cs.filter_out[8];
-        fp.gps_pos = ci.gps_pos;
-        fp.gps_vel = ci.gps_vel;
-
+        fp.gps_state = ci.gps_state;
         fp.x_est = cs.x_est;
         fp.co = co;
 

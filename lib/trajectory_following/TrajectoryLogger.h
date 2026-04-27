@@ -20,27 +20,9 @@ struct __packed LoopState {
 
 static_assert(sizeof(LoopState) == 5, "sizeof(LoopState) error");
 
-static_assert(sizeof(IMU_MAG_State) == 36, "sizeof(SensorEntry) error");
+static_assert(sizeof(IMU_MAG_State) == 36, "sizeof(IMU_MAG_State) error");
 
-struct __packed GpsEntry {
-  GPS_Point gps_pos;
-  GPS_Velocity gps_vel;
-
-  float posCovNN; // m^2
-  float posCovNE; // m^2
-  float posCovND; // m^2
-  float posCovEE; // m^2
-  float posCovED; // m^2
-  float posCovDD; // m^2
-  float velCovNN; // m^2/s^2
-  float velCovNE; // m^2/s^2
-  float velCovND; // m^2/s^2
-  float velCovEE; // m^2/s^2
-  float velCovED; // m^2/s^2
-  float velCovDD; // m^2/s^2
-};
-
-static_assert(sizeof(GpsEntry) == 18 * 4, "sizeof(GpsEntry) error");
+static_assert(sizeof(GPS_State) == 18 * 4, "sizeof(GPS_State) error");
 
 namespace TrajectoryLogger {
 

@@ -77,18 +77,12 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
   }
 
   case ENTRY_GPS: {
-    GpsEntry gps;
-    fread(&gps, sizeof(GpsEntry), 1, compressed_bin);
+    GPS_State gps_state;
+    fread(&gps_state, sizeof(GPS_State), 1, compressed_bin);
 
-    // TODO - so much redundancy
     ci.new_gps_packet = true;
-    ci.gps_pos = gps.gps_pos;
-    ci.gps_vel = gps.gps_vel;
-
-    // TODO - covariances
-
-    fp.gps_pos = ci.gps_pos;
-    fp.gps_vel = ci.gps_vel;
+    ci.gps_state = gps_state;
+    fp.gps_state = gps_state;
     break;
   }
 

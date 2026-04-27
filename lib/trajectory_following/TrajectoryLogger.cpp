@@ -58,26 +58,7 @@ void flash_log_sensor(float time, int phase, Controller_Input ci, Controller_Out
 
   if (ci.new_gps_packet) {
     Logging::write(ENTRY_GPS);
-
-    GpsEntry gpsData{};
-    gpsData.gps_pos = ci.gps_pos;
-    gpsData.gps_vel = ci.gps_vel;
-
-    gpsData.posCovNN = GPS::ubx.cov.data->posCovNN;
-    gpsData.posCovNE = GPS::ubx.cov.data->posCovNE;
-    gpsData.posCovND = GPS::ubx.cov.data->posCovND;
-    gpsData.posCovEE = GPS::ubx.cov.data->posCovEE;
-    gpsData.posCovED = GPS::ubx.cov.data->posCovED;
-    gpsData.posCovDD = GPS::ubx.cov.data->posCovDD;
-
-    gpsData.velCovNN = GPS::ubx.cov.data->velCovNN;
-    gpsData.velCovNE = GPS::ubx.cov.data->velCovNE;
-    gpsData.velCovND = GPS::ubx.cov.data->velCovND;
-    gpsData.velCovEE = GPS::ubx.cov.data->velCovEE;
-    gpsData.velCovED = GPS::ubx.cov.data->velCovED;
-    gpsData.velCovDD = GPS::ubx.cov.data->velCovDD;
-
-    Logging::write((uint8_t *)&gpsData, sizeof(gpsData));
+    Logging::write((uint8_t *)&ci.gps_state, sizeof(ci.gps_state));
   }
 
   static_assert(sizeof(co) == 16);

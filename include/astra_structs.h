@@ -29,6 +29,24 @@ struct __packed IMU_MAG_State {
   float mag_z;
 };
 
+struct __packed GPS_State {
+  GPS_Point gps_pos;
+  GPS_Velocity gps_vel;
+
+  float posCovNN; // m^2
+  float posCovNE; // m^2
+  float posCovND; // m^2
+  float posCovEE; // m^2
+  float posCovED; // m^2
+  float posCovDD; // m^2
+  float velCovNN; // m^2/s^2
+  float velCovNE; // m^2/s^2
+  float velCovND; // m^2/s^2
+  float velCovEE; // m^2/s^2
+  float velCovED; // m^2/s^2
+  float velCovDD; // m^2/s^2
+};
+
 struct Controller_Input {
   // System Status
   bool GND_val;
@@ -37,11 +55,7 @@ struct Controller_Input {
 
   // Sensor Inputs
   IMU_MAG_State imu_mag_state;
-  GPS_Point gps_pos;
-  GPS_Velocity gps_vel;
-
-  float gps_pos_covar[3][3];
-  float gps_vel_covar[3][3];
+  GPS_State gps_state;
 
   float target_pos_north;
   float target_pos_west;
@@ -86,9 +100,7 @@ struct Controller_Output {
 // also used by the UI save format
 struct telemetry_packet_t {
   IMU_MAG_State imu_mag_state;
-  GPS_Point gps_pos;
-  GPS_Velocity gps_vel;
-
+  GPS_State gps_state;
   Controller_X_Est x_est;
   Controller_Output co;
 

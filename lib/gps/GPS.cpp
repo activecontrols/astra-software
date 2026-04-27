@@ -138,30 +138,20 @@ bool is_pos_cov_valid() {
   return (ubx.cov.data->posCovValid);
 }
 
-// get velocity covariance
-void get_vel_cov(float out[3][3]) {
-  out[0][2] = ubx.cov.data->velCovNN;
-  out[0][2] = -ubx.cov.data->velCovNE;
-  out[0][2] = -ubx.cov.data->velCovND;
-  out[1][2] = -ubx.cov.data->velCovNE;
-  out[1][2] = ubx.cov.data->velCovEE;
-  out[1][2] = ubx.cov.data->velCovED;
-  out[2][0] = -ubx.cov.data->velCovND;
-  out[2][1] = ubx.cov.data->velCovED;
-  out[2][2] = ubx.cov.data->velCovDD;
-}
+void fill_covariances(GPS_State *gps_state) {
+  gps_state->posCovNN = GPS::ubx.cov.data->posCovNN;
+  gps_state->posCovNE = GPS::ubx.cov.data->posCovNE;
+  gps_state->posCovND = GPS::ubx.cov.data->posCovND;
+  gps_state->posCovEE = GPS::ubx.cov.data->posCovEE;
+  gps_state->posCovED = GPS::ubx.cov.data->posCovED;
+  gps_state->posCovDD = GPS::ubx.cov.data->posCovDD;
 
-// get position covariance
-void get_pos_cov(float out[3][3]) {
-  out[0][0] = ubx.cov.data->posCovNN;
-  out[0][1] = -ubx.cov.data->posCovNE;
-  out[0][2] = -ubx.cov.data->posCovND;
-  out[1][0] = -ubx.cov.data->posCovNE;
-  out[1][1] = ubx.cov.data->posCovEE;
-  out[1][2] = ubx.cov.data->posCovED;
-  out[2][0] = -ubx.cov.data->posCovND;
-  out[2][1] = ubx.cov.data->posCovED;
-  out[2][2] = ubx.cov.data->posCovDD;
+  gps_state->velCovNN = GPS::ubx.cov.data->velCovNN;
+  gps_state->velCovNE = GPS::ubx.cov.data->velCovNE;
+  gps_state->velCovND = GPS::ubx.cov.data->velCovND;
+  gps_state->velCovEE = GPS::ubx.cov.data->velCovEE;
+  gps_state->velCovED = GPS::ubx.cov.data->velCovED;
+  gps_state->velCovDD = GPS::ubx.cov.data->velCovDD;
 }
 
 // returns in meters
