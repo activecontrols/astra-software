@@ -218,11 +218,11 @@ bool has_valid_recent_pos() {
 }
 
 GPS_Coord get_lat_lon_alt() {
-  return GPS_Coord{ubx.pvt_solution.data->lat / 10000000.0, ubx.pvt_solution.data->lon / 10000000.0, ubx.pvt_solution.data->hMSL / 1000.0};
+  return GPS_Coord{ubx.pvt_solution.data->lat / 10000000.0f, ubx.pvt_solution.data->lon / 10000000.0f, ubx.pvt_solution.data->hMSL / 1000.0f};
 }
 
 GPS_Velocity get_velocity() {
-  return GPS_Velocity{ubx.pvt_solution.data->velN / 1000.0, -ubx.pvt_solution.data->velE / 1000.0, -ubx.pvt_solution.data->velD / 1000.0};
+  return GPS_Velocity{ubx.pvt_solution.data->velN / 1000.0f, -ubx.pvt_solution.data->velE / 1000.0f, -ubx.pvt_solution.data->velD / 1000.0f};
 }
 
 void set_current_position_as_origin() {
@@ -241,10 +241,10 @@ GPS_Point get_rel_xyz_pos() {
   double dlat_rad = deg_to_rad(pos.lat - origin.lat);
   double dlon_rad = deg_to_rad(pos.lon - origin.lon);
 
-  double north_m = (EARTH_RADIUS_M + pos.alt) * dlat_rad;
-  double east_m = (EARTH_RADIUS_M + pos.alt) * std::cos(origin_lat_rad) * dlon_rad;
-  double west_m = -east_m;
-  double up_m = pos.alt - origin.alt;
+  float north_m = (EARTH_RADIUS_M + pos.alt) * dlat_rad;
+  float east_m = (EARTH_RADIUS_M + pos.alt) * std::cos(origin_lat_rad) * dlon_rad;
+  float west_m = -east_m;
+  float up_m = pos.alt - origin.alt;
 
   return GPS_Point{north : north_m, west : west_m, up : up_m};
 }

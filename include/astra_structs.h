@@ -4,32 +4,18 @@
 // this file contains shared structs for use across the embedded code and UI
 
 struct GPS_Point {
-  double north; // meters
-  double west;  // meters
-  double up;    // meters
+  float north; // meters
+  float west;  // meters
+  float up;    // meters
 };
 
 struct GPS_Velocity {
-  double north; // m/s velocity north
-  double west;  // m/s velocity west
-  double up;    // m/s velocity up
+  float north; // m/s velocity north
+  float west;  // m/s velocity west
+  float up;    // m/s velocity up
 };
 
 struct __packed IMU_MAG_State {
-  float accel_x;
-  float accel_y;
-  float accel_z;
-
-  float gyro_yaw;
-  float gyro_pitch;
-  float gyro_roll;
-
-  float mag_x;
-  float mag_y;
-  float mag_z;
-};
-
-struct __packed GPS_State {
   float accel_x;
   float accel_y;
   float accel_z;

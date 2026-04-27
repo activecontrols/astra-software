@@ -23,14 +23,8 @@ static_assert(sizeof(LoopState) == 5, "sizeof(LoopState) error");
 static_assert(sizeof(IMU_MAG_State) == 36, "sizeof(SensorEntry) error");
 
 struct __packed GpsEntry {
-
-  float gps_pos_north;
-  float gps_pos_west;
-  float gps_pos_up;
-
-  float gps_vel_north;
-  float gps_vel_west;
-  float gps_vel_up;
+  GPS_Point gps_pos;
+  GPS_Velocity gps_vel;
 
   float posCovNN; // m^2
   float posCovNE; // m^2
