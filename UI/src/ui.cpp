@@ -8,6 +8,7 @@
 #include "ui_components.h"
 #include "ui_graphs.h"
 #include "flash_dump.h"
+#include "csr_trigger.h"
 
 bool text_box_active;
 
@@ -298,6 +299,8 @@ void data_management_panel() {
   ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, MODE_FILE_INPUT);
   ImGui::SameLine();
   ImGui::RadioButton("Flash", &FlightDataState.data_input_mode, MODE_FLASH_DUMP);
+  ImGui::SameLine();
+  ImGui::RadioButton("CSR", &FlightDataState.data_input_mode, MODE_CSR_TRIGGER);
 
   if (FlightDataState.ports.size() == 0)
   {
@@ -305,6 +308,7 @@ void data_management_panel() {
   }
 
   FlashDump::update();
+  CSRTrigger::update();
 
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
 
@@ -402,9 +406,19 @@ void data_management_panel() {
       }
     }
   }
+  else if (FlightDataState.data_input_mode == MODE_FLASH_DUMP)
+  {
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Flash Link");
+    ImGui::PopFont();
+    FlashDump::render();
+  }
   else
   {
-    FlashDump::render();
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Controller State Reconstruction");
+    ImGui::PopFont();
+    CSRTrigger::render();
   }
   ImGui::End();
 }

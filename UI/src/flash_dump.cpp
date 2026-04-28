@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "platform_win.h"
 #include "port_selector.h"
+#include "csr_trigger.h"
 
 namespace FlashDump {
 bool _in_progress = false;
@@ -16,7 +17,7 @@ PortSelector &read_port = port_selector;
 
 FILE *fout;
 
-char out_path[MAX_PATH + 1];
+char out_path[MAX_PATH];
 
 const unsigned int PAGE_SIZE = 256;
 uint8_t recv_buf[PAGE_SIZE + 3];
@@ -65,6 +66,10 @@ void update() {
     if (recv_buf[PAGE_SIZE + 2] == 'k') {
       result_message = "Finished Successfully";
       finish();
+
+      // automatically switch to csr menu and set input path to the dump output
+      FlightDataState.data_input_mode = MODE_CSR_TRIGGER;
+      strcpy(CSRTrigger::input_fp, out_path);
       return;
     }
 

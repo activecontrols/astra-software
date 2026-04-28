@@ -133,19 +133,6 @@ void send_flash_over_serial() {
   uint32_t addr = 0;
   int idx = 0;
   while (1) {
-    // wait for serial to send a c before sending the next page
-    while (!USB_CommsSerial.available()) {
-    }
-
-    char c;
-
-    do {
-      c = USB_CommsSerial.read();
-    } while (!(c == 'k' || c == 'c'));
-
-    if (c == 'k') {
-      return;
-    }
 
     Flash::read(addr, PAGE_SIZE, last_page);
 
@@ -176,6 +163,20 @@ void send_flash_over_serial() {
     idx %= PAGE_SIZE;
 
     addr += PAGE_SIZE;
+
+    // wait for serial to send a c before sending the next page
+    while (!USB_CommsSerial.available()) {
+    }
+
+    char c;
+
+    do {
+      c = USB_CommsSerial.read();
+    } while (!(c == 'k' || c == 'c'));
+
+    if (c == 'k') {
+      return;
+    }
   }
 
   return;

@@ -193,14 +193,19 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
   return true;
 }
 
-int main() {
-  FILE *compressed_bin = fopen("successful_flight_test.bin", "rb");
+int main(const int argc, const char* argv[]) {
+  if (argc < 3)
+  {
+    printf("Usage:\n./app.exe <infile> <outfile>\n");
+    return EXIT_FAILURE;
+  }
+  FILE *compressed_bin = fopen(argv[1], "rb");
   if (compressed_bin == NULL) {
     printf("Failed to open compressed log dump.");
     return EXIT_FAILURE;
   }
 
-  FILE *reconstructed_bin = fopen("reconstructed_successful_test_flight_with_timestamps.bin", "wb");
+  FILE *reconstructed_bin = fopen(argv[2], "wb");
   if (reconstructed_bin == NULL) {
     fclose(compressed_bin);
     printf("Failed to create reconstructed flight log.");

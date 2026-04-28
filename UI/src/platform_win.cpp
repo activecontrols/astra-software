@@ -28,8 +28,7 @@ private:
   bool _is_open;
 
 public:
-  WindowsSerial(HANDLE h)
-  {
+  WindowsSerial(HANDLE h) {
     handle = h;
     _is_open = true;
   }
@@ -50,24 +49,20 @@ public:
   }
 
   int read(char *data, unsigned int max_len) {
-    if (!_is_open)
-    {
+    if (!_is_open) {
       return 0;
     }
     int bytes_read = -1;
     _read_from_serial_port(&handle, &_is_open, data, max_len, &bytes_read);
 
-    if (!_is_open)
-    {
+    if (!_is_open) {
       return -1;
     }
     return bytes_read;
   }
 
-  void close()
-  {
-    if (!_is_open)
-    {
+  void close() {
+    if (!_is_open) {
       return;
     }
     _close_serial_port(&handle);
@@ -75,8 +70,7 @@ public:
     return;
   }
 
-  ~WindowsSerial()
-  {
+  ~WindowsSerial() {
     close();
   }
 };
@@ -231,16 +225,14 @@ std::vector<ComPortInfo> enumerate_ports() {
   return ports;
 }
 
-Serial* open_serial_port(const char* name)
-{
+Serial *open_serial_port(const char *name) {
   HANDLE h;
   _open_serial_port(&h, name);
-  if (h == INVALID_HANDLE_VALUE)
-  {
+  if (h == INVALID_HANDLE_VALUE) {
     return nullptr;
   }
   // is this cursed idk? don't classes store deconstructor in their vtable?
-  return (Serial*)new WindowsSerial(h);
+  return (Serial *)new WindowsSerial(h);
 }
 
 void _open_serial_port(HANDLE *hSerial, const char *com_port) {
@@ -335,4 +327,67 @@ void platform_begin() {
   LARGE_INTEGER temp;
   QueryPerformanceFrequency(&temp); // per windows docs - this value doesn't change and can be cached
   lpFrequency = temp.QuadPart;
+}
+
+void *spawn_csr_make() {
+  PROCESS_INFORMATION *proc_info = new PROCESS_INFORMATION;
+  STARTUPINFO si{};
+  si.cb = sizeof(si);
+
+  char cmd[] = "make.exe";
+  bool success = CreateProcessA(nullptr, cmd, NULL, NULL, false, NORMAL_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, "..\\data_postprocessing", &si, proc_info);
+
+  if (!success) {
+    int error = GetLastError();
+    printf("Failed to start process: %d\n", error);
+  }
+  return proc_info;
+}
+
+void *spawn_csr(const char *input_fp, const char *output_fp, const char *output_csv_fp) {
+  PROCESS_INFORMATION *proc_info = new PROCESS_INFORMATION;
+  STARTUPINFO si{};
+  si.cb = sizeof(si);
+
+  static char cmd_str[1024];
+
+  if (output_csv_fp) {
+    snprintf(cmd_str, sizeof(cmd_str), "\"..\\data_postprocessing\\app.exe\" \"%s\" \"%s\"", input_fp, output_fp);
+  } else {
+    snprintf(cmd_str, sizeof(cmd_str), "\"..\\data_postprocessing\\app.exe\" \"%s\" \"%s\" \"%s\"", input_fp, output_fp, output_csv_fp);
+  }
+
+  bool success = CreateProcessA(nullptr, cmd_str, NULL, NULL, false, ABOVE_NORMAL_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, nullptr, &si, proc_info);
+
+  return proc_info;
+}
+
+Process_Status check_process_status(void *handle) {
+  Process_Status res{};
+  PROCESS_INFORMATION *proc_info = (PROCESS_INFORMATION *)(handle);
+  DWORD code;
+  bool succeeded = GetExitCodeProcess(proc_info->hProcess, &code);
+
+  if (!succeeded) {
+    printf("GetExitCodeProcess failed: %d\n", GetLastError());
+    return res;
+  }
+
+  if (code == STILL_ACTIVE) {
+    res.running = true;
+    return res;
+  } else {
+    res.running = false;
+    res.exit_code = code;
+    return res;
+  }
+}
+
+void close_process(void *handle) {
+  PROCESS_INFORMATION *hproc = (PROCESS_INFORMATION *)handle;
+
+  CloseHandle(hproc->hProcess);
+  CloseHandle(hproc->hThread);
+  delete hproc;
+  return;
 }
