@@ -12,4 +12,6 @@ virtual int write(const char* data, unsigned int len, bool end_with_newline = fa
 virtual int read(char* data, unsigned int max_len) = 0;
 
 virtual void close() = 0;
+
+virtual ~Serial() = default; // intended to be overwritten by inheriting class
 };

@@ -25,12 +25,13 @@ void _write_to_serial_port(HANDLE *hSerial, bool *open_flag, const char *msg, si
 class WindowsSerial : Serial {
 private:
   HANDLE handle;
-  bool _is_open = false;
+  bool _is_open;
 
 public:
   WindowsSerial(HANDLE h)
   {
     handle = h;
+    _is_open = true;
   }
 
   bool is_open() {

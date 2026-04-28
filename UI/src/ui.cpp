@@ -319,7 +319,7 @@ void data_management_panel() {
         if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
         {
           FlightDataState.fv_serial_idx = i;
-          FlightDataState.fv_serial.reset(nullptr);
+          FlightDataState.fv_serial.reset();
         }
 
         // Set the initial focus when opening the combo (scrolling to selection)
@@ -332,13 +332,14 @@ void data_management_panel() {
     bool fv_serial_open = FlightDataState.fv_serial && FlightDataState.fv_serial->is_open();
     if (ImGui::Checkbox("##fv_serial_open", &fv_serial_open))
     {
+      printf("a\n");
       if (fv_serial_open)
       {
         FlightDataState.fv_serial.reset(open_serial_port(FlightDataState.ports[FlightDataState.fv_serial_idx].portName.c_str()));
       }
       else
       {
-        FlightDataState.fv_serial.reset(nullptr);
+        FlightDataState.fv_serial.reset();
       }
     }
     ImGui::SameLine();
@@ -355,7 +356,7 @@ void data_management_panel() {
         if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
         {
           FlightDataState.rtk_serial_idx = i;
-          FlightDataState.rtk_serial.reset(nullptr);
+          FlightDataState.rtk_serial.reset();
         }
 
         // Set the initial focus when opening the combo (scrolling to selection)
@@ -374,7 +375,7 @@ void data_management_panel() {
       }
       else
       {
-        FlightDataState.rtk_serial.reset(nullptr);
+        FlightDataState.rtk_serial.reset();
       }
     }
 
