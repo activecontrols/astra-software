@@ -121,6 +121,80 @@ void OpenFileDialog(char *path) {
   CoUninitialize();
 }
 
+void SaveFileDialog(char *path, const char *file_specs[], const char *spec_names[], unsigned int n_specs, unsigned int default_spec_idx) {
+  path[0] = '\0';
+
+  HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+  if (FAILED(hr)) {
+    return;
+  }
+
+  IFileSaveDialog *pFileSave = nullptr;
+
+  hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_ALL, IID_IFileSaveDialog, reinterpret_cast<void **>(&pFileSave));
+
+  // convert types to array of win32 structs
+  COMDLG_FILTERSPEC *filter_spec = (COMDLG_FILTERSPEC *)malloc(n_specs * sizeof(*filter_spec));
+
+  for (int i = 0; i < n_specs; ++i) {
+    int n = MultiByteToWideChar(CP_UTF8, 0, spec_names[i], -1, (LPWSTR)filter_spec[i].pszName, 0);
+    filter_spec[i].pszName = (LPCWSTR)malloc(n * sizeof(*(filter_spec[i].pszName)));
+    MultiByteToWideChar(CP_UTF8, 0, spec_names[i], -1, (LPWSTR)filter_spec[i].pszName, n);
+
+    n = MultiByteToWideChar(CP_UTF8, 0, file_specs[i], -1, (LPWSTR)filter_spec[i].pszSpec, 0);
+    filter_spec[i].pszSpec = (LPCWSTR)malloc(n * sizeof(*(filter_spec[i].pszSpec)));
+    MultiByteToWideChar(CP_UTF8, 0, file_specs[i], -1, (LPWSTR)filter_spec[i].pszSpec, n);
+  }
+
+  hr = pFileSave->SetFileTypes(n_specs, filter_spec);
+
+  if (SUCCEEDED(hr)) {
+    hr = pFileSave->SetFileTypeIndex(default_spec_idx);
+    if (SUCCEEDED(hr)) {
+      hr = pFileSave->SetDefaultExtension(filter_spec[default_spec_idx].pszSpec);
+      if (SUCCEEDED(hr)) {
+        hr = pFileSave->Show(NULL);
+
+        if (SUCCEEDED(hr)) {
+          IShellItem *pItem;
+          hr = pFileSave->GetResult(&pItem);
+
+          if (SUCCEEDED(hr)) {
+            PWSTR pszFilePath = nullptr;
+            hr = pItem->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
+
+            if (SUCCEEDED(hr)) {
+              WideCharToMultiByte(CP_UTF8, 0, pszFilePath, -1, path, MAX_PATH, NULL, NULL);
+              CoTaskMemFree(pszFilePath);
+            }
+
+            pItem->Release();
+          }
+        }
+
+        pFileSave->Release();
+      }
+
+      CoUninitialize();
+    }
+  }
+
+  for (int i = 0; i < n_specs; ++i) {
+    free((void *)filter_spec[i].pszName);
+    free((void *)filter_spec[i].pszSpec);
+  }
+
+  free(filter_spec);
+  return;
+}
+
+void SaveFileDialog(char *path) {
+  static const char *default_spec[] = {"*.*"};
+  static const char *default_label[] = {"any"};
+  SaveFileDialog(path, default_spec, default_label, 1, 0);
+  return;
+}
+
 const char *get_filename_from_path(const char *full_path) {
   const char *filename = PathFindFileNameA(full_path);
   return filename;

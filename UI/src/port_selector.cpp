@@ -73,9 +73,10 @@ int PortSelector::write(const char *data, unsigned int len, bool end_with_newlin
 // return # of bytes read, -1 on error
 int PortSelector::read(char *data, unsigned int max_len) {
   if (!is_open()) {
-    return 0;
+    return -1;
   }
-  return active_port->read(data, max_len);
+  int read_count = active_port->read(data, max_len);
+  return read_count;
 }
 
 PortSelector::~PortSelector() {

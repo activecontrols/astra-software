@@ -18,6 +18,7 @@ struct ComPortInfo {
 
 #define MODE_SERIAL_INPUT 0
 #define MODE_FILE_INPUT 1
+#define MODE_FLASH_DUMP 2
 
 struct flight_data_state_t {
   int data_input_mode;

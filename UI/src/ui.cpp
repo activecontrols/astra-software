@@ -7,6 +7,7 @@
 #include "platform_win.h"
 #include "ui_components.h"
 #include "ui_graphs.h"
+#include "flash_dump.h"
 
 bool text_box_active;
 
@@ -292,14 +293,18 @@ char concat_msg_buf[1000];
 void data_management_panel() {
   ImGui::Begin(DATA_MANAGEMENT_PANEL);
 
-  ImGui::RadioButton("Serial Input (Live Monitoring)", &FlightDataState.data_input_mode, 0);
+  ImGui::RadioButton("Serial Input (Live Monitoring)", &FlightDataState.data_input_mode, MODE_SERIAL_INPUT);
   ImGui::SameLine();
-  ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, 1);
+  ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, MODE_FILE_INPUT);
+  ImGui::SameLine();
+  ImGui::RadioButton("Flash", &FlightDataState.data_input_mode, MODE_FLASH_DUMP);
 
   if (FlightDataState.ports.size() == 0)
   {
     FlightDataState.ports = enumerate_ports();
   }
+
+  FlashDump::update();
 
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
 
@@ -356,7 +361,7 @@ void data_management_panel() {
     // ImFormatStringToTempBuffer(&child_window_name, NULL, "%s/%s_%08X", g.CurrentWindow->Name, "##serial_output", ImGui::GetID("##serial_output"));
     // ImGuiWindow *child_window = ImGui::FindWindowByName(child_window_name);
     // ImGui::SetScrollY(child_window, child_window->ScrollMax.y);
-  } else {
+  } else if (FlightDataState.data_input_mode == MODE_FILE_INPUT) {
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Flight Replay");
     ImGui::PopFont();
@@ -396,6 +401,10 @@ void data_management_panel() {
         }
       }
     }
+  }
+  else
+  {
+    FlashDump::render();
   }
   ImGui::End();
 }
