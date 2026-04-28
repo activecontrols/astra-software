@@ -1,12 +1,13 @@
 #ifndef ASTRA_GS_FLIGHT_DATA_STATE
 #define ASTRA_GS_FLIGHT_DATA_STATE
 
+#include "port_selector.h"
 #include "serial.h"
+#include <memory>
 #include <stdio.h>
 #include <string>
 #include <vector>
 #include <windows.h>
-#include <memory>
 
 #include <cstdint>
 
@@ -23,11 +24,11 @@ struct flight_data_state_t {
 
   // serial input mode
   std::vector<ComPortInfo> ports;
-  int fv_serial_idx;         // serial index for flight vehicle radio
-  int rtk_serial_idx;        // serial index for GPS RTK source
+  int fv_serial_idx;  // serial index for flight vehicle radio
+  int rtk_serial_idx; // serial index for GPS RTK source
 
-  std::unique_ptr<Serial> fv_serial = 0;
-  std::unique_ptr<Serial> rtk_serial = 0;
+  PortSelector fv_serial = PortSelector("Vehicle: ", "##fv_serial_picker", "##fv_serial_open");
+  PortSelector rtk_serial = PortSelector("RTK: ", "##rtk_serial_picker", "##rtk_serial_open");
 
   // file input mode
   char selected_file_path[260] = "";

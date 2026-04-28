@@ -296,88 +296,25 @@ void data_management_panel() {
   ImGui::SameLine();
   ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, 1);
 
+  if (FlightDataState.ports.size() == 0)
+  {
+    FlightDataState.ports = enumerate_ports();
+  }
+
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
 
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Serial Monitor");
     ImGui::PopFont();
 
-    if (FlightDataState.ports.size() == 0) {
-      FlightDataState.ports = enumerate_ports(); // TODO - this could re-arrange the user's selections - make sure we preserve when possible
-      if (FlightDataState.ports.size() == 0) {
-
-        FlightDataState.ports.push_back({"", "No Serial Ports Found"});
-      }
-    }
-
-    ImGui::Text("Vehicle: ");
-    ImGui::SameLine(150);
-    if (ImGui::BeginCombo("##fv_serial_picker", FlightDataState.ports[FlightDataState.fv_serial_idx].friendlyName.c_str())) {
-      for (int i = 0; i < FlightDataState.ports.size(); i++) {
-        ComPortInfo port = FlightDataState.ports[i];
-        const bool is_selected = (FlightDataState.fv_serial_idx == i);
-        if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
-        {
-          FlightDataState.fv_serial_idx = i;
-          FlightDataState.fv_serial.reset();
-        }
-
-        // Set the initial focus when opening the combo (scrolling to selection)
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
-    }
+    // render port selections
+    FlightDataState.fv_serial.render();
+    
     ImGui::SameLine();
-    bool fv_serial_open = FlightDataState.fv_serial && FlightDataState.fv_serial->is_open();
-    if (ImGui::Checkbox("##fv_serial_open", &fv_serial_open))
-    {
-      printf("a\n");
-      if (fv_serial_open)
-      {
-        FlightDataState.fv_serial.reset(open_serial_port(FlightDataState.ports[FlightDataState.fv_serial_idx].portName.c_str()));
-      }
-      else
-      {
-        FlightDataState.fv_serial.reset();
-      }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("\uE117")) {
-      FlightDataState.ports = enumerate_ports();
-    }
+    // render port refresh button
+    render_port_refresh_button();
 
-    ImGui::Text("RTK: ");
-    ImGui::SameLine(150);
-    if (ImGui::BeginCombo("##rtk_serial_picker", FlightDataState.ports[FlightDataState.rtk_serial_idx].friendlyName.c_str())) {
-      for (int i = 0; i < FlightDataState.ports.size(); i++) {
-        ComPortInfo port = FlightDataState.ports[i];
-        const bool is_selected = (FlightDataState.rtk_serial_idx == i);
-        if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
-        {
-          FlightDataState.rtk_serial_idx = i;
-          FlightDataState.rtk_serial.reset();
-        }
-
-        // Set the initial focus when opening the combo (scrolling to selection)
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
-    }
-    ImGui::SameLine();
-
-    bool rtk_serial_open = FlightDataState.rtk_serial && FlightDataState.rtk_serial->is_open();
-    if (ImGui::Checkbox("##rtk_serial_open", &rtk_serial_open))
-    {
-      if (rtk_serial_open) {
-        FlightDataState.rtk_serial.reset(open_serial_port(FlightDataState.ports[FlightDataState.rtk_serial_idx].portName.c_str()));
-      }
-      else
-      {
-        FlightDataState.rtk_serial.reset();
-      }
-    }
+    FlightDataState.rtk_serial.render();
 
     ImGui::Dummy(ImVec2(0, 25));
 
