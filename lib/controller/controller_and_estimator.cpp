@@ -16,7 +16,6 @@ const float tau = 0.03; // seconds - time constant for ema low pass filter appli
 Matrix3_3 get_pos_cov_mtx(GPS_State gps_state) {
   Matrix3_3 pos_cov_mtx;
   pos_cov_mtx(0, 0) = gps_state.posCovNN;
-  pos_cov_mtx(0, 0) = gps_state.posCovNN;
   pos_cov_mtx(0, 1) = -gps_state.posCovNE;
   pos_cov_mtx(0, 2) = -gps_state.posCovND;
   pos_cov_mtx(1, 0) = -gps_state.posCovNE;
@@ -30,11 +29,11 @@ Matrix3_3 get_pos_cov_mtx(GPS_State gps_state) {
 
 Matrix3_3 get_vel_cov_mtx(GPS_State gps_state) {
   Matrix3_3 vel_cov_mtx;
-  vel_cov_mtx(0, 2) = gps_state.velCovNN;
-  vel_cov_mtx(0, 2) = -gps_state.velCovNE;
+  vel_cov_mtx(0, 0) = gps_state.velCovNN;
+  vel_cov_mtx(0, 1) = -gps_state.velCovNE;
   vel_cov_mtx(0, 2) = -gps_state.velCovND;
-  vel_cov_mtx(1, 2) = -gps_state.velCovNE;
-  vel_cov_mtx(1, 2) = gps_state.velCovEE;
+  vel_cov_mtx(1, 0) = -gps_state.velCovNE;
+  vel_cov_mtx(1, 1) = gps_state.velCovEE;
   vel_cov_mtx(1, 2) = gps_state.velCovED;
   vel_cov_mtx(2, 0) = -gps_state.velCovND;
   vel_cov_mtx(2, 1) = gps_state.velCovED;
