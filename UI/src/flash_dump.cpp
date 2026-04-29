@@ -11,9 +11,9 @@ const char *result_message = nullptr;
 
 unsigned int bytes_downloaded = 0;
 
-PortSelector port_selector("Flash: ", "##dump_combo", "##dump_checkbox");
+PortSelector flash_usb_port("Flash: ", "##dump_combo", "##dump_checkbox");
 
-PortSelector &read_port = port_selector;
+PortSelector &selected_download_port = flash_usb_port;
 
 FILE *fout;
 
@@ -42,18 +42,18 @@ void update() {
   // timeout of 5s
   if (get_time_us() - last_byte_time > 5'000'000) {
     result_message = "ERROR: CONNECTION TIMED OUT";
-    read_port.write("k", 1, false);
+    selected_download_port.write("k", 1, false);
     finish();
     return;
   }
 
-  if (!read_port.is_open()) {
+  if (!selected_download_port.is_open()) {
     result_message = "ERROR: PORT CLOSED";
     finish();
     return;
   }
 
-  int n_bytes = read_port.read((char *)(recv_buf + recv_buf_pos), sizeof(recv_buf) - recv_buf_pos);
+  int n_bytes = selected_download_port.read((char *)(recv_buf + recv_buf_pos), sizeof(recv_buf) - recv_buf_pos);
 
   if (n_bytes > 0) {
     last_byte_time = get_time_us();
@@ -89,7 +89,7 @@ void update() {
       return;
     }
 
-    read_port.write("c", 1, false);
+    selected_download_port.write("c", 1, false);
     recv_buf_pos = 0;
   }
 
@@ -107,7 +107,7 @@ void render() {
     ImGui::SameLine();
     render_port_refresh_button(); // port refresh button
 
-    port_selector.render();
+    flash_usb_port.render();
 
     if (FlightDataState.fv_serial.is_open() && ImGui::Button("Begin")) {
       static const char *specs[] = {"*.bin", "*.*"};
@@ -126,7 +126,7 @@ void render() {
           bytes_downloaded = 0;
 
           // if dump port hasn't been chosen, assume we are dumping over fv serial
-          read_port = port_selector.is_open() ? port_selector : FlightDataState.fv_serial;
+          selected_download_port = flash_usb_port.is_open() ? flash_usb_port : FlightDataState.fv_serial;
           last_byte_time = get_time_us();
         } else {
           fclose(fout);
