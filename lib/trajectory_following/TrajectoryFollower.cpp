@@ -15,7 +15,6 @@
 #include "controller_and_estimator.h"
 #include "elapsedMillis.h"
 #include "fc_pins.h"
-#include "flight_packet.h"
 #include <Arduino.h>
 
 #define TELEMETRY_INTERVAL_US 100000
