@@ -255,6 +255,16 @@ void _open_serial_port(HANDLE *hSerial, const char *com_port) {
   dcb.Parity = NOPARITY;
   dcb.StopBits = ONESTOPBIT;
 
+  dcb.fBinary = TRUE;                   // Must be TRUE for Win32
+  dcb.fParity = FALSE;                  // Disable parity checking
+  dcb.fOutxCtsFlow = FALSE;             // Disable CTS flow control (CRITICAL)
+  dcb.fOutxDsrFlow = FALSE;             // Disable DSR flow control (CRITICAL)
+  dcb.fDtrControl = DTR_CONTROL_ENABLE; // Ensure DTR is on
+  dcb.fDsrSensitivity = FALSE;
+  dcb.fOutX = FALSE; // Disable XON/XOFF
+  dcb.fInX = FALSE;
+  dcb.fRtsControl = RTS_CONTROL_ENABLE; // Ensure RTS is on
+
   if (!SetCommState(*hSerial, &dcb)) {
     printf("SetCommState error while opening serial port.\n");
     _close_serial_port(hSerial);
