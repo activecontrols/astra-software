@@ -344,7 +344,7 @@ void *spawn_csr_make() {
   STARTUPINFO si{};
   si.cb = sizeof(si);
 
-  char cmd[] = "make.exe";
+  char cmd[] = "mingw32-make.exe";
   bool success = CreateProcessA(nullptr, cmd, NULL, NULL, false, NORMAL_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, "..\\data_postprocessing", &si, proc_info);
 
   if (!success) {
