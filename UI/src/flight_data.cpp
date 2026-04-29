@@ -142,9 +142,8 @@ int rtk_write_pos = 0;
 
 void flight_data_periodic() {
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
-
     // RTK forwarding
-    if (FlightDataState.rtk_serial.is_open()) {
+    if (FlightDataState.rtk_serial.is_open() && FlightDataState.fv_serial.is_open()) {
       int rtk_bytes_read = FlightDataState.rtk_serial.read(rtk_read_buf, RTK_READ_SIZE);
 
       if (rtk_bytes_read > 0) {
@@ -157,8 +156,8 @@ void flight_data_periodic() {
           rtk_write_pos++;
           if (rtk_write_pos >= RTK_WRITE_SIZE - 1) {
             // escape newlines and backslashes
-            FlightDataState.rtk_serial.write("rtk ", 4);
-            FlightDataState.rtk_serial.write(rtk_write_buf, rtk_write_pos, true);
+            FlightDataState.fv_serial.write("rtk ", 4);
+            FlightDataState.fv_serial.write(rtk_write_buf, rtk_write_pos, true);
             rtk_write_pos = 0;
           }
         }
