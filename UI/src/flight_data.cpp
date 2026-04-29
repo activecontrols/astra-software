@@ -20,8 +20,9 @@ void deinit_flight_data() {
     fclose(FlightDataState.input_file);
     FlightDataState.input_file = NULL;
   }
-  close_serial_port(&FlightDataState.fv_serial);
-  close_serial_port(&FlightDataState.rtk_serial);
+
+  FlightDataState.fv_serial.close();
+  FlightDataState.rtk_serial.close();
 }
 
 void commit_packet() {
@@ -141,32 +142,10 @@ int rtk_write_pos = 0;
 
 void flight_data_periodic() {
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
-    if (FlightDataState.fv_serial_port_open && FlightDataState.fv_serial == INVALID_HANDLE_VALUE && FlightDataState.fv_serial_idx < FlightDataState.ports.size()) {
-      open_serial_port(&FlightDataState.fv_serial, FlightDataState.ports[FlightDataState.fv_serial_idx].portName.c_str());
-      if (FlightDataState.fv_serial == INVALID_HANDLE_VALUE) {
-        FlightDataState.fv_serial_port_open = false; // tell the user we failed to open the port
-      }
-    }
-
-    if (FlightDataState.rtk_serial_port_open && FlightDataState.rtk_serial == INVALID_HANDLE_VALUE && FlightDataState.rtk_serial_idx < FlightDataState.ports.size()) {
-      open_serial_port(&FlightDataState.rtk_serial, FlightDataState.ports[FlightDataState.rtk_serial_idx].portName.c_str());
-      if (FlightDataState.rtk_serial == INVALID_HANDLE_VALUE) {
-        FlightDataState.rtk_serial_port_open = false; // tell the user we failed to open the port
-      }
-    }
-
-    if (!FlightDataState.fv_serial_port_open && FlightDataState.fv_serial != INVALID_HANDLE_VALUE) {
-      close_serial_port(&FlightDataState.fv_serial);
-    }
-
-    if (!FlightDataState.rtk_serial_port_open && FlightDataState.rtk_serial != INVALID_HANDLE_VALUE) {
-      close_serial_port(&FlightDataState.rtk_serial);
-    }
-
     // RTK forwarding
-    if (FlightDataState.rtk_serial_port_open && FlightDataState.fv_serial_port_open) {
-      int rtk_bytes_read = 0;
-      read_from_serial_port(&FlightDataState.rtk_serial, &FlightDataState.rtk_serial_port_open, rtk_read_buf, RTK_READ_SIZE, &rtk_bytes_read);
+    if (FlightDataState.rtk_serial.is_open() && FlightDataState.fv_serial.is_open()) {
+      int rtk_bytes_read = FlightDataState.rtk_serial.read(rtk_read_buf, RTK_READ_SIZE);
+
       if (rtk_bytes_read > 0) {
         for (int i = 0; i < rtk_bytes_read; i++) {
           if (rtk_read_buf[i] == ESCAPE_CHAR || rtk_read_buf[i] == END_CHAR || rtk_read_buf[i] == CR_CHAR || rtk_read_buf[i] == BACKSPACE_CHAR) {
@@ -177,8 +156,8 @@ void flight_data_periodic() {
           rtk_write_pos++;
           if (rtk_write_pos >= RTK_WRITE_SIZE - 1) {
             // escape newlines and backslashes
-            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, "rtk ", 4, false);                   // send "rtk " cmd
-            write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, rtk_write_buf, rtk_write_pos, true); // send data and newline suffix
+            FlightDataState.fv_serial.write("rtk ", 4);
+            FlightDataState.fv_serial.write(rtk_write_buf, rtk_write_pos, true);
             rtk_write_pos = 0;
           }
         }
@@ -186,9 +165,8 @@ void flight_data_periodic() {
     }
 
     // Flight data parsing
-    if (FlightDataState.fv_serial_port_open) {
-      int fv_bytes_read = 0;
-      read_from_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, fv_read_buf, FV_SERIAL_READ_SIZE, &fv_bytes_read);
+    if (FlightDataState.fv_serial.is_open()) {
+      int fv_bytes_read = FlightDataState.fv_serial.read(fv_read_buf, FV_SERIAL_READ_SIZE);
       for (int i = 0; i < fv_bytes_read; i++) {
         flight_command_encode(fv_read_buf[i]);
       }
@@ -216,11 +194,11 @@ void flight_data_periodic() {
 }
 
 void write_serial_to_fv(const char *msg) {
-  if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT && FlightDataState.fv_serial_port_open) {
+  if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT && FlightDataState.fv_serial.is_open()) {
     size_t len = strlen(msg);
     if (len != 0) {
       // write to the flight vehicle, end with newline
-      write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, msg, len, true);
+      FlightDataState.fv_serial.write(msg, len, true);
     }
 
   } else {

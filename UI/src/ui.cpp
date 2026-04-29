@@ -7,6 +7,8 @@
 #include "platform_win.h"
 #include "ui_components.h"
 #include "ui_graphs.h"
+#include "flash_dump.h"
+#include "csr_trigger.h"
 
 bool text_box_active;
 
@@ -292,9 +294,21 @@ char concat_msg_buf[1000];
 void data_management_panel() {
   ImGui::Begin(DATA_MANAGEMENT_PANEL);
 
-  ImGui::RadioButton("Serial Input (Live Monitoring)", &FlightDataState.data_input_mode, 0);
+  ImGui::RadioButton("Serial Input (Live Monitoring)", &FlightDataState.data_input_mode, MODE_SERIAL_INPUT);
   ImGui::SameLine();
-  ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, 1);
+  ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, MODE_FILE_INPUT);
+  ImGui::SameLine();
+  ImGui::RadioButton("Flash", &FlightDataState.data_input_mode, MODE_FLASH_DUMP);
+  ImGui::SameLine();
+  ImGui::RadioButton("CSR", &FlightDataState.data_input_mode, MODE_CSR_TRIGGER);
+
+  if (FlightDataState.ports.size() == 0)
+  {
+    FlightDataState.ports = enumerate_ports();
+  }
+
+  FlashDump::update();
+  CSRTrigger::update();
 
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
 
@@ -302,53 +316,14 @@ void data_management_panel() {
     ImGui::SeparatorText("Serial Monitor");
     ImGui::PopFont();
 
-    if (FlightDataState.ports.size() == 0) {
-      FlightDataState.ports = enumerate_ports(); // TODO - this could re-arrange the user's selections - make sure we preserve when possible
-      if (FlightDataState.ports.size() == 0) {
-
-        FlightDataState.ports.push_back({"", "No Serial Ports Found"});
-      }
-    }
-
-    ImGui::Text("Vehicle: ");
-    ImGui::SameLine(150);
-    if (ImGui::BeginCombo("##fv_serial_picker", FlightDataState.ports[FlightDataState.fv_serial_idx].friendlyName.c_str())) {
-      for (int i = 0; i < FlightDataState.ports.size(); i++) {
-        ComPortInfo port = FlightDataState.ports[i];
-        const bool is_selected = (FlightDataState.fv_serial_idx == i);
-        if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
-          FlightDataState.fv_serial_idx = i;
-
-        // Set the initial focus when opening the combo (scrolling to selection)
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
-    }
+    // render port selections
+    FlightDataState.fv_serial.render();
+    
     ImGui::SameLine();
-    ImGui::Checkbox("##fv_serial_open", &FlightDataState.fv_serial_port_open);
-    ImGui::SameLine();
-    if (ImGui::Button("\uE117")) {
-      FlightDataState.ports = enumerate_ports();
-    }
+    // render port refresh button
+    render_port_refresh_button();
 
-    ImGui::Text("RTK: ");
-    ImGui::SameLine(150);
-    if (ImGui::BeginCombo("##rtk_serial_picker", FlightDataState.ports[FlightDataState.rtk_serial_idx].friendlyName.c_str())) {
-      for (int i = 0; i < FlightDataState.ports.size(); i++) {
-        ComPortInfo port = FlightDataState.ports[i];
-        const bool is_selected = (FlightDataState.rtk_serial_idx == i);
-        if (ImGui::Selectable(port.friendlyName.c_str(), is_selected))
-          FlightDataState.rtk_serial_idx = i;
-
-        // Set the initial focus when opening the combo (scrolling to selection)
-        if (is_selected)
-          ImGui::SetItemDefaultFocus();
-      }
-      ImGui::EndCombo();
-    }
-    ImGui::SameLine();
-    ImGui::Checkbox("##rtk_serial_open", &FlightDataState.rtk_serial_port_open);
+    FlightDataState.rtk_serial.render();
 
     ImGui::Dummy(ImVec2(0, 25));
 
@@ -390,7 +365,7 @@ void data_management_panel() {
     // ImFormatStringToTempBuffer(&child_window_name, NULL, "%s/%s_%08X", g.CurrentWindow->Name, "##serial_output", ImGui::GetID("##serial_output"));
     // ImGuiWindow *child_window = ImGui::FindWindowByName(child_window_name);
     // ImGui::SetScrollY(child_window, child_window->ScrollMax.y);
-  } else {
+  } else if (FlightDataState.data_input_mode == MODE_FILE_INPUT) {
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Flight Replay");
     ImGui::PopFont();
@@ -430,6 +405,20 @@ void data_management_panel() {
         }
       }
     }
+  }
+  else if (FlightDataState.data_input_mode == MODE_FLASH_DUMP)
+  {
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Flash Link");
+    ImGui::PopFont();
+    FlashDump::render();
+  }
+  else
+  {
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("Controller State Reconstruction");
+    ImGui::PopFont();
+    CSRTrigger::render();
   }
   ImGui::End();
 }
