@@ -14,6 +14,7 @@
 #include "elapsedMillis.h"
 #include "flight_packet.h"
 #include <Arduino.h>
+#include "fc_pins.h"
 
 #define TELEMETRY_INTERVAL_US 100000
 #define COMMAND_INTERVAL_US 1000
@@ -59,6 +60,8 @@ void follow_trajectory() {
   unsigned long lasttelemetry = timer;
   unsigned long lastloop = timer;
   unsigned long lastlogx_est = timer;
+  unsigned long led_on_time = 0;
+  bool led_on = false;
 
   float last_time_s = timer / 1000000.0;
   float mx, my, mz;
@@ -85,6 +88,15 @@ void follow_trajectory() {
         GPS::set_current_position_as_origin();
 
         TrajectoryLogger::log_x_est(); // only log initial controller state, this is too much data to log every frame
+
+        led_on_time = millis();
+        led_on = true;
+        digitalWrite(PIN_TEST_LED, LOW);
+      }
+
+      if (led_on && millis() - led_on_time > 500)
+      {
+        digitalWrite(PIN_TEST_LED, HIGH);
       }
 
       Controller_Input ci;
@@ -243,6 +255,8 @@ void follow_trajectory() {
       break;
     }
   }
+
+  digitalWrite(PIN_TEST_LED, HIGH);
 
   Logging::disarm();
 

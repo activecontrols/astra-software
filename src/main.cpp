@@ -11,6 +11,7 @@
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
 #include <Arduino.h>
+#include "fc_pins.h"
 
 CommsSerial_t<HardwareSerial> HW_CommsSerial(PIN_SERIAL_RX, PIN_SERIAL_TX);
 CommsSerial_t<USBSerial> USB_CommsSerial;
@@ -52,6 +53,9 @@ void setup() {
   pinMode(PD7, OUTPUT);
 
   pinMode(PB6, OUTPUT);
+
+  pinMode(PIN_TEST_LED, OUTPUT);
+  digitalWrite(PIN_TEST_LED, HIGH);
 
   CommandRouter::begin();
   Prop::begin();
