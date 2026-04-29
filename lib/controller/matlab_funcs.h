@@ -1,5 +1,6 @@
 #pragma once
 #include <ArduinoEigenDense.h>
+#include "astra_structs.h"
 
 // Note - using matlab funcs based off of ASTRA simulation: 3a2af9e756f0981da411d93f59ee6b421d5fa234
 // TODO - update matlab func commit
@@ -28,18 +29,6 @@ using Matrix9_9 = Eigen::Matrix<float, 9, 9>;
 using Matrix18_6 = Eigen::Matrix<float, 18, 6>;
 using Matrix18_18 = Eigen::Matrix<float, 18, 18>;
 
-struct Controller_Intermediates {
-  Vector9 filt; // output of digitalNF - accel x,y,z , gyro x,y,z , mag x,y,z
-
-  Vector3 VelTarget;   // controller velocity target
-  Vector3 AccelTarget; // controller acceleration target
-  Vector4 TargetAtt;   // target attitude
-
-  // integrators
-  Vector3 VelErrorI;
-  Vector3 AttErrorI;
-};
-
 typedef struct {
   float g;
   float m;
@@ -60,7 +49,7 @@ Vector4 DCM_Quat_Conversion(Matrix3_3 R);
 Vector9 DigitalNF(Vector9 IN, bool GND, float THRUST_PERC, float dT, Matrix9_4 &X, Matrix9_4 &Y);
 Matrix18_18 Q_gen();
 void ASTRAv2_Controller_reset();
-Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Intermediates *intermediates);
+Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals *cs);
 
 // call like so: matrixExpPade6<Matrix9_9>
 template <typename MatrixN_N> MatrixN_N matrixExpPade6(MatrixN_N A) {

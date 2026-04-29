@@ -362,10 +362,12 @@ void *spawn_csr(const char *input_fp, const char *output_fp, const char *output_
   static char cmd_str[1024];
 
   if (output_csv_fp) {
-    snprintf(cmd_str, sizeof(cmd_str), "\"..\\data_postprocessing\\app.exe\" \"%s\" \"%s\"", input_fp, output_fp);
-  } else {
     snprintf(cmd_str, sizeof(cmd_str), "\"..\\data_postprocessing\\app.exe\" \"%s\" \"%s\" \"%s\"", input_fp, output_fp, output_csv_fp);
+  } else {
+    snprintf(cmd_str, sizeof(cmd_str), "\"..\\data_postprocessing\\app.exe\" \"%s\" \"%s\"", input_fp, output_fp);
   }
+
+  printf("%s\n", cmd_str);
 
   bool success = CreateProcessA(nullptr, cmd_str, NULL, NULL, false, ABOVE_NORMAL_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, nullptr, &si, proc_info);
 

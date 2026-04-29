@@ -5,6 +5,7 @@
 #include "controller_and_estimator.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "csr_to_csv.h"
 
 struct IMU_Calib {
   double gyro_bias[3];
@@ -34,11 +35,6 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
   }
 
   // printf("Read log entry.\n");
-
-  fp.GND_flag = false;
-  fp.flight_armed = true;
-
-  static GpsEntry gps {};
 
 
   switch (entry_type) {
@@ -88,13 +84,12 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
     fread(&logged_co, sizeof(Controller_Output), 1, compressed_bin);
 
     Controller_Internals cs;
+
     float loop_dT = this_time - last_time;
     last_time = this_time;
     float ideal_dT = 1 / 1000.0;
 
-    Controller_Intermediates intermediates {};
-
-    Controller_Output constructed_co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs, &intermediates);
+    Controller_Output constructed_co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs);
     // TODO - check constructed_co against real data
 
     // printf("Logged co: %f %f %f %f\n", logged_co.gimbal_pitch_deg, logged_co.gimbal_yaw_deg, logged_co.thrust_N, logged_co.roll_rad_sec_squared);
@@ -112,7 +107,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
 
     if (csv_out)
     {
-      csr_to_csv(csv_out, fp, intermediates, gps);
+      csr_to_csv(csv_out, fp, cs);
     }
     break;
   }
@@ -158,7 +153,6 @@ int main(const int argc, const char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  FILE *reconstructed_bin = fopen(argv[2], "wb");
   FILE *reconstructed_bin = fopen(argv[2], "wb");
   if (reconstructed_bin == NULL) {
     fclose(compressed_bin);

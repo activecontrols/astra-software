@@ -28,7 +28,7 @@ void ASTRAv2_Controller_reset() {
   lastAttError = Vector3::Zero();
 }
 
-Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Intermediates* intermediates) {
+Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals* cs) {
   // Controller Limits
   float thrustMax = 1.5 * 9.8;          // N
   float gimbalMax = 7.0 * M_PI / 180.0; // rad
@@ -132,14 +132,20 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
   U = U.cwiseMax(uMin).cwiseMin(uMax);
 
 
-  if (intermediates)
+  for (int i = 0; i < 3; ++i)
   {
-    intermediates->VelTarget = VelTarget;
-    intermediates->AccelTarget = AccelTarget;
-    intermediates->TargetAtt = TargetAtt;
+    cs->VelTarget[i] = VelTarget(i);
+    cs->AccelTarget[i] = AccelTarget(i);
 
-    intermediates->VelErrorI = VelErrorI;
-    intermediates->AttErrorI = AttErrorI;
+    cs->VelErrorI[i] = VelErrorI(i);
+    cs->AttErrorI[i] = AttErrorI(i);
   }
+
+  for (int i = 0; i < 4; ++i)
+  {
+    cs->TargetAtt[i] = TargetAtt(i);
+  }
+
+
   return U;
 }

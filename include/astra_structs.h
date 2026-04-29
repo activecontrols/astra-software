@@ -90,6 +90,11 @@ struct Controller_X_Est {
 struct Controller_Internals {
   Controller_X_Est x_est;
   float filter_out[9];
+  float VelTarget[3];
+  float AccelTarget[3];
+  float TargetAtt[4];
+  float VelErrorI[3];
+  float AttErrorI[3];
 };
 
 struct Controller_Output {
