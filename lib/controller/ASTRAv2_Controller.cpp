@@ -1,4 +1,5 @@
 #include "matlab_funcs.h"
+#include "controller_and_estimator.h"
 
 // Version 2 Controller formulation for ASTRAv2. Structure consists of 3
 // cascaded loops.
@@ -27,7 +28,7 @@ void ASTRAv2_Controller_reset() {
   lastAttError = Vector3::Zero();
 }
 
-Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT) {
+Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Intermediates* intermediates) {
   // Controller Limits
   float thrustMax = 1.5 * 9.8;          // N
   float gimbalMax = 7.0 * M_PI / 180.0; // rad
@@ -129,5 +130,16 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
 
   // Controls Saturation
   U = U.cwiseMax(uMin).cwiseMin(uMax);
+
+
+  if (intermediates)
+  {
+    intermediates->VelTarget = VelTarget;
+    intermediates->AccelTarget = AccelTarget;
+    intermediates->TargetAtt = TargetAtt;
+
+    intermediates->VelErrorI = VelErrorI;
+    intermediates->AttErrorI = AttErrorI;
+  }
   return U;
 }

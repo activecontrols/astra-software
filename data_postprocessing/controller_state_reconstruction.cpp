@@ -26,7 +26,7 @@ traj_point_pos *traj;
 Mag_Calib mcal;
 IMU_Calib ical;
 
-bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
+bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_out) {
   uint8_t entry_type;
   size_t did_read = fread(&entry_type, sizeof(uint8_t), 1, compressed_bin);
   if (did_read != sizeof(uint8_t)) {
@@ -34,6 +34,12 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
   }
 
   // printf("Read log entry.\n");
+
+  fp.GND_flag = false;
+  fp.flight_armed = true;
+
+  static GpsEntry gps {};
+
 
   switch (entry_type) {
 
@@ -86,7 +92,9 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     last_time = this_time;
     float ideal_dT = 1 / 1000.0;
 
-    Controller_Output constructed_co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs);
+    Controller_Intermediates intermediates {};
+
+    Controller_Output constructed_co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs, &intermediates);
     // TODO - check constructed_co against real data
 
     // printf("Logged co: %f %f %f %f\n", logged_co.gimbal_pitch_deg, logged_co.gimbal_yaw_deg, logged_co.thrust_N, logged_co.roll_rad_sec_squared);
@@ -101,6 +109,11 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin) {
     get_prop_perc(fp.co.thrust_N, fp.co.roll_rad_sec_squared, &fp.thrust_perc, &fp.diffy_perc); // use thrust table to find these values
 
     fwrite(&fp, sizeof(fp), 1, reconstructed_bin);
+
+    if (csv_out)
+    {
+      csr_to_csv(csv_out, fp, intermediates, gps);
+    }
     break;
   }
 
@@ -146,20 +159,48 @@ int main(const int argc, const char* argv[]) {
   }
 
   FILE *reconstructed_bin = fopen(argv[2], "wb");
+  FILE *reconstructed_bin = fopen(argv[2], "wb");
   if (reconstructed_bin == NULL) {
     fclose(compressed_bin);
     printf("Failed to create reconstructed flight log.");
     return EXIT_FAILURE;
   }
 
+  FILE* csv_out = nullptr;
+
+  if (argc == 4)
+  {
+    csv_out = fopen(argv[3], "wb");
+
+    if (csv_out == NULL)
+    {
+      fclose(compressed_bin);
+      fclose(reconstructed_bin);
+      printf("Failed to create csv output file.");
+      return EXIT_FAILURE;
+    }
+  }
+
   last_time = 0;
   ControllerAndEstimator::init_controller_and_estimator_constants();
 
-  while (parse_log_entry(compressed_bin, reconstructed_bin)) {
+  if (csv_out != NULL)
+  {
+    csv_header_log(csv_out);
+  }
+  
+  while (parse_log_entry(compressed_bin, reconstructed_bin, csv_out)) {
   };
 
   printf("Finished reading log.");
+
   fclose(compressed_bin);
   fclose(reconstructed_bin);
+
+  if (csv_out != NULL)
+  {
+    fclose(csv_out);
+  }
+
   return EXIT_SUCCESS;
 }

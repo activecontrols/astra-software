@@ -111,7 +111,7 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   Vector16 X = StateAUG(x_est.segment<13>(0), z.segment<3>(3));
   Vector3 TargetPos;
   TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
-  Vector4 raw_co = ASTRAv2_Controller(TargetPos, X, constantsASTRA, loop_dT);
+  Vector4 raw_co = ASTRAv2_Controller(TargetPos, X, constantsASTRA, loop_dT, intermediates);
   if (ci.GND_val) {
     raw_co = Vector4::Zero();
   }

@@ -3,7 +3,7 @@ CXXFLAGS := -I../lib/trajectory_following/ -I../lib/controller/ -I../lib/data/ -
 LDFLAGS  := 
 
 VPATH     := ../lib/controller ../lib/prop
-APP_SRC   := controller_state_reconstruction.cpp $(wildcard ../lib/controller/*.cpp) ../lib/prop/RollControl.cpp
+APP_SRC   := controller_state_reconstruction.cpp $(wildcard ../lib/controller/*.cpp) ../lib/prop/RollControl.cpp csr_to_csv.cpp
 SRC       := $(APP_SRC)
 BUILD_FOLDER := build
 
