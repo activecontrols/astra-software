@@ -194,7 +194,7 @@ void flight_data_periodic() {
 }
 
 void reply_with_heartbeat() {
-  write_to_serial_port(&FlightDataState.fv_serial, &FlightDataState.fv_serial_port_open, "hb", 2, true);
+  FlightDataState.fv_serial.write("hb", 2, true);
 }
 
 void write_serial_to_fv(const char *msg) {
