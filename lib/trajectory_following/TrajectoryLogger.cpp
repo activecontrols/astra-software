@@ -132,6 +132,12 @@ void send_flash_over_serial() {
   uint8_t last_page[PAGE_SIZE];
   uint32_t addr = 0;
   int idx = 0;
+
+  while (USB_CommsSerial.available()) // empty receive buffer just in case
+  {
+    USB_CommsSerial.read();
+  }
+
   while (1) {
 
     Flash::read(addr, PAGE_SIZE, last_page);
@@ -165,13 +171,17 @@ void send_flash_over_serial() {
     addr += PAGE_SIZE;
 
     // wait for serial to send a c before sending the next page
-    while (!USB_CommsSerial.available()) {
-    }
+    int c;
 
-    char c;
-
+    uint32_t wait_start_time = millis();
     do {
       c = USB_CommsSerial.read();
+
+      // if (0){
+      if (millis() - wait_start_time > 5000) {
+        CommsSerial.println("Error: flash dump timed out");
+        return;
+      }
     } while (!(c == 'k' || c == 'c'));
 
     if (c == 'k') {

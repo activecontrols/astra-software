@@ -1,9 +1,9 @@
 #include "flash_dump.h"
+#include "csr_trigger.h"
 #include "flight_data_state.h"
 #include "imgui.h"
 #include "platform_win.h"
 #include "port_selector.h"
-#include "csr_trigger.h"
 
 namespace FlashDump {
 bool _in_progress = false;
@@ -23,6 +23,8 @@ const unsigned int PAGE_SIZE = 256;
 uint8_t recv_buf[PAGE_SIZE + 3];
 unsigned int recv_buf_pos = 0;
 
+uint64_t last_byte_time = 0;
+
 bool is_in_progress() {
   return _in_progress;
 }
@@ -37,12 +39,26 @@ void update() {
     return;
   }
 
+  // timeout of 5s
+  if (get_time_us() - last_byte_time > 5'000'000) {
+    result_message = "ERROR: CONNECTION TIMED OUT";
+    read_port.write("k", 1, false);
+    finish();
+    return;
+  }
+
   if (!read_port.is_open()) {
     result_message = "ERROR: PORT CLOSED";
     finish();
+    return;
   }
 
-  recv_buf_pos += read_port.read((char *)(recv_buf + recv_buf_pos), sizeof(recv_buf) - recv_buf_pos);
+  int n_bytes = read_port.read((char *)(recv_buf + recv_buf_pos), sizeof(recv_buf) - recv_buf_pos);
+
+  if (n_bytes > 0) {
+    last_byte_time = get_time_us();
+    recv_buf_pos += n_bytes;
+  }
 
   if (recv_buf_pos == sizeof(recv_buf)) {
     // checksum calculation
@@ -102,7 +118,7 @@ void render() {
 
       if (fout) {
         // begin by sending start command
-        const char start_cmd[] = "dump_flash";
+        const char start_cmd[] = "\ndump_flash";
         if (FlightDataState.fv_serial.write(start_cmd, sizeof(start_cmd) - 1, true)) {
           // if send succeeded, switch to in-progress state
           _in_progress = true;
@@ -111,6 +127,7 @@ void render() {
 
           // if dump port hasn't been chosen, assume we are dumping over fv serial
           read_port = port_selector.is_open() ? port_selector : FlightDataState.fv_serial;
+          last_byte_time = get_time_us();
         } else {
           fclose(fout);
         }
