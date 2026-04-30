@@ -77,9 +77,9 @@ void follow_trajectory() {
         CommandRouter::receive_byte(CommsSerial.read());
       }
 
-      if ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS) {
-        kill_flag = true;
-      }
+      // if ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS) {
+      //   kill_flag = true;
+      // }
 
       if (kill_flag) {
         break;
@@ -166,7 +166,7 @@ void follow_trajectory() {
       get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
       if (flight_armed) {
         Prop::set_throttle_roll(thrust_perc, diffy_perc);
-        GimbalServos::setGimbalAngle(co.gimbal_pitch_deg, co.gimbal_yaw_deg);
+        GimbalServos::setGimbalAngle(-co.gimbal_pitch_deg, co.gimbal_yaw_deg);
       }
 
       if (flight_armed) // we only want to log flight data, not pre-flight

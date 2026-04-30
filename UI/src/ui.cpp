@@ -1,4 +1,6 @@
 #include "ui.h"
+#include "csr_trigger.h"
+#include "flash_dump.h"
 #include "flight_data.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -7,8 +9,6 @@
 #include "platform_win.h"
 #include "ui_components.h"
 #include "ui_graphs.h"
-#include "flash_dump.h"
-#include "csr_trigger.h"
 
 bool text_box_active;
 
@@ -281,7 +281,7 @@ void gimbal_output_panel() {
   centered_text("Gimbal Command");
   if (ImPlot::BeginPlot("##Gimbal Command", ImVec2(-1, 250), ImPlotFlags_NoLegend)) {
     ImPlot::SetupAxes("Yaw (deg)", "Pitch (deg)");
-    ImPlot::SetupAxesLimits(-10, 10, -10, 10, ImPlotCond_Always);
+    ImPlot::SetupAxesLimits(-15, 15, -15, 15, ImPlotCond_Always);
     ImPlot::PlotScatter("##Gimbal", &x, &y, 1);
     ImPlot::EndPlot();
   }
@@ -302,8 +302,7 @@ void data_management_panel() {
   ImGui::SameLine();
   ImGui::RadioButton("CSR", &FlightDataState.data_input_mode, MODE_CSR_TRIGGER);
 
-  if (FlightDataState.ports.size() == 0)
-  {
+  if (FlightDataState.ports.size() == 0) {
     FlightDataState.ports = enumerate_ports();
   }
 
@@ -318,7 +317,7 @@ void data_management_panel() {
 
     // render port selections
     FlightDataState.fv_serial.render();
-    
+
     ImGui::SameLine();
     // render port refresh button
     render_port_refresh_button();
@@ -405,16 +404,12 @@ void data_management_panel() {
         }
       }
     }
-  }
-  else if (FlightDataState.data_input_mode == MODE_FLASH_DUMP)
-  {
+  } else if (FlightDataState.data_input_mode == MODE_FLASH_DUMP) {
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Flash Link");
     ImGui::PopFont();
     FlashDump::render();
-  }
-  else
-  {
+  } else {
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Controller State Reconstruction");
     ImGui::PopFont();
