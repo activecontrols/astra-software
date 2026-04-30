@@ -1,5 +1,5 @@
-#include "matlab_funcs.h"
 #include "controller_and_estimator.h"
+#include "matlab_funcs.h"
 
 // Version 2 Controller formulation for ASTRAv2. Structure consists of 3
 // cascaded loops.
@@ -28,10 +28,10 @@ void ASTRAv2_Controller_reset() {
   lastAttError = Vector3::Zero();
 }
 
-Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals* cs) {
+Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals *cs) {
   // Controller Limits
-  float thrustMax = 1.5 * 9.8;          // N
-  float gimbalMax = 7.0 * M_PI / 180.0; // rad
+  float thrustMax = 1.5 * 9.8;           // N
+  float gimbalMax = 11.0 * M_PI / 180.0; // rad
   Vector4 uMin = (Vector4() << -gimbalMax, -gimbalMax, 0.4 * thrustMax, -M_PI / 6).finished();
   Vector4 uMax = (Vector4() << gimbalMax, gimbalMax, thrustMax, M_PI / 6).finished();
   Vector4 U = Vector4::Zero();
@@ -131,9 +131,7 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
   // Controls Saturation
   U = U.cwiseMax(uMin).cwiseMin(uMax);
 
-
-  for (int i = 0; i < 3; ++i)
-  {
+  for (int i = 0; i < 3; ++i) {
     cs->VelTarget[i] = VelTarget(i);
     cs->AccelTarget[i] = AccelTarget(i);
 
@@ -141,11 +139,9 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
     cs->AttErrorI[i] = AttErrorI(i);
   }
 
-  for (int i = 0; i < 4; ++i)
-  {
+  for (int i = 0; i < 4; ++i) {
     cs->TargetAtt[i] = TargetAtt(i);
   }
-
 
   return U;
 }
