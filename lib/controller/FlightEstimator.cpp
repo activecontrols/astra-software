@@ -60,7 +60,7 @@ Vector19 FlightEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
     H.block<3, 3>(3, 6) = Matrix3_3::Identity();
 
     Matrix6_6 R = Matrix6_6::Zero();
-    R.block<3, 3>(0, 0) = 0.2 * Matrix3_3::Identity(); // TODO - use covariances
+    R.block<3, 3>(0, 0) = 0.55 * Matrix3_3::Identity(); // TODO - use covariances
     R.block<3, 3>(3, 3) = 0.2 * Matrix3_3::Identity();
 
     // A priori covariance and Kalman gain
