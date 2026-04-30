@@ -112,7 +112,7 @@ void rcv_rtk(const uint8_t *rtk_data, size_t len) {
 }
 
 void begin() {
-  gps_uart.begin(38400, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
+  gps_uart.begin(921600, SERIAL_8N1); // https://content.u-blox.com/sites/default/files/documents/NEO-F9P-15B_DataSheet_UBX-22021920.pdf
 
 #ifdef DEBUG_GPS_MSG
   CommsSerial.println("Undefine `DEBUG_GPS_MSG` to remove GPS prints.");

@@ -1,0 +1,861 @@
+# Config changes format version 1.0
+# created by u-center version 25.06 at 18:49:10 on Thursday, 30 Apr 2026
+[del]
+[set]
+  BBR CFG-I2C-ENABLED      0                    # write value 0                    to item id 0x10510003 in layer 1
+  BBR CFG-UART2-ENABLED    0                    # write value 0                    to item id 0x10530005 in layer 1
+  BBR CFG-UART1OUTPROT-RTCM3X 0                    # write value 0                    to item id 0x10740004 in layer 1
+  BBR CFG-USBOUTPROT-UBX   0                    # write value 0                    to item id 0x10780001 in layer 1
+  BBR CFG-USBOUTPROT-NMEA  0                    # write value 0                    to item id 0x10780002 in layer 1
+  BBR CFG-USBOUTPROT-RTCM3X 0                    # write value 0                    to item id 0x10780004 in layer 1
+  BBR CFG-MSGOUT-UBX_NAV_PVT_USB 0x0                  # write value 0  0x0               to item id 0x20910009 in layer
+  BBR CFG-MSGOUT-UBX_MON_RXBUF_UART1 0x0                  # write value 0  0x0               to item id 0x209101a1 in l
+  BBR CFG-MSGOUT-UBX_RXM_RTCM_UART1 0x0                  # write value 0  0x0               to item id 0x20910269 in la
+  BBR CFG-MSGOUT-UBX_RXM_RTCM_USB 0x0                  # write value 0  0x0               to item id 0x2091026b in laye
+  BBR CFG-UART1-BAUDRATE   0xe1000              # write value 921600  0xe1000      to item id 0x40520001 in layer 1
+  BBR CFG-UART2-BAUDRATE   0xe1000              # write value 921600  0xe1000      to item id 0x40530001 in layer 1
+Flash CFG-TP-TP1_ENA       1                    # write value 1                    to item id 0x10050007 in layer 2
+Flash CFG-TP-SYNC_GNSS_TP1 1                    # write value 1                    to item id 0x10050008 in layer 2
+Flash CFG-TP-USE_LOCKED_TP1 1                    # write value 1                    to item id 0x10050009 in layer 2
+Flash CFG-TP-ALIGN_TO_TOW_TP1 1                    # write value 1                    to item id 0x1005000a in layer 2
+Flash CFG-TP-POL_TP1       1                    # write value 1                    to item id 0x1005000b in layer 2
+Flash CFG-NAVSPG-INIFIX3D  0                    # write value 0                    to item id 0x10110013 in layer 2
+Flash CFG-NAVSPG-ACKAIDING 0                    # write value 0                    to item id 0x10110025 in layer 2
+Flash CFG-NAVSPG-USE_USRDAT 0                    # write value 0                    to item id 0x10110061 in layer 2
+Flash CFG-NAVSPG-PL_ENA    1                    # write value 1                    to item id 0x101100d7 in layer 2
+Flash CFG-NAV2-OUT_ENABLED 0                    # write value 0                    to item id 0x10170001 in layer 2
+Flash CFG-NAV2-SBAS_USE_INTEGRITY 0                    # write value 0                    to item id 0x10170002 in laye
+Flash CFG-ODO-USE_ODO      0                    # write value 0                    to item id 0x10220001 in layer 2
+Flash CFG-ODO-USE_COG      0                    # write value 0                    to item id 0x10220002 in layer 2
+Flash CFG-ODO-OUTLPVEL     0                    # write value 0                    to item id 0x10220003 in layer 2
+Flash CFG-ODO-OUTLPCOG     0                    # write value 0                    to item id 0x10220004 in layer 2
+Flash CFG-GEOFENCE-USE_PIO 0                    # write value 0                    to item id 0x10240012 in layer 2
+Flash CFG-GEOFENCE-USE_FENCE1 0                    # write value 0                    to item id 0x10240020 in layer 2
+Flash CFG-GEOFENCE-USE_FENCE2 0                    # write value 0                    to item id 0x10240030 in layer 2
+Flash CFG-GEOFENCE-USE_FENCE3 0                    # write value 0                    to item id 0x10240040 in layer 2
+Flash CFG-GEOFENCE-USE_FENCE4 0                    # write value 0                    to item id 0x10240050 in layer 2
+Flash CFG-SIGNAL-GPS_L1CA_ENA 1                    # write value 1                    to item id 0x10310001 in layer 2
+Flash CFG-SIGNAL-GPS_L5_ENA 1                    # write value 1                    to item id 0x10310004 in layer 2
+Flash CFG-SIGNAL-SBAS_L1CA_ENA 1                    # write value 1                    to item id 0x10310005 in layer 2
+Flash CFG-SIGNAL-GAL_E1_ENA 1                    # write value 1                    to item id 0x10310007 in layer 2
+Flash CFG-SIGNAL-GAL_E5A_ENA 1                    # write value 1                    to item id 0x10310009 in layer 2
+Flash CFG-SIGNAL-BDS_B1_ENA 1                    # write value 1                    to item id 0x1031000d in layer 2
+Flash CFG-SIGNAL-QZSS_L1CA_ENA 1                    # write value 1                    to item id 0x10310012 in layer 2
+Flash CFG-SIGNAL-QZSS_L1S_ENA 0                    # write value 0                    to item id 0x10310014 in layer 2
+Flash CFG-SIGNAL-QZSS_L5_ENA 1                    # write value 1                    to item id 0x10310017 in layer 2
+Flash CFG-SIGNAL-GLO_L1_ENA 1                    # write value 1                    to item id 0x10310018 in layer 2
+Flash CFG-SIGNAL-NAVIC_L5_ENA 0                    # write value 0                    to item id 0x1031001d in layer 2
+Flash CFG-SIGNAL-GPS_ENA   1                    # write value 1                    to item id 0x1031001f in layer 2
+Flash CFG-SIGNAL-SBAS_ENA  1                    # write value 1                    to item id 0x10310020 in layer 2
+Flash CFG-SIGNAL-GAL_ENA   1                    # write value 1                    to item id 0x10310021 in layer 2
+Flash CFG-SIGNAL-BDS_ENA   1                    # write value 1                    to item id 0x10310022 in layer 2
+Flash CFG-SIGNAL-QZSS_ENA  1                    # write value 1                    to item id 0x10310024 in layer 2
+Flash CFG-SIGNAL-GLO_ENA   1                    # write value 1                    to item id 0x10310025 in layer 2
+Flash CFG-SIGNAL-NAVIC_ENA 0                    # write value 0                    to item id 0x10310026 in layer 2
+Flash CFG-SIGNAL-BDS_B2A_ENA 1                    # write value 1                    to item id 0x10310028 in layer 2
+Flash CFG-BDS-USE_GEO_PRN  0                    # write value 0                    to item id 0x10340014 in layer 2
+Flash CFG-SBAS-USE_TESTMODE 0                    # write value 0                    to item id 0x10360002 in layer 2
+Flash CFG-SBAS-USE_RANGING 1                    # write value 1                    to item id 0x10360003 in layer 2
+Flash CFG-SBAS-USE_DIFFCORR 1                    # write value 1                    to item id 0x10360004 in layer 2
+Flash CFG-SBAS-USE_INTEGRITY 0                    # write value 0                    to item id 0x10360005 in layer 2
+Flash CFG-SBAS-USE_IONOONLY 0                    # write value 0                    to item id 0x10360007 in layer 2
+Flash CFG-QZSS-USE_SLAS_DGNSS 1                    # write value 1                    to item id 0x10370005 in layer 2
+Flash CFG-QZSS-USE_SLAS_TESTMODE 0                    # write value 0                    to item id 0x10370006 in layer
+Flash CFG-QZSS-USE_SLAS_RAIM_UNCORR 0                    # write value 0                    to item id 0x10370007 in la
+Flash CFG-I2C-EXTENDEDTIMEOUT 0                    # write value 0                    to item id 0x10510002 in layer 2
+Flash CFG-I2C-ENABLED      0                    # write value 0                    to item id 0x10510003 in layer 2
+Flash CFG-UART1-ENABLED    1                    # write value 1                    to item id 0x10520005 in layer 2
+Flash CFG-UART2-ENABLED    0                    # write value 0                    to item id 0x10530005 in layer 2
+Flash CFG-SPI-CPOLARITY    0                    # write value 0                    to item id 0x10640002 in layer 2
+Flash CFG-SPI-CPHASE       0                    # write value 0                    to item id 0x10640003 in layer 2
+Flash CFG-SPI-EXTENDEDTIMEOUT 0                    # write value 0                    to item id 0x10640005 in layer 2
+Flash CFG-SPI-ENABLED      0                    # write value 0                    to item id 0x10640006 in layer 2
+Flash CFG-USB-ENABLED      1                    # write value 1                    to item id 0x10650001 in layer 2
+Flash CFG-USB-SELFPOW      1                    # write value 1                    to item id 0x10650002 in layer 2
+Flash CFG-I2CINPROT-UBX    1                    # write value 1                    to item id 0x10710001 in layer 2
+Flash CFG-I2CINPROT-NMEA   1                    # write value 1                    to item id 0x10710002 in layer 2
+Flash CFG-I2CINPROT-RTCM3X 1                    # write value 1                    to item id 0x10710004 in layer 2
+Flash CFG-I2CINPROT-SPARTN 1                    # write value 1                    to item id 0x10710005 in layer 2
+Flash CFG-I2COUTPROT-UBX   1                    # write value 1                    to item id 0x10720001 in layer 2
+Flash CFG-I2COUTPROT-NMEA  1                    # write value 1                    to item id 0x10720002 in layer 2
+Flash CFG-I2COUTPROT-RTCM3X 1                    # write value 1                    to item id 0x10720004 in layer 2
+Flash CFG-UART1INPROT-UBX  1                    # write value 1                    to item id 0x10730001 in layer 2
+Flash CFG-UART1INPROT-NMEA 0                    # write value 0                    to item id 0x10730002 in layer 2
+Flash CFG-UART1INPROT-RTCM3X 1                    # write value 1                    to item id 0x10730004 in layer 2
+Flash CFG-UART1INPROT-SPARTN 0                    # write value 0                    to item id 0x10730005 in layer 2
+Flash CFG-UART1OUTPROT-UBX 1                    # write value 1                    to item id 0x10740001 in layer 2
+Flash CFG-UART1OUTPROT-NMEA 0                    # write value 0                    to item id 0x10740002 in layer 2
+Flash CFG-UART1OUTPROT-RTCM3X 0                    # write value 0                    to item id 0x10740004 in layer 2
+Flash CFG-UART2INPROT-UBX  1                    # write value 1                    to item id 0x10750001 in layer 2
+Flash CFG-UART2INPROT-NMEA 0                    # write value 0                    to item id 0x10750002 in layer 2
+Flash CFG-UART2INPROT-RTCM3X 1                    # write value 1                    to item id 0x10750004 in layer 2
+Flash CFG-UART2INPROT-SPARTN 1                    # write value 1                    to item id 0x10750005 in layer 2
+Flash CFG-UART2OUTPROT-UBX 0                    # write value 0                    to item id 0x10760001 in layer 2
+Flash CFG-UART2OUTPROT-NMEA 0                    # write value 0                    to item id 0x10760002 in layer 2
+Flash CFG-UART2OUTPROT-RTCM3X 1                    # write value 1                    to item id 0x10760004 in layer 2
+Flash CFG-USBINPROT-UBX    1                    # write value 1                    to item id 0x10770001 in layer 2
+Flash CFG-USBINPROT-NMEA   1                    # write value 1                    to item id 0x10770002 in layer 2
+Flash CFG-USBINPROT-RTCM3X 1                    # write value 1                    to item id 0x10770004 in layer 2
+Flash CFG-USBINPROT-SPARTN 1                    # write value 1                    to item id 0x10770005 in layer 2
+Flash CFG-USBOUTPROT-UBX   0                    # write value 0                    to item id 0x10780001 in layer 2
+Flash CFG-USBOUTPROT-NMEA  0                    # write value 0                    to item id 0x10780002 in layer 2
+Flash CFG-USBOUTPROT-RTCM3X 0                    # write value 0                    to item id 0x10780004 in layer 2
+Flash CFG-SPIINPROT-UBX    1                    # write value 1                    to item id 0x10790001 in layer 2
+Flash CFG-SPIINPROT-NMEA   1                    # write value 1                    to item id 0x10790002 in layer 2
+Flash CFG-SPIINPROT-RTCM3X 1                    # write value 1                    to item id 0x10790004 in layer 2
+Flash CFG-SPIINPROT-SPARTN 1                    # write value 1                    to item id 0x10790005 in layer 2
+Flash CFG-SPIOUTPROT-UBX   1                    # write value 1                    to item id 0x107a0001 in layer 2
+Flash CFG-SPIOUTPROT-NMEA  1                    # write value 1                    to item id 0x107a0002 in layer 2
+Flash CFG-SPIOUTPROT-RTCM3X 1                    # write value 1                    to item id 0x107a0004 in layer 2
+Flash CFG-NMEA-COMPAT      0                    # write value 0                    to item id 0x10930003 in layer 2
+Flash CFG-NMEA-CONSIDER    1                    # write value 1                    to item id 0x10930004 in layer 2
+Flash CFG-NMEA-LIMIT82     0                    # write value 0                    to item id 0x10930005 in layer 2
+Flash CFG-NMEA-HIGHPREC    0                    # write value 0                    to item id 0x10930006 in layer 2
+Flash CFG-NMEA-FILT_GPS    0                    # write value 0                    to item id 0x10930011 in layer 2
+Flash CFG-NMEA-FILT_SBAS   0                    # write value 0                    to item id 0x10930012 in layer 2
+Flash CFG-NMEA-FILT_GAL    0                    # write value 0                    to item id 0x10930013 in layer 2
+Flash CFG-NMEA-FILT_QZSS   0                    # write value 0                    to item id 0x10930015 in layer 2
+Flash CFG-NMEA-FILT_GLO    0                    # write value 0                    to item id 0x10930016 in layer 2
+Flash CFG-NMEA-FILT_BDS    0                    # write value 0                    to item id 0x10930017 in layer 2
+Flash CFG-NMEA-FILT_NAVIC  0                    # write value 0                    to item id 0x10930018 in layer 2
+Flash CFG-NMEA-OUT_INVFIX  0                    # write value 0                    to item id 0x10930021 in layer 2
+Flash CFG-NMEA-OUT_MSKFIX  0                    # write value 0                    to item id 0x10930022 in layer 2
+Flash CFG-NMEA-OUT_INVTIME 0                    # write value 0                    to item id 0x10930023 in layer 2
+Flash CFG-NMEA-OUT_INVDATE 0                    # write value 0                    to item id 0x10930024 in layer 2
+Flash CFG-NMEA-OUT_ONLYGPS 0                    # write value 0                    to item id 0x10930025 in layer 2
+Flash CFG-NMEA-OUT_FROZENCOG 0                    # write value 0                    to item id 0x10930026 in layer 2
+Flash CFG-TXREADY-ENABLED  0                    # write value 0                    to item id 0x10a20001 in layer 2
+Flash CFG-TXREADY-POLARITY 0                    # write value 0                    to item id 0x10a20002 in layer 2
+Flash CFG-HW-ANT_CFG_VOLTCTRL 1                    # write value 1                    to item id 0x10a3002e in layer 2
+Flash CFG-HW-ANT_CFG_SHORTDET 0                    # write value 0                    to item id 0x10a3002f in layer 2
+Flash CFG-HW-ANT_CFG_SHORTDET_POL 1                    # write value 1                    to item id 0x10a30030 in laye
+Flash CFG-HW-ANT_CFG_OPENDET 0                    # write value 0                    to item id 0x10a30031 in layer 2
+Flash CFG-HW-ANT_CFG_OPENDET_POL 1                    # write value 1                    to item id 0x10a30032 in layer
+Flash CFG-HW-ANT_CFG_PWRDOWN 0                    # write value 0                    to item id 0x10a30033 in layer 2
+Flash CFG-HW-ANT_CFG_PWRDOWN_POL 0                    # write value 0                    to item id 0x10a30034 in layer
+Flash CFG-HW-ANT_CFG_RECOVER 0                    # write value 0                    to item id 0x10a30035 in layer 2
+Flash CFG-RINV-DUMP        0                    # write value 0                    to item id 0x10c70001 in layer 2
+Flash CFG-RINV-BINARY      0                    # write value 0                    to item id 0x10c70002 in layer 2
+Flash CFG-LOGFILTER-RECORD_ENA 0                    # write value 0                    to item id 0x10de0002 in layer 2
+Flash CFG-LOGFILTER-ONCE_PER_WAKE_UP_ENA 0                    # write value 0                    to item id 0x10de0003 
+Flash CFG-LOGFILTER-APPLY_ALL_FILTERS 0                    # write value 0                    to item id 0x10de0004 in 
+Flash CFG-SEC-CFG_LOCK     0                    # write value 0                    to item id 0x10f60009 in layer 2
+Flash CFG-SEC-JAMDET_SENSITIVITY_HI 1                    # write value 1                    to item id 0x10f60051 in la
+Flash CFG-TMODE-MODE       0                    # write value 0 - DISABLED         to item id 0x20030001 in layer 2
+Flash CFG-TMODE-POS_TYPE   0                    # write value 0 - ECEF             to item id 0x20030002 in layer 2
+Flash CFG-TMODE-ECEF_X_HP  0x0                  # write value 0  0x0               to item id 0x20030006 in layer 2
+Flash CFG-TMODE-ECEF_Y_HP  0x0                  # write value 0  0x0               to item id 0x20030007 in layer 2
+Flash CFG-TMODE-ECEF_Z_HP  0x0                  # write value 0  0x0               to item id 0x20030008 in layer 2
+Flash CFG-TMODE-LAT_HP     0x0                  # write value 0  0x0               to item id 0x2003000c in layer 2
+Flash CFG-TMODE-LON_HP     0x0                  # write value 0  0x0               to item id 0x2003000d in layer 2
+Flash CFG-TMODE-HEIGHT_HP  0x0                  # write value 0  0x0               to item id 0x2003000e in layer 2
+Flash CFG-TP-TIMEGRID_TP1  0                    # write value 0 - UTC              to item id 0x2005000c in layer 2
+Flash CFG-TP-PULSE_DEF     0                    # write value 0 - PERIOD           to item id 0x20050023 in layer 2
+Flash CFG-TP-PULSE_LENGTH_DEF 1                    # write value 1 - LENGTH           to item id 0x20050030 in layer 2
+Flash CFG-TP-DRSTR_TP1     1                    # write value 1 - DRIVE_STRENGTH_4MA to item id 0x20050035 in layer 2
+Flash CFG-RTCM-DF003_IN_FILTER 0                    # write value 0 - DISABLED         to item id 0x20090009 in layer 2
+Flash CFG-NAVSPG-FIXMODE   3                    # write value 3 - AUTO             to item id 0x20110011 in layer 2
+Flash CFG-NAVSPG-UTCSTANDARD 0                    # write value 0 - AUTO             to item id 0x2011001c in layer 2
+Flash CFG-NAVSPG-DYNMODEL  0                    # write value 0 - PORT             to item id 0x20110021 in layer 2
+Flash CFG-NAVSPG-INFIL_MINSVS 0x3                  # write value 3  0x3               to item id 0x201100a1 in layer 2
+Flash CFG-NAVSPG-INFIL_MAXSVS 0x20                 # write value 32  0x20             to item id 0x201100a2 in layer 2
+Flash CFG-NAVSPG-INFIL_MINCNO 0x6                  # write value 6  0x6               to item id 0x201100a3 in layer 2
+Flash CFG-NAVSPG-INFIL_MINELEV 0xa                  # write value 10  0xa              to item id 0x201100a4 in layer 2
+Flash CFG-NAVSPG-INFIL_NCNOTHRS 0x0                  # write value 0  0x0               to item id 0x201100aa in layer 
+Flash CFG-NAVSPG-INFIL_CNOTHRS 0x0                  # write value 0  0x0               to item id 0x201100ab in layer 2
+Flash CFG-NAVSPG-CONSTR_DGNSSTO 0x3c                 # write value 60  0x3c             to item id 0x201100c4 in layer 
+Flash CFG-NAVHPG-DGNSSMODE 3                    # write value 3 - RTK_FIXED        to item id 0x20140011 in layer 2
+Flash CFG-RATE-TIMEREF     1                    # write value 1 - GPS              to item id 0x20210003 in layer 2
+Flash CFG-ODO-PROFILE      0                    # write value 0 - RUN              to item id 0x20220005 in layer 2
+Flash CFG-ODO-COGMAXSPEED  0xa                  # write value 10  0xa              to item id 0x20220021 in layer 2
+Flash CFG-ODO-COGMAXPOSACC 0x32                 # write value 50  0x32             to item id 0x20220022 in layer 2
+Flash CFG-ODO-VELLPGAIN    0x99                 # write value 153  0x99            to item id 0x20220031 in layer 2
+Flash CFG-ODO-COGLPGAIN    0x4c                 # write value 76  0x4c             to item id 0x20220032 in layer 2
+Flash CFG-GEOFENCE-CONFLVL 0                    # write value 0 - L000             to item id 0x20240011 in layer 2
+Flash CFG-GEOFENCE-PINPOL  0                    # write value 0 - LOW_IN           to item id 0x20240013 in layer 2
+Flash CFG-GEOFENCE-PIN     0x3                  # write value 3  0x3               to item id 0x20240014 in layer 2
+Flash CFG-MOT-GNSSSPEED_THRS 0x0                  # write value 0  0x0               to item id 0x20250038 in layer 2
+Flash CFG-I2C-ADDRESS      0x84                 # write value 132  0x84            to item id 0x20510001 in layer 2
+Flash CFG-UART1-STOPBITS   1                    # write value 1 - ONE              to item id 0x20520002 in layer 2
+Flash CFG-UART1-DATABITS   0                    # write value 0 - EIGHT            to item id 0x20520003 in layer 2
+Flash CFG-UART1-PARITY     0                    # write value 0 - NONE             to item id 0x20520004 in layer 2
+Flash CFG-UART2-STOPBITS   1                    # write value 1 - ONE              to item id 0x20530002 in layer 2
+Flash CFG-UART2-DATABITS   0                    # write value 0 - EIGHT            to item id 0x20530003 in layer 2
+Flash CFG-UART2-PARITY     0                    # write value 0 - NONE             to item id 0x20530004 in layer 2
+Flash CFG-SPI-MAXFF        0x32                 # write value 50  0x32             to item id 0x20640001 in layer 2
+Flash CFG-MSGOUT-UBX_NAV_PVT_I2C 0x0                  # write value 0  0x0               to item id 0x20910006 in layer
+Flash CFG-MSGOUT-UBX_NAV_PVT_UART1 0x1                  # write value 1  0x1               to item id 0x20910007 in lay
+Flash CFG-MSGOUT-UBX_NAV_PVT_UART2 0x0                  # write value 0  0x0               to item id 0x20910008 in lay
+Flash CFG-MSGOUT-UBX_NAV_PVT_USB 0x0                  # write value 0  0x0               to item id 0x20910009 in layer
+Flash CFG-MSGOUT-UBX_NAV_PVT_SPI 0x0                  # write value 0  0x0               to item id 0x2091000a in layer
+Flash CFG-MSGOUT-UBX_NAV_ORB_I2C 0x0                  # write value 0  0x0               to item id 0x20910010 in layer
+Flash CFG-MSGOUT-UBX_NAV_ORB_UART1 0x0                  # write value 0  0x0               to item id 0x20910011 in lay
+Flash CFG-MSGOUT-UBX_NAV_ORB_UART2 0x0                  # write value 0  0x0               to item id 0x20910012 in lay
+Flash CFG-MSGOUT-UBX_NAV_ORB_USB 0x0                  # write value 0  0x0               to item id 0x20910013 in layer
+Flash CFG-MSGOUT-UBX_NAV_ORB_SPI 0x0                  # write value 0  0x0               to item id 0x20910014 in layer
+Flash CFG-MSGOUT-UBX_NAV_SAT_I2C 0x0                  # write value 0  0x0               to item id 0x20910015 in layer
+Flash CFG-MSGOUT-UBX_NAV_SAT_UART1 0x0                  # write value 0  0x0               to item id 0x20910016 in lay
+Flash CFG-MSGOUT-UBX_NAV_SAT_UART2 0x0                  # write value 0  0x0               to item id 0x20910017 in lay
+Flash CFG-MSGOUT-UBX_NAV_SAT_USB 0x0                  # write value 0  0x0               to item id 0x20910018 in layer
+Flash CFG-MSGOUT-UBX_NAV_SAT_SPI 0x0                  # write value 0  0x0               to item id 0x20910019 in layer
+Flash CFG-MSGOUT-UBX_NAV_STATUS_I2C 0x0                  # write value 0  0x0               to item id 0x2091001a in la
+Flash CFG-MSGOUT-UBX_NAV_STATUS_UART1 0x0                  # write value 0  0x0               to item id 0x2091001b in 
+Flash CFG-MSGOUT-UBX_NAV_STATUS_UART2 0x0                  # write value 0  0x0               to item id 0x2091001c in 
+Flash CFG-MSGOUT-UBX_NAV_STATUS_USB 0x0                  # write value 0  0x0               to item id 0x2091001d in la
+Flash CFG-MSGOUT-UBX_NAV_STATUS_SPI 0x0                  # write value 0  0x0               to item id 0x2091001e in la
+Flash CFG-MSGOUT-UBX_NAV_POSECEF_I2C 0x0                  # write value 0  0x0               to item id 0x20910024 in l
+Flash CFG-MSGOUT-UBX_NAV_POSECEF_UART1 0x0                  # write value 0  0x0               to item id 0x20910025 in
+Flash CFG-MSGOUT-UBX_NAV_POSECEF_UART2 0x0                  # write value 0  0x0               to item id 0x20910026 in
+Flash CFG-MSGOUT-UBX_NAV_POSECEF_USB 0x0                  # write value 0  0x0               to item id 0x20910027 in l
+Flash CFG-MSGOUT-UBX_NAV_POSECEF_SPI 0x0                  # write value 0  0x0               to item id 0x20910028 in l
+Flash CFG-MSGOUT-UBX_NAV_POSLLH_I2C 0x0                  # write value 0  0x0               to item id 0x20910029 in la
+Flash CFG-MSGOUT-UBX_NAV_POSLLH_UART1 0x0                  # write value 0  0x0               to item id 0x2091002a in 
+Flash CFG-MSGOUT-UBX_NAV_POSLLH_UART2 0x0                  # write value 0  0x0               to item id 0x2091002b in 
+Flash CFG-MSGOUT-UBX_NAV_POSLLH_USB 0x0                  # write value 0  0x0               to item id 0x2091002c in la
+Flash CFG-MSGOUT-UBX_NAV_POSLLH_SPI 0x0                  # write value 0  0x0               to item id 0x2091002d in la
+Flash CFG-MSGOUT-UBX_NAV_HPPOSECEF_I2C 0x0                  # write value 0  0x0               to item id 0x2091002e in
+Flash CFG-MSGOUT-UBX_NAV_HPPOSECEF_UART1 0x0                  # write value 0  0x0               to item id 0x2091002f 
+Flash CFG-MSGOUT-UBX_NAV_HPPOSECEF_UART2 0x0                  # write value 0  0x0               to item id 0x20910030 
+Flash CFG-MSGOUT-UBX_NAV_HPPOSECEF_USB 0x0                  # write value 0  0x0               to item id 0x20910031 in
+Flash CFG-MSGOUT-UBX_NAV_HPPOSECEF_SPI 0x0                  # write value 0  0x0               to item id 0x20910032 in
+Flash CFG-MSGOUT-UBX_NAV_HPPOSLLH_I2C 0x0                  # write value 0  0x0               to item id 0x20910033 in 
+Flash CFG-MSGOUT-UBX_NAV_HPPOSLLH_UART1 0x0                  # write value 0  0x0               to item id 0x20910034 i
+Flash CFG-MSGOUT-UBX_NAV_HPPOSLLH_UART2 0x0                  # write value 0  0x0               to item id 0x20910035 i
+Flash CFG-MSGOUT-UBX_NAV_HPPOSLLH_USB 0x0                  # write value 0  0x0               to item id 0x20910036 in 
+Flash CFG-MSGOUT-UBX_NAV_HPPOSLLH_SPI 0x0                  # write value 0  0x0               to item id 0x20910037 in 
+Flash CFG-MSGOUT-UBX_NAV_DOP_I2C 0x0                  # write value 0  0x0               to item id 0x20910038 in layer
+Flash CFG-MSGOUT-UBX_NAV_DOP_UART1 0x0                  # write value 0  0x0               to item id 0x20910039 in lay
+Flash CFG-MSGOUT-UBX_NAV_DOP_UART2 0x0                  # write value 0  0x0               to item id 0x2091003a in lay
+Flash CFG-MSGOUT-UBX_NAV_DOP_USB 0x0                  # write value 0  0x0               to item id 0x2091003b in layer
+Flash CFG-MSGOUT-UBX_NAV_DOP_SPI 0x0                  # write value 0  0x0               to item id 0x2091003c in layer
+Flash CFG-MSGOUT-UBX_NAV_VELECEF_I2C 0x0                  # write value 0  0x0               to item id 0x2091003d in l
+Flash CFG-MSGOUT-UBX_NAV_VELECEF_UART1 0x0                  # write value 0  0x0               to item id 0x2091003e in
+Flash CFG-MSGOUT-UBX_NAV_VELECEF_UART2 0x0                  # write value 0  0x0               to item id 0x2091003f in
+Flash CFG-MSGOUT-UBX_NAV_VELECEF_USB 0x0                  # write value 0  0x0               to item id 0x20910040 in l
+Flash CFG-MSGOUT-UBX_NAV_VELECEF_SPI 0x0                  # write value 0  0x0               to item id 0x20910041 in l
+Flash CFG-MSGOUT-UBX_NAV_VELNED_I2C 0x0                  # write value 0  0x0               to item id 0x20910042 in la
+Flash CFG-MSGOUT-UBX_NAV_VELNED_UART1 0x0                  # write value 0  0x0               to item id 0x20910043 in 
+Flash CFG-MSGOUT-UBX_NAV_VELNED_UART2 0x0                  # write value 0  0x0               to item id 0x20910044 in 
+Flash CFG-MSGOUT-UBX_NAV_VELNED_USB 0x0                  # write value 0  0x0               to item id 0x20910045 in la
+Flash CFG-MSGOUT-UBX_NAV_VELNED_SPI 0x0                  # write value 0  0x0               to item id 0x20910046 in la
+Flash CFG-MSGOUT-UBX_NAV_TIMEGPS_I2C 0x0                  # write value 0  0x0               to item id 0x20910047 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGPS_UART1 0x0                  # write value 0  0x0               to item id 0x20910048 in
+Flash CFG-MSGOUT-UBX_NAV_TIMEGPS_UART2 0x0                  # write value 0  0x0               to item id 0x20910049 in
+Flash CFG-MSGOUT-UBX_NAV_TIMEGPS_USB 0x0                  # write value 0  0x0               to item id 0x2091004a in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGPS_SPI 0x0                  # write value 0  0x0               to item id 0x2091004b in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGLO_I2C 0x0                  # write value 0  0x0               to item id 0x2091004c in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGLO_UART1 0x0                  # write value 0  0x0               to item id 0x2091004d in
+Flash CFG-MSGOUT-UBX_NAV_TIMEGLO_UART2 0x0                  # write value 0  0x0               to item id 0x2091004e in
+Flash CFG-MSGOUT-UBX_NAV_TIMEGLO_USB 0x0                  # write value 0  0x0               to item id 0x2091004f in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGLO_SPI 0x0                  # write value 0  0x0               to item id 0x20910050 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEBDS_I2C 0x0                  # write value 0  0x0               to item id 0x20910051 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEBDS_UART1 0x0                  # write value 0  0x0               to item id 0x20910052 in
+Flash CFG-MSGOUT-UBX_NAV_TIMEBDS_UART2 0x0                  # write value 0  0x0               to item id 0x20910053 in
+Flash CFG-MSGOUT-UBX_NAV_TIMEBDS_USB 0x0                  # write value 0  0x0               to item id 0x20910054 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEBDS_SPI 0x0                  # write value 0  0x0               to item id 0x20910055 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGAL_I2C 0x0                  # write value 0  0x0               to item id 0x20910056 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGAL_UART1 0x0                  # write value 0  0x0               to item id 0x20910057 in
+Flash CFG-MSGOUT-UBX_NAV_TIMEGAL_UART2 0x0                  # write value 0  0x0               to item id 0x20910058 in
+Flash CFG-MSGOUT-UBX_NAV_TIMEGAL_USB 0x0                  # write value 0  0x0               to item id 0x20910059 in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEGAL_SPI 0x0                  # write value 0  0x0               to item id 0x2091005a in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEUTC_I2C 0x0                  # write value 0  0x0               to item id 0x2091005b in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEUTC_UART1 0x0                  # write value 0  0x0               to item id 0x2091005c in
+Flash CFG-MSGOUT-UBX_NAV_TIMEUTC_UART2 0x0                  # write value 0  0x0               to item id 0x2091005d in
+Flash CFG-MSGOUT-UBX_NAV_TIMEUTC_USB 0x0                  # write value 0  0x0               to item id 0x2091005e in l
+Flash CFG-MSGOUT-UBX_NAV_TIMEUTC_SPI 0x0                  # write value 0  0x0               to item id 0x2091005f in l
+Flash CFG-MSGOUT-UBX_NAV_TIMELS_I2C 0x0                  # write value 0  0x0               to item id 0x20910060 in la
+Flash CFG-MSGOUT-UBX_NAV_TIMELS_UART1 0x0                  # write value 0  0x0               to item id 0x20910061 in 
+Flash CFG-MSGOUT-UBX_NAV_TIMELS_UART2 0x0                  # write value 0  0x0               to item id 0x20910062 in 
+Flash CFG-MSGOUT-UBX_NAV_TIMELS_USB 0x0                  # write value 0  0x0               to item id 0x20910063 in la
+Flash CFG-MSGOUT-UBX_NAV_TIMELS_SPI 0x0                  # write value 0  0x0               to item id 0x20910064 in la
+Flash CFG-MSGOUT-UBX_NAV_CLOCK_I2C 0x0                  # write value 0  0x0               to item id 0x20910065 in lay
+Flash CFG-MSGOUT-UBX_NAV_CLOCK_UART1 0x0                  # write value 0  0x0               to item id 0x20910066 in l
+Flash CFG-MSGOUT-UBX_NAV_CLOCK_UART2 0x0                  # write value 0  0x0               to item id 0x20910067 in l
+Flash CFG-MSGOUT-UBX_NAV_CLOCK_USB 0x0                  # write value 0  0x0               to item id 0x20910068 in lay
+Flash CFG-MSGOUT-UBX_NAV_CLOCK_SPI 0x0                  # write value 0  0x0               to item id 0x20910069 in lay
+Flash CFG-MSGOUT-UBX_NAV_SBAS_I2C 0x0                  # write value 0  0x0               to item id 0x2091006a in laye
+Flash CFG-MSGOUT-UBX_NAV_SBAS_UART1 0x0                  # write value 0  0x0               to item id 0x2091006b in la
+Flash CFG-MSGOUT-UBX_NAV_SBAS_UART2 0x0                  # write value 0  0x0               to item id 0x2091006c in la
+Flash CFG-MSGOUT-UBX_NAV_SBAS_USB 0x0                  # write value 0  0x0               to item id 0x2091006d in laye
+Flash CFG-MSGOUT-UBX_NAV_SBAS_SPI 0x0                  # write value 0  0x0               to item id 0x2091006e in laye
+Flash CFG-MSGOUT-UBX_NAV_ODO_I2C 0x0                  # write value 0  0x0               to item id 0x2091007e in layer
+Flash CFG-MSGOUT-UBX_NAV_ODO_UART1 0x0                  # write value 0  0x0               to item id 0x2091007f in lay
+Flash CFG-MSGOUT-UBX_NAV_ODO_UART2 0x0                  # write value 0  0x0               to item id 0x20910080 in lay
+Flash CFG-MSGOUT-UBX_NAV_ODO_USB 0x0                  # write value 0  0x0               to item id 0x20910081 in layer
+Flash CFG-MSGOUT-UBX_NAV_ODO_SPI 0x0                  # write value 0  0x0               to item id 0x20910082 in layer
+Flash CFG-MSGOUT-UBX_NAV_COV_I2C 0x0                  # write value 0  0x0               to item id 0x20910083 in layer
+Flash CFG-MSGOUT-UBX_NAV_COV_UART1 0x0                  # write value 0  0x0               to item id 0x20910084 in lay
+Flash CFG-MSGOUT-UBX_NAV_COV_UART2 0x0                  # write value 0  0x0               to item id 0x20910085 in lay
+Flash CFG-MSGOUT-UBX_NAV_COV_USB 0x0                  # write value 0  0x0               to item id 0x20910086 in layer
+Flash CFG-MSGOUT-UBX_NAV_COV_SPI 0x0                  # write value 0  0x0               to item id 0x20910087 in layer
+Flash CFG-MSGOUT-UBX_NAV_SVIN_I2C 0x0                  # write value 0  0x0               to item id 0x20910088 in laye
+Flash CFG-MSGOUT-UBX_NAV_SVIN_UART1 0x0                  # write value 0  0x0               to item id 0x20910089 in la
+Flash CFG-MSGOUT-UBX_NAV_SVIN_UART2 0x0                  # write value 0  0x0               to item id 0x2091008a in la
+Flash CFG-MSGOUT-UBX_NAV_SVIN_USB 0x0                  # write value 0  0x0               to item id 0x2091008b in laye
+Flash CFG-MSGOUT-UBX_NAV_SVIN_SPI 0x0                  # write value 0  0x0               to item id 0x2091008c in laye
+Flash CFG-MSGOUT-UBX_NAV_RELPOSNED_I2C 0x0                  # write value 0  0x0               to item id 0x2091008d in
+Flash CFG-MSGOUT-UBX_NAV_RELPOSNED_UART1 0x0                  # write value 0  0x0               to item id 0x2091008e 
+Flash CFG-MSGOUT-UBX_NAV_RELPOSNED_UART2 0x0                  # write value 0  0x0               to item id 0x2091008f 
+Flash CFG-MSGOUT-UBX_NAV_RELPOSNED_USB 0x0                  # write value 0  0x0               to item id 0x20910090 in
+Flash CFG-MSGOUT-UBX_NAV_RELPOSNED_SPI 0x0                  # write value 0  0x0               to item id 0x20910091 in
+Flash CFG-MSGOUT-UBX_TIM_VRFY_I2C 0x0                  # write value 0  0x0               to item id 0x20910092 in laye
+Flash CFG-MSGOUT-UBX_TIM_VRFY_UART1 0x0                  # write value 0  0x0               to item id 0x20910093 in la
+Flash CFG-MSGOUT-UBX_TIM_VRFY_UART2 0x0                  # write value 0  0x0               to item id 0x20910094 in la
+Flash CFG-MSGOUT-UBX_TIM_VRFY_USB 0x0                  # write value 0  0x0               to item id 0x20910095 in laye
+Flash CFG-MSGOUT-UBX_TIM_VRFY_SPI 0x0                  # write value 0  0x0               to item id 0x20910096 in laye
+Flash CFG-MSGOUT-UBX_NAV_GEOFENCE_I2C 0x0                  # write value 0  0x0               to item id 0x209100a1 in 
+Flash CFG-MSGOUT-UBX_NAV_GEOFENCE_UART1 0x0                  # write value 0  0x0               to item id 0x209100a2 i
+Flash CFG-MSGOUT-UBX_NAV_GEOFENCE_UART2 0x0                  # write value 0  0x0               to item id 0x209100a3 i
+Flash CFG-MSGOUT-UBX_NAV_GEOFENCE_USB 0x0                  # write value 0  0x0               to item id 0x209100a4 in 
+Flash CFG-MSGOUT-UBX_NAV_GEOFENCE_SPI 0x0                  # write value 0  0x0               to item id 0x209100a5 in 
+Flash CFG-MSGOUT-NMEA_ID_DTM_I2C 0x0                  # write value 0  0x0               to item id 0x209100a6 in layer
+Flash CFG-MSGOUT-NMEA_ID_DTM_UART1 0x0                  # write value 0  0x0               to item id 0x209100a7 in lay
+Flash CFG-MSGOUT-NMEA_ID_DTM_UART2 0x0                  # write value 0  0x0               to item id 0x209100a8 in lay
+Flash CFG-MSGOUT-NMEA_ID_DTM_USB 0x0                  # write value 0  0x0               to item id 0x209100a9 in layer
+Flash CFG-MSGOUT-NMEA_ID_DTM_SPI 0x0                  # write value 0  0x0               to item id 0x209100aa in layer
+Flash CFG-MSGOUT-NMEA_ID_RMC_I2C 0x1                  # write value 1  0x1               to item id 0x209100ab in layer
+Flash CFG-MSGOUT-NMEA_ID_RMC_UART1 0x1                  # write value 1  0x1               to item id 0x209100ac in lay
+Flash CFG-MSGOUT-NMEA_ID_RMC_UART2 0x1                  # write value 1  0x1               to item id 0x209100ad in lay
+Flash CFG-MSGOUT-NMEA_ID_RMC_USB 0x1                  # write value 1  0x1               to item id 0x209100ae in layer
+Flash CFG-MSGOUT-NMEA_ID_RMC_SPI 0x1                  # write value 1  0x1               to item id 0x209100af in layer
+Flash CFG-MSGOUT-NMEA_ID_VTG_I2C 0x1                  # write value 1  0x1               to item id 0x209100b0 in layer
+Flash CFG-MSGOUT-NMEA_ID_VTG_UART1 0x1                  # write value 1  0x1               to item id 0x209100b1 in lay
+Flash CFG-MSGOUT-NMEA_ID_VTG_UART2 0x1                  # write value 1  0x1               to item id 0x209100b2 in lay
+Flash CFG-MSGOUT-NMEA_ID_VTG_USB 0x1                  # write value 1  0x1               to item id 0x209100b3 in layer
+Flash CFG-MSGOUT-NMEA_ID_VTG_SPI 0x1                  # write value 1  0x1               to item id 0x209100b4 in layer
+Flash CFG-MSGOUT-NMEA_ID_GNS_I2C 0x0                  # write value 0  0x0               to item id 0x209100b5 in layer
+Flash CFG-MSGOUT-NMEA_ID_GNS_UART1 0x0                  # write value 0  0x0               to item id 0x209100b6 in lay
+Flash CFG-MSGOUT-NMEA_ID_GNS_UART2 0x0                  # write value 0  0x0               to item id 0x209100b7 in lay
+Flash CFG-MSGOUT-NMEA_ID_GNS_USB 0x0                  # write value 0  0x0               to item id 0x209100b8 in layer
+Flash CFG-MSGOUT-NMEA_ID_GNS_SPI 0x0                  # write value 0  0x0               to item id 0x209100b9 in layer
+Flash CFG-MSGOUT-NMEA_ID_GGA_I2C 0x1                  # write value 1  0x1               to item id 0x209100ba in layer
+Flash CFG-MSGOUT-NMEA_ID_GGA_UART1 0x1                  # write value 1  0x1               to item id 0x209100bb in lay
+Flash CFG-MSGOUT-NMEA_ID_GGA_UART2 0x1                  # write value 1  0x1               to item id 0x209100bc in lay
+Flash CFG-MSGOUT-NMEA_ID_GGA_USB 0x1                  # write value 1  0x1               to item id 0x209100bd in layer
+Flash CFG-MSGOUT-NMEA_ID_GGA_SPI 0x1                  # write value 1  0x1               to item id 0x209100be in layer
+Flash CFG-MSGOUT-NMEA_ID_GSA_I2C 0x1                  # write value 1  0x1               to item id 0x209100bf in layer
+Flash CFG-MSGOUT-NMEA_ID_GSA_UART1 0x1                  # write value 1  0x1               to item id 0x209100c0 in lay
+Flash CFG-MSGOUT-NMEA_ID_GSA_UART2 0x1                  # write value 1  0x1               to item id 0x209100c1 in lay
+Flash CFG-MSGOUT-NMEA_ID_GSA_USB 0x1                  # write value 1  0x1               to item id 0x209100c2 in layer
+Flash CFG-MSGOUT-NMEA_ID_GSA_SPI 0x1                  # write value 1  0x1               to item id 0x209100c3 in layer
+Flash CFG-MSGOUT-NMEA_ID_GSV_I2C 0x1                  # write value 1  0x1               to item id 0x209100c4 in layer
+Flash CFG-MSGOUT-NMEA_ID_GSV_UART1 0x1                  # write value 1  0x1               to item id 0x209100c5 in lay
+Flash CFG-MSGOUT-NMEA_ID_GSV_UART2 0x1                  # write value 1  0x1               to item id 0x209100c6 in lay
+Flash CFG-MSGOUT-NMEA_ID_GSV_USB 0x1                  # write value 1  0x1               to item id 0x209100c7 in layer
+Flash CFG-MSGOUT-NMEA_ID_GSV_SPI 0x1                  # write value 1  0x1               to item id 0x209100c8 in layer
+Flash CFG-MSGOUT-NMEA_ID_GLL_I2C 0x1                  # write value 1  0x1               to item id 0x209100c9 in layer
+Flash CFG-MSGOUT-NMEA_ID_GLL_UART1 0x1                  # write value 1  0x1               to item id 0x209100ca in lay
+Flash CFG-MSGOUT-NMEA_ID_GLL_UART2 0x1                  # write value 1  0x1               to item id 0x209100cb in lay
+Flash CFG-MSGOUT-NMEA_ID_GLL_USB 0x1                  # write value 1  0x1               to item id 0x209100cc in layer
+Flash CFG-MSGOUT-NMEA_ID_GLL_SPI 0x1                  # write value 1  0x1               to item id 0x209100cd in layer
+Flash CFG-MSGOUT-NMEA_ID_GRS_I2C 0x0                  # write value 0  0x0               to item id 0x209100ce in layer
+Flash CFG-MSGOUT-NMEA_ID_GRS_UART1 0x0                  # write value 0  0x0               to item id 0x209100cf in lay
+Flash CFG-MSGOUT-NMEA_ID_GRS_UART2 0x0                  # write value 0  0x0               to item id 0x209100d0 in lay
+Flash CFG-MSGOUT-NMEA_ID_GRS_USB 0x0                  # write value 0  0x0               to item id 0x209100d1 in layer
+Flash CFG-MSGOUT-NMEA_ID_GRS_SPI 0x0                  # write value 0  0x0               to item id 0x209100d2 in layer
+Flash CFG-MSGOUT-NMEA_ID_GST_I2C 0x0                  # write value 0  0x0               to item id 0x209100d3 in layer
+Flash CFG-MSGOUT-NMEA_ID_GST_UART1 0x0                  # write value 0  0x0               to item id 0x209100d4 in lay
+Flash CFG-MSGOUT-NMEA_ID_GST_UART2 0x0                  # write value 0  0x0               to item id 0x209100d5 in lay
+Flash CFG-MSGOUT-NMEA_ID_GST_USB 0x0                  # write value 0  0x0               to item id 0x209100d6 in layer
+Flash CFG-MSGOUT-NMEA_ID_GST_SPI 0x0                  # write value 0  0x0               to item id 0x209100d7 in layer
+Flash CFG-MSGOUT-NMEA_ID_ZDA_I2C 0x0                  # write value 0  0x0               to item id 0x209100d8 in layer
+Flash CFG-MSGOUT-NMEA_ID_ZDA_UART1 0x0                  # write value 0  0x0               to item id 0x209100d9 in lay
+Flash CFG-MSGOUT-NMEA_ID_ZDA_UART2 0x0                  # write value 0  0x0               to item id 0x209100da in lay
+Flash CFG-MSGOUT-NMEA_ID_ZDA_USB 0x0                  # write value 0  0x0               to item id 0x209100db in layer
+Flash CFG-MSGOUT-NMEA_ID_ZDA_SPI 0x0                  # write value 0  0x0               to item id 0x209100dc in layer
+Flash CFG-MSGOUT-NMEA_ID_GBS_I2C 0x0                  # write value 0  0x0               to item id 0x209100dd in layer
+Flash CFG-MSGOUT-NMEA_ID_GBS_UART1 0x0                  # write value 0  0x0               to item id 0x209100de in lay
+Flash CFG-MSGOUT-NMEA_ID_GBS_UART2 0x0                  # write value 0  0x0               to item id 0x209100df in lay
+Flash CFG-MSGOUT-NMEA_ID_GBS_USB 0x0                  # write value 0  0x0               to item id 0x209100e0 in layer
+Flash CFG-MSGOUT-NMEA_ID_GBS_SPI 0x0                  # write value 0  0x0               to item id 0x209100e1 in layer
+Flash CFG-MSGOUT-NMEA_ID_VLW_I2C 0x0                  # write value 0  0x0               to item id 0x209100e7 in layer
+Flash CFG-MSGOUT-NMEA_ID_VLW_UART1 0x0                  # write value 0  0x0               to item id 0x209100e8 in lay
+Flash CFG-MSGOUT-NMEA_ID_VLW_UART2 0x0                  # write value 0  0x0               to item id 0x209100e9 in lay
+Flash CFG-MSGOUT-NMEA_ID_VLW_USB 0x0                  # write value 0  0x0               to item id 0x209100ea in layer
+Flash CFG-MSGOUT-NMEA_ID_VLW_SPI 0x0                  # write value 0  0x0               to item id 0x209100eb in layer
+Flash CFG-MSGOUT-PUBX_ID_POLYP_I2C 0x0                  # write value 0  0x0               to item id 0x209100ec in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYP_UART1 0x0                  # write value 0  0x0               to item id 0x209100ed in l
+Flash CFG-MSGOUT-PUBX_ID_POLYP_UART2 0x0                  # write value 0  0x0               to item id 0x209100ee in l
+Flash CFG-MSGOUT-PUBX_ID_POLYP_USB 0x0                  # write value 0  0x0               to item id 0x209100ef in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYP_SPI 0x0                  # write value 0  0x0               to item id 0x209100f0 in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYS_I2C 0x0                  # write value 0  0x0               to item id 0x209100f1 in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYS_UART1 0x0                  # write value 0  0x0               to item id 0x209100f2 in l
+Flash CFG-MSGOUT-PUBX_ID_POLYS_UART2 0x0                  # write value 0  0x0               to item id 0x209100f3 in l
+Flash CFG-MSGOUT-PUBX_ID_POLYS_USB 0x0                  # write value 0  0x0               to item id 0x209100f4 in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYS_SPI 0x0                  # write value 0  0x0               to item id 0x209100f5 in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYT_I2C 0x0                  # write value 0  0x0               to item id 0x209100f6 in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYT_UART1 0x0                  # write value 0  0x0               to item id 0x209100f7 in l
+Flash CFG-MSGOUT-PUBX_ID_POLYT_UART2 0x0                  # write value 0  0x0               to item id 0x209100f8 in l
+Flash CFG-MSGOUT-PUBX_ID_POLYT_USB 0x0                  # write value 0  0x0               to item id 0x209100f9 in lay
+Flash CFG-MSGOUT-PUBX_ID_POLYT_SPI 0x0                  # write value 0  0x0               to item id 0x209100fa in lay
+Flash CFG-MSGOUT-UBX_NAV_EOE_I2C 0x0                  # write value 0  0x0               to item id 0x2091015f in layer
+Flash CFG-MSGOUT-UBX_NAV_EOE_UART1 0x0                  # write value 0  0x0               to item id 0x20910160 in lay
+Flash CFG-MSGOUT-UBX_NAV_EOE_UART2 0x0                  # write value 0  0x0               to item id 0x20910161 in lay
+Flash CFG-MSGOUT-UBX_NAV_EOE_USB 0x0                  # write value 0  0x0               to item id 0x20910162 in layer
+Flash CFG-MSGOUT-UBX_NAV_EOE_SPI 0x0                  # write value 0  0x0               to item id 0x20910163 in layer
+Flash CFG-MSGOUT-UBX_TIM_TM2_I2C 0x0                  # write value 0  0x0               to item id 0x20910178 in layer
+Flash CFG-MSGOUT-UBX_TIM_TM2_UART1 0x0                  # write value 0  0x0               to item id 0x20910179 in lay
+Flash CFG-MSGOUT-UBX_TIM_TM2_UART2 0x0                  # write value 0  0x0               to item id 0x2091017a in lay
+Flash CFG-MSGOUT-UBX_TIM_TM2_USB 0x0                  # write value 0  0x0               to item id 0x2091017b in layer
+Flash CFG-MSGOUT-UBX_TIM_TM2_SPI 0x0                  # write value 0  0x0               to item id 0x2091017c in layer
+Flash CFG-MSGOUT-UBX_TIM_TP_I2C 0x0                  # write value 0  0x0               to item id 0x2091017d in layer 
+Flash CFG-MSGOUT-UBX_TIM_TP_UART1 0x0                  # write value 0  0x0               to item id 0x2091017e in laye
+Flash CFG-MSGOUT-UBX_TIM_TP_UART2 0x0                  # write value 0  0x0               to item id 0x2091017f in laye
+Flash CFG-MSGOUT-UBX_TIM_TP_USB 0x0                  # write value 0  0x0               to item id 0x20910180 in layer 
+Flash CFG-MSGOUT-UBX_TIM_TP_SPI 0x0                  # write value 0  0x0               to item id 0x20910181 in layer 
+Flash CFG-MSGOUT-UBX_MON_RXR_I2C 0x0                  # write value 0  0x0               to item id 0x20910187 in layer
+Flash CFG-MSGOUT-UBX_MON_RXR_UART1 0x0                  # write value 0  0x0               to item id 0x20910188 in lay
+Flash CFG-MSGOUT-UBX_MON_RXR_UART2 0x0                  # write value 0  0x0               to item id 0x20910189 in lay
+Flash CFG-MSGOUT-UBX_MON_RXR_USB 0x0                  # write value 0  0x0               to item id 0x2091018a in layer
+Flash CFG-MSGOUT-UBX_MON_RXR_SPI 0x0                  # write value 0  0x0               to item id 0x2091018b in layer
+Flash CFG-MSGOUT-UBX_MON_MSGPP_I2C 0x0                  # write value 0  0x0               to item id 0x20910196 in lay
+Flash CFG-MSGOUT-UBX_MON_MSGPP_UART1 0x0                  # write value 0  0x0               to item id 0x20910197 in l
+Flash CFG-MSGOUT-UBX_MON_MSGPP_UART2 0x0                  # write value 0  0x0               to item id 0x20910198 in l
+Flash CFG-MSGOUT-UBX_MON_MSGPP_USB 0x0                  # write value 0  0x0               to item id 0x20910199 in lay
+Flash CFG-MSGOUT-UBX_MON_MSGPP_SPI 0x0                  # write value 0  0x0               to item id 0x2091019a in lay
+Flash CFG-MSGOUT-UBX_MON_TXBUF_I2C 0x0                  # write value 0  0x0               to item id 0x2091019b in lay
+Flash CFG-MSGOUT-UBX_MON_TXBUF_UART1 0x0                  # write value 0  0x0               to item id 0x2091019c in l
+Flash CFG-MSGOUT-UBX_MON_TXBUF_UART2 0x0                  # write value 0  0x0               to item id 0x2091019d in l
+Flash CFG-MSGOUT-UBX_MON_TXBUF_USB 0x0                  # write value 0  0x0               to item id 0x2091019e in lay
+Flash CFG-MSGOUT-UBX_MON_TXBUF_SPI 0x0                  # write value 0  0x0               to item id 0x2091019f in lay
+Flash CFG-MSGOUT-UBX_MON_RXBUF_I2C 0x0                  # write value 0  0x0               to item id 0x209101a0 in lay
+Flash CFG-MSGOUT-UBX_MON_RXBUF_UART1 0x0                  # write value 0  0x0               to item id 0x209101a1 in l
+Flash CFG-MSGOUT-UBX_MON_RXBUF_UART2 0x0                  # write value 0  0x0               to item id 0x209101a2 in l
+Flash CFG-MSGOUT-UBX_MON_RXBUF_USB 0x1                  # write value 1  0x1               to item id 0x209101a3 in lay
+Flash CFG-MSGOUT-UBX_MON_RXBUF_SPI 0x0                  # write value 0  0x0               to item id 0x209101a4 in lay
+Flash CFG-MSGOUT-UBX_MON_IO_I2C 0x0                  # write value 0  0x0               to item id 0x209101a5 in layer 
+Flash CFG-MSGOUT-UBX_MON_IO_UART1 0x0                  # write value 0  0x0               to item id 0x209101a6 in laye
+Flash CFG-MSGOUT-UBX_MON_IO_UART2 0x0                  # write value 0  0x0               to item id 0x209101a7 in laye
+Flash CFG-MSGOUT-UBX_MON_IO_USB 0x0                  # write value 0  0x0               to item id 0x209101a8 in layer 
+Flash CFG-MSGOUT-UBX_MON_IO_SPI 0x0                  # write value 0  0x0               to item id 0x209101a9 in layer 
+Flash CFG-MSGOUT-UBX_MON_HW_I2C 0x0                  # write value 0  0x0               to item id 0x209101b4 in layer 
+Flash CFG-MSGOUT-UBX_MON_HW_UART1 0x0                  # write value 0  0x0               to item id 0x209101b5 in laye
+Flash CFG-MSGOUT-UBX_MON_HW_UART2 0x0                  # write value 0  0x0               to item id 0x209101b6 in laye
+Flash CFG-MSGOUT-UBX_MON_HW_USB 0x0                  # write value 0  0x0               to item id 0x209101b7 in layer 
+Flash CFG-MSGOUT-UBX_MON_HW_SPI 0x0                  # write value 0  0x0               to item id 0x209101b8 in layer 
+Flash CFG-MSGOUT-UBX_MON_HW2_I2C 0x0                  # write value 0  0x0               to item id 0x209101b9 in layer
+Flash CFG-MSGOUT-UBX_MON_HW2_UART1 0x0                  # write value 0  0x0               to item id 0x209101ba in lay
+Flash CFG-MSGOUT-UBX_MON_HW2_UART2 0x0                  # write value 0  0x0               to item id 0x209101bb in lay
+Flash CFG-MSGOUT-UBX_MON_HW2_USB 0x0                  # write value 0  0x0               to item id 0x209101bc in layer
+Flash CFG-MSGOUT-UBX_MON_HW2_SPI 0x0                  # write value 0  0x0               to item id 0x209101bd in layer
+Flash CFG-MSGOUT-UBX_RXM_MEASX_I2C 0x0                  # write value 0  0x0               to item id 0x20910204 in lay
+Flash CFG-MSGOUT-UBX_RXM_MEASX_UART1 0x0                  # write value 0  0x0               to item id 0x20910205 in l
+Flash CFG-MSGOUT-UBX_RXM_MEASX_UART2 0x0                  # write value 0  0x0               to item id 0x20910206 in l
+Flash CFG-MSGOUT-UBX_RXM_MEASX_USB 0x0                  # write value 0  0x0               to item id 0x20910207 in lay
+Flash CFG-MSGOUT-UBX_RXM_MEASX_SPI 0x0                  # write value 0  0x0               to item id 0x20910208 in lay
+Flash CFG-MSGOUT-UBX_RXM_SFRBX_I2C 0x0                  # write value 0  0x0               to item id 0x20910231 in lay
+Flash CFG-MSGOUT-UBX_RXM_SFRBX_UART1 0x0                  # write value 0  0x0               to item id 0x20910232 in l
+Flash CFG-MSGOUT-UBX_RXM_SFRBX_UART2 0x0                  # write value 0  0x0               to item id 0x20910233 in l
+Flash CFG-MSGOUT-UBX_RXM_SFRBX_USB 0x0                  # write value 0  0x0               to item id 0x20910234 in lay
+Flash CFG-MSGOUT-UBX_RXM_SFRBX_SPI 0x0                  # write value 0  0x0               to item id 0x20910235 in lay
+Flash CFG-MSGOUT-UBX_LOG_INFO_I2C 0x0                  # write value 0  0x0               to item id 0x20910259 in laye
+Flash CFG-MSGOUT-UBX_LOG_INFO_UART1 0x0                  # write value 0  0x0               to item id 0x2091025a in la
+Flash CFG-MSGOUT-UBX_LOG_INFO_UART2 0x0                  # write value 0  0x0               to item id 0x2091025b in la
+Flash CFG-MSGOUT-UBX_LOG_INFO_USB 0x0                  # write value 0  0x0               to item id 0x2091025c in laye
+Flash CFG-MSGOUT-UBX_LOG_INFO_SPI 0x0                  # write value 0  0x0               to item id 0x2091025d in laye
+Flash CFG-MSGOUT-UBX_RXM_RLM_I2C 0x0                  # write value 0  0x0               to item id 0x2091025e in layer
+Flash CFG-MSGOUT-UBX_RXM_RLM_UART1 0x0                  # write value 0  0x0               to item id 0x2091025f in lay
+Flash CFG-MSGOUT-UBX_RXM_RLM_UART2 0x0                  # write value 0  0x0               to item id 0x20910260 in lay
+Flash CFG-MSGOUT-UBX_RXM_RLM_USB 0x0                  # write value 0  0x0               to item id 0x20910261 in layer
+Flash CFG-MSGOUT-UBX_RXM_RLM_SPI 0x0                  # write value 0  0x0               to item id 0x20910262 in layer
+Flash CFG-MSGOUT-UBX_RXM_RTCM_I2C 0x0                  # write value 0  0x0               to item id 0x20910268 in laye
+Flash CFG-MSGOUT-UBX_RXM_RTCM_UART1 0x0                  # write value 0  0x0               to item id 0x20910269 in la
+Flash CFG-MSGOUT-UBX_RXM_RTCM_UART2 0x0                  # write value 0  0x0               to item id 0x2091026a in la
+Flash CFG-MSGOUT-UBX_RXM_RTCM_USB 0x0                  # write value 0  0x0               to item id 0x2091026b in laye
+Flash CFG-MSGOUT-UBX_RXM_RTCM_SPI 0x0                  # write value 0  0x0               to item id 0x2091026c in laye
+Flash CFG-MSGOUT-UBX_RXM_RAWX_I2C 0x0                  # write value 0  0x0               to item id 0x209102a4 in laye
+Flash CFG-MSGOUT-UBX_RXM_RAWX_UART1 0x0                  # write value 0  0x0               to item id 0x209102a5 in la
+Flash CFG-MSGOUT-UBX_RXM_RAWX_UART2 0x0                  # write value 0  0x0               to item id 0x209102a6 in la
+Flash CFG-MSGOUT-UBX_RXM_RAWX_USB 0x0                  # write value 0  0x0               to item id 0x209102a7 in laye
+Flash CFG-MSGOUT-UBX_RXM_RAWX_SPI 0x0                  # write value 0  0x0               to item id 0x209102a8 in laye
+Flash CFG-MSGOUT-RTCM_3X_TYPE1005_I2C 0x0                  # write value 0  0x0               to item id 0x209102bd in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1005_UART1 0x0                  # write value 0  0x0               to item id 0x209102be i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1005_UART2 0x0                  # write value 0  0x0               to item id 0x209102bf i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1005_USB 0x0                  # write value 0  0x0               to item id 0x209102c0 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1005_SPI 0x0                  # write value 0  0x0               to item id 0x209102c1 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1077_I2C 0x0                  # write value 0  0x0               to item id 0x209102cc in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1077_UART1 0x0                  # write value 0  0x0               to item id 0x209102cd i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1077_UART2 0x0                  # write value 0  0x0               to item id 0x209102ce i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1077_USB 0x0                  # write value 0  0x0               to item id 0x209102cf in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1077_SPI 0x0                  # write value 0  0x0               to item id 0x209102d0 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1087_I2C 0x0                  # write value 0  0x0               to item id 0x209102d1 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1087_UART1 0x0                  # write value 0  0x0               to item id 0x209102d2 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1087_UART2 0x0                  # write value 0  0x0               to item id 0x209102d3 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1087_USB 0x0                  # write value 0  0x0               to item id 0x209102d4 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1087_SPI 0x0                  # write value 0  0x0               to item id 0x209102d5 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1127_I2C 0x0                  # write value 0  0x0               to item id 0x209102d6 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1127_UART1 0x0                  # write value 0  0x0               to item id 0x209102d7 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1127_UART2 0x0                  # write value 0  0x0               to item id 0x209102d8 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1127_USB 0x0                  # write value 0  0x0               to item id 0x209102d9 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1127_SPI 0x0                  # write value 0  0x0               to item id 0x209102da in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1230_I2C 0x0                  # write value 0  0x0               to item id 0x20910303 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1230_UART1 0x0                  # write value 0  0x0               to item id 0x20910304 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1230_UART2 0x0                  # write value 0  0x0               to item id 0x20910305 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1230_USB 0x0                  # write value 0  0x0               to item id 0x20910306 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1230_SPI 0x0                  # write value 0  0x0               to item id 0x20910307 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1097_I2C 0x0                  # write value 0  0x0               to item id 0x20910318 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1097_UART1 0x0                  # write value 0  0x0               to item id 0x20910319 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1097_UART2 0x0                  # write value 0  0x0               to item id 0x2091031a i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1097_USB 0x0                  # write value 0  0x0               to item id 0x2091031b in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1097_SPI 0x0                  # write value 0  0x0               to item id 0x2091031c in 
+Flash CFG-MSGOUT-UBX_NAV_SLAS_I2C 0x0                  # write value 0  0x0               to item id 0x20910336 in laye
+Flash CFG-MSGOUT-UBX_NAV_SLAS_UART1 0x0                  # write value 0  0x0               to item id 0x20910337 in la
+Flash CFG-MSGOUT-UBX_NAV_SLAS_UART2 0x0                  # write value 0  0x0               to item id 0x20910338 in la
+Flash CFG-MSGOUT-UBX_NAV_SLAS_USB 0x0                  # write value 0  0x0               to item id 0x20910339 in laye
+Flash CFG-MSGOUT-UBX_NAV_SLAS_SPI 0x0                  # write value 0  0x0               to item id 0x2091033a in laye
+Flash CFG-MSGOUT-UBX_NAV_SIG_I2C 0x0                  # write value 0  0x0               to item id 0x20910345 in layer
+Flash CFG-MSGOUT-UBX_NAV_SIG_UART1 0x0                  # write value 0  0x0               to item id 0x20910346 in lay
+Flash CFG-MSGOUT-UBX_NAV_SIG_UART2 0x0                  # write value 0  0x0               to item id 0x20910347 in lay
+Flash CFG-MSGOUT-UBX_NAV_SIG_USB 0x0                  # write value 0  0x0               to item id 0x20910348 in layer
+Flash CFG-MSGOUT-UBX_NAV_SIG_SPI 0x0                  # write value 0  0x0               to item id 0x20910349 in layer
+Flash CFG-MSGOUT-UBX_MON_COMMS_I2C 0x0                  # write value 0  0x0               to item id 0x2091034f in lay
+Flash CFG-MSGOUT-UBX_MON_COMMS_UART1 0x0                  # write value 0  0x0               to item id 0x20910350 in l
+Flash CFG-MSGOUT-UBX_MON_COMMS_UART2 0x0                  # write value 0  0x0               to item id 0x20910351 in l
+Flash CFG-MSGOUT-UBX_MON_COMMS_USB 0x0                  # write value 0  0x0               to item id 0x20910352 in lay
+Flash CFG-MSGOUT-UBX_MON_COMMS_SPI 0x0                  # write value 0  0x0               to item id 0x20910353 in lay
+Flash CFG-MSGOUT-UBX_MON_HW3_I2C 0x0                  # write value 0  0x0               to item id 0x20910354 in layer
+Flash CFG-MSGOUT-UBX_MON_HW3_UART1 0x0                  # write value 0  0x0               to item id 0x20910355 in lay
+Flash CFG-MSGOUT-UBX_MON_HW3_UART2 0x0                  # write value 0  0x0               to item id 0x20910356 in lay
+Flash CFG-MSGOUT-UBX_MON_HW3_USB 0x0                  # write value 0  0x0               to item id 0x20910357 in layer
+Flash CFG-MSGOUT-UBX_MON_HW3_SPI 0x0                  # write value 0  0x0               to item id 0x20910358 in layer
+Flash CFG-MSGOUT-UBX_MON_RF_I2C 0x0                  # write value 0  0x0               to item id 0x20910359 in layer 
+Flash CFG-MSGOUT-UBX_MON_RF_UART1 0x0                  # write value 0  0x0               to item id 0x2091035a in laye
+Flash CFG-MSGOUT-UBX_MON_RF_UART2 0x0                  # write value 0  0x0               to item id 0x2091035b in laye
+Flash CFG-MSGOUT-UBX_MON_RF_USB 0x0                  # write value 0  0x0               to item id 0x2091035c in layer 
+Flash CFG-MSGOUT-UBX_MON_RF_SPI 0x0                  # write value 0  0x0               to item id 0x2091035d in layer 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1074_I2C 0x0                  # write value 0  0x0               to item id 0x2091035e in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1074_UART1 0x0                  # write value 0  0x0               to item id 0x2091035f i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1074_UART2 0x0                  # write value 0  0x0               to item id 0x20910360 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1074_USB 0x0                  # write value 0  0x0               to item id 0x20910361 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1074_SPI 0x0                  # write value 0  0x0               to item id 0x20910362 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1084_I2C 0x0                  # write value 0  0x0               to item id 0x20910363 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1084_UART1 0x0                  # write value 0  0x0               to item id 0x20910364 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1084_UART2 0x0                  # write value 0  0x0               to item id 0x20910365 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1084_USB 0x0                  # write value 0  0x0               to item id 0x20910366 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1084_SPI 0x0                  # write value 0  0x0               to item id 0x20910367 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1094_I2C 0x0                  # write value 0  0x0               to item id 0x20910368 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1094_UART1 0x0                  # write value 0  0x0               to item id 0x20910369 i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1094_UART2 0x0                  # write value 0  0x0               to item id 0x2091036a i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1094_USB 0x0                  # write value 0  0x0               to item id 0x2091036b in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1094_SPI 0x0                  # write value 0  0x0               to item id 0x2091036c in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1124_I2C 0x0                  # write value 0  0x0               to item id 0x2091036d in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1124_UART1 0x0                  # write value 0  0x0               to item id 0x2091036e i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1124_UART2 0x0                  # write value 0  0x0               to item id 0x2091036f i
+Flash CFG-MSGOUT-RTCM_3X_TYPE1124_USB 0x0                  # write value 0  0x0               to item id 0x20910370 in 
+Flash CFG-MSGOUT-RTCM_3X_TYPE1124_SPI 0x0                  # write value 0  0x0               to item id 0x20910371 in 
+Flash CFG-MSGOUT-UBX_NAV_TIMEQZSS_I2C 0x0                  # write value 0  0x0               to item id 0x20910386 in 
+Flash CFG-MSGOUT-UBX_NAV_TIMEQZSS_UART1 0x0                  # write value 0  0x0               to item id 0x20910387 i
+Flash CFG-MSGOUT-UBX_NAV_TIMEQZSS_UART2 0x0                  # write value 0  0x0               to item id 0x20910388 i
+Flash CFG-MSGOUT-UBX_NAV_TIMEQZSS_USB 0x0                  # write value 0  0x0               to item id 0x20910389 in 
+Flash CFG-MSGOUT-UBX_NAV_TIMEQZSS_SPI 0x0                  # write value 0  0x0               to item id 0x2091038a in 
+Flash CFG-MSGOUT-UBX_MON_SPAN_I2C 0x0                  # write value 0  0x0               to item id 0x2091038b in laye
+Flash CFG-MSGOUT-UBX_MON_SPAN_UART1 0x0                  # write value 0  0x0               to item id 0x2091038c in la
+Flash CFG-MSGOUT-UBX_MON_SPAN_UART2 0x0                  # write value 0  0x0               to item id 0x2091038d in la
+Flash CFG-MSGOUT-UBX_MON_SPAN_USB 0x0                  # write value 0  0x0               to item id 0x2091038e in laye
+Flash CFG-MSGOUT-UBX_MON_SPAN_SPI 0x0                  # write value 0  0x0               to item id 0x2091038f in laye
+Flash CFG-MSGOUT-NMEA_ID_RLM_I2C 0x0                  # write value 0  0x0               to item id 0x20910400 in layer
+Flash CFG-MSGOUT-NMEA_ID_RLM_UART1 0x0                  # write value 0  0x0               to item id 0x20910401 in lay
+Flash CFG-MSGOUT-NMEA_ID_RLM_UART2 0x0                  # write value 0  0x0               to item id 0x20910402 in lay
+Flash CFG-MSGOUT-NMEA_ID_RLM_USB 0x0                  # write value 0  0x0               to item id 0x20910403 in layer
+Flash CFG-MSGOUT-NMEA_ID_RLM_SPI 0x0                  # write value 0  0x0               to item id 0x20910404 in layer
+Flash CFG-MSGOUT-UBX_NAV_PL_I2C 0x0                  # write value 0  0x0               to item id 0x20910415 in layer 
+Flash CFG-MSGOUT-UBX_NAV_PL_UART1 0x0                  # write value 0  0x0               to item id 0x20910416 in laye
+Flash CFG-MSGOUT-UBX_NAV_PL_UART2 0x0                  # write value 0  0x0               to item id 0x20910417 in laye
+Flash CFG-MSGOUT-UBX_NAV_PL_USB 0x0                  # write value 0  0x0               to item id 0x20910418 in layer 
+Flash CFG-MSGOUT-UBX_NAV_PL_SPI 0x0                  # write value 0  0x0               to item id 0x20910419 in layer 
+Flash CFG-MSGOUT-UBX_NAV2_CLOCK_I2C 0x0                  # write value 0  0x0               to item id 0x20910430 in la
+Flash CFG-MSGOUT-UBX_NAV2_CLOCK_UART1 0x0                  # write value 0  0x0               to item id 0x20910431 in 
+Flash CFG-MSGOUT-UBX_NAV2_CLOCK_UART2 0x0                  # write value 0  0x0               to item id 0x20910432 in 
+Flash CFG-MSGOUT-UBX_NAV2_CLOCK_USB 0x0                  # write value 0  0x0               to item id 0x20910433 in la
+Flash CFG-MSGOUT-UBX_NAV2_CLOCK_SPI 0x0                  # write value 0  0x0               to item id 0x20910434 in la
+Flash CFG-MSGOUT-UBX_NAV2_COV_I2C 0x0                  # write value 0  0x0               to item id 0x20910435 in laye
+Flash CFG-MSGOUT-UBX_NAV2_COV_UART1 0x0                  # write value 0  0x0               to item id 0x20910436 in la
+Flash CFG-MSGOUT-UBX_NAV2_COV_UART2 0x0                  # write value 0  0x0               to item id 0x20910437 in la
+Flash CFG-MSGOUT-UBX_NAV2_COV_USB 0x0                  # write value 0  0x0               to item id 0x20910438 in laye
+Flash CFG-MSGOUT-UBX_NAV2_COV_SPI 0x0                  # write value 0  0x0               to item id 0x20910439 in laye
+Flash CFG-MSGOUT-UBX_NAV2_DOP_I2C 0x0                  # write value 0  0x0               to item id 0x20910465 in laye
+Flash CFG-MSGOUT-UBX_NAV2_DOP_UART1 0x0                  # write value 0  0x0               to item id 0x20910466 in la
+Flash CFG-MSGOUT-UBX_NAV2_DOP_UART2 0x0                  # write value 0  0x0               to item id 0x20910467 in la
+Flash CFG-MSGOUT-UBX_NAV2_DOP_USB 0x0                  # write value 0  0x0               to item id 0x20910468 in laye
+Flash CFG-MSGOUT-UBX_NAV2_DOP_SPI 0x0                  # write value 0  0x0               to item id 0x20910469 in laye
+Flash CFG-MSGOUT-UBX_NAV2_ODO_I2C 0x0                  # write value 0  0x0               to item id 0x20910475 in laye
+Flash CFG-MSGOUT-UBX_NAV2_ODO_UART1 0x0                  # write value 0  0x0               to item id 0x20910476 in la
+Flash CFG-MSGOUT-UBX_NAV2_ODO_UART2 0x0                  # write value 0  0x0               to item id 0x20910477 in la
+Flash CFG-MSGOUT-UBX_NAV2_ODO_USB 0x0                  # write value 0  0x0               to item id 0x20910478 in laye
+Flash CFG-MSGOUT-UBX_NAV2_ODO_SPI 0x0                  # write value 0  0x0               to item id 0x20910479 in laye
+Flash CFG-MSGOUT-UBX_NAV2_POSECEF_I2C 0x0                  # write value 0  0x0               to item id 0x20910480 in 
+Flash CFG-MSGOUT-UBX_NAV2_POSECEF_UART1 0x0                  # write value 0  0x0               to item id 0x20910481 i
+Flash CFG-MSGOUT-UBX_NAV2_POSECEF_UART2 0x0                  # write value 0  0x0               to item id 0x20910482 i
+Flash CFG-MSGOUT-UBX_NAV2_POSECEF_USB 0x0                  # write value 0  0x0               to item id 0x20910483 in 
+Flash CFG-MSGOUT-UBX_NAV2_POSECEF_SPI 0x0                  # write value 0  0x0               to item id 0x20910484 in 
+Flash CFG-MSGOUT-UBX_NAV2_POSLLH_I2C 0x0                  # write value 0  0x0               to item id 0x20910485 in l
+Flash CFG-MSGOUT-UBX_NAV2_POSLLH_UART1 0x0                  # write value 0  0x0               to item id 0x20910486 in
+Flash CFG-MSGOUT-UBX_NAV2_POSLLH_UART2 0x0                  # write value 0  0x0               to item id 0x20910487 in
+Flash CFG-MSGOUT-UBX_NAV2_POSLLH_USB 0x0                  # write value 0  0x0               to item id 0x20910488 in l
+Flash CFG-MSGOUT-UBX_NAV2_POSLLH_SPI 0x0                  # write value 0  0x0               to item id 0x20910489 in l
+Flash CFG-MSGOUT-UBX_NAV2_PVT_I2C 0x0                  # write value 0  0x0               to item id 0x20910490 in laye
+Flash CFG-MSGOUT-UBX_NAV2_PVT_UART1 0x0                  # write value 0  0x0               to item id 0x20910491 in la
+Flash CFG-MSGOUT-UBX_NAV2_PVT_UART2 0x0                  # write value 0  0x0               to item id 0x20910492 in la
+Flash CFG-MSGOUT-UBX_NAV2_PVT_USB 0x0                  # write value 0  0x0               to item id 0x20910493 in laye
+Flash CFG-MSGOUT-UBX_NAV2_PVT_SPI 0x0                  # write value 0  0x0               to item id 0x20910494 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SAT_I2C 0x0                  # write value 0  0x0               to item id 0x20910495 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SAT_UART1 0x0                  # write value 0  0x0               to item id 0x20910496 in la
+Flash CFG-MSGOUT-UBX_NAV2_SAT_UART2 0x0                  # write value 0  0x0               to item id 0x20910497 in la
+Flash CFG-MSGOUT-UBX_NAV2_SAT_USB 0x0                  # write value 0  0x0               to item id 0x20910498 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SAT_SPI 0x0                  # write value 0  0x0               to item id 0x20910499 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SBAS_I2C 0x0                  # write value 0  0x0               to item id 0x20910500 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SBAS_UART1 0x0                  # write value 0  0x0               to item id 0x20910501 in l
+Flash CFG-MSGOUT-UBX_NAV2_SBAS_UART2 0x0                  # write value 0  0x0               to item id 0x20910502 in l
+Flash CFG-MSGOUT-UBX_NAV2_SBAS_USB 0x0                  # write value 0  0x0               to item id 0x20910503 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SBAS_SPI 0x0                  # write value 0  0x0               to item id 0x20910504 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SIG_I2C 0x0                  # write value 0  0x0               to item id 0x20910505 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SIG_UART1 0x0                  # write value 0  0x0               to item id 0x20910506 in la
+Flash CFG-MSGOUT-UBX_NAV2_SIG_UART2 0x0                  # write value 0  0x0               to item id 0x20910507 in la
+Flash CFG-MSGOUT-UBX_NAV2_SIG_USB 0x0                  # write value 0  0x0               to item id 0x20910508 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SIG_SPI 0x0                  # write value 0  0x0               to item id 0x20910509 in laye
+Flash CFG-MSGOUT-UBX_NAV2_SLAS_I2C 0x0                  # write value 0  0x0               to item id 0x20910510 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SLAS_UART1 0x0                  # write value 0  0x0               to item id 0x20910511 in l
+Flash CFG-MSGOUT-UBX_NAV2_SLAS_UART2 0x0                  # write value 0  0x0               to item id 0x20910512 in l
+Flash CFG-MSGOUT-UBX_NAV2_SLAS_USB 0x0                  # write value 0  0x0               to item id 0x20910513 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SLAS_SPI 0x0                  # write value 0  0x0               to item id 0x20910514 in lay
+Flash CFG-MSGOUT-UBX_NAV2_STATUS_I2C 0x0                  # write value 0  0x0               to item id 0x20910515 in l
+Flash CFG-MSGOUT-UBX_NAV2_STATUS_UART1 0x0                  # write value 0  0x0               to item id 0x20910516 in
+Flash CFG-MSGOUT-UBX_NAV2_STATUS_UART2 0x0                  # write value 0  0x0               to item id 0x20910517 in
+Flash CFG-MSGOUT-UBX_NAV2_STATUS_USB 0x0                  # write value 0  0x0               to item id 0x20910518 in l
+Flash CFG-MSGOUT-UBX_NAV2_STATUS_SPI 0x0                  # write value 0  0x0               to item id 0x20910519 in l
+Flash CFG-MSGOUT-UBX_NAV2_SVIN_I2C 0x0                  # write value 0  0x0               to item id 0x20910520 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SVIN_UART1 0x0                  # write value 0  0x0               to item id 0x20910521 in l
+Flash CFG-MSGOUT-UBX_NAV2_SVIN_UART2 0x0                  # write value 0  0x0               to item id 0x20910522 in l
+Flash CFG-MSGOUT-UBX_NAV2_SVIN_USB 0x0                  # write value 0  0x0               to item id 0x20910523 in lay
+Flash CFG-MSGOUT-UBX_NAV2_SVIN_SPI 0x0                  # write value 0  0x0               to item id 0x20910524 in lay
+Flash CFG-MSGOUT-UBX_NAV2_TIMEBDS_I2C 0x0                  # write value 0  0x0               to item id 0x20910525 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEBDS_UART1 0x0                  # write value 0  0x0               to item id 0x20910526 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEBDS_UART2 0x0                  # write value 0  0x0               to item id 0x20910527 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEBDS_USB 0x0                  # write value 0  0x0               to item id 0x20910528 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEBDS_SPI 0x0                  # write value 0  0x0               to item id 0x20910529 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGAL_I2C 0x0                  # write value 0  0x0               to item id 0x20910530 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGAL_UART1 0x0                  # write value 0  0x0               to item id 0x20910531 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGAL_UART2 0x0                  # write value 0  0x0               to item id 0x20910532 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGAL_USB 0x0                  # write value 0  0x0               to item id 0x20910533 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGAL_SPI 0x0                  # write value 0  0x0               to item id 0x20910534 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGLO_I2C 0x0                  # write value 0  0x0               to item id 0x20910535 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGLO_UART1 0x0                  # write value 0  0x0               to item id 0x20910536 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGLO_UART2 0x0                  # write value 0  0x0               to item id 0x20910537 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGLO_USB 0x0                  # write value 0  0x0               to item id 0x20910538 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGLO_SPI 0x0                  # write value 0  0x0               to item id 0x20910539 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGPS_I2C 0x0                  # write value 0  0x0               to item id 0x20910540 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGPS_UART1 0x0                  # write value 0  0x0               to item id 0x20910541 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGPS_UART2 0x0                  # write value 0  0x0               to item id 0x20910542 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGPS_USB 0x0                  # write value 0  0x0               to item id 0x20910543 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEGPS_SPI 0x0                  # write value 0  0x0               to item id 0x20910544 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMELS_I2C 0x0                  # write value 0  0x0               to item id 0x20910545 in l
+Flash CFG-MSGOUT-UBX_NAV2_TIMELS_UART1 0x0                  # write value 0  0x0               to item id 0x20910546 in
+Flash CFG-MSGOUT-UBX_NAV2_TIMELS_UART2 0x0                  # write value 0  0x0               to item id 0x20910547 in
+Flash CFG-MSGOUT-UBX_NAV2_TIMELS_USB 0x0                  # write value 0  0x0               to item id 0x20910548 in l
+Flash CFG-MSGOUT-UBX_NAV2_TIMELS_SPI 0x0                  # write value 0  0x0               to item id 0x20910549 in l
+Flash CFG-MSGOUT-UBX_NAV2_TIMEUTC_I2C 0x0                  # write value 0  0x0               to item id 0x20910550 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEUTC_UART1 0x0                  # write value 0  0x0               to item id 0x20910551 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEUTC_UART2 0x0                  # write value 0  0x0               to item id 0x20910552 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMEUTC_USB 0x0                  # write value 0  0x0               to item id 0x20910553 in 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEUTC_SPI 0x0                  # write value 0  0x0               to item id 0x20910554 in 
+Flash CFG-MSGOUT-UBX_NAV2_VELECEF_I2C 0x0                  # write value 0  0x0               to item id 0x20910555 in 
+Flash CFG-MSGOUT-UBX_NAV2_VELECEF_UART1 0x0                  # write value 0  0x0               to item id 0x20910556 i
+Flash CFG-MSGOUT-UBX_NAV2_VELECEF_UART2 0x0                  # write value 0  0x0               to item id 0x20910557 i
+Flash CFG-MSGOUT-UBX_NAV2_VELECEF_USB 0x0                  # write value 0  0x0               to item id 0x20910558 in 
+Flash CFG-MSGOUT-UBX_NAV2_VELECEF_SPI 0x0                  # write value 0  0x0               to item id 0x20910559 in 
+Flash CFG-MSGOUT-UBX_NAV2_VELNED_I2C 0x0                  # write value 0  0x0               to item id 0x20910560 in l
+Flash CFG-MSGOUT-UBX_NAV2_VELNED_UART1 0x0                  # write value 0  0x0               to item id 0x20910561 in
+Flash CFG-MSGOUT-UBX_NAV2_VELNED_UART2 0x0                  # write value 0  0x0               to item id 0x20910562 in
+Flash CFG-MSGOUT-UBX_NAV2_VELNED_USB 0x0                  # write value 0  0x0               to item id 0x20910563 in l
+Flash CFG-MSGOUT-UBX_NAV2_VELNED_SPI 0x0                  # write value 0  0x0               to item id 0x20910564 in l
+Flash CFG-MSGOUT-UBX_NAV2_EOE_I2C 0x0                  # write value 0  0x0               to item id 0x20910565 in laye
+Flash CFG-MSGOUT-UBX_NAV2_EOE_UART1 0x0                  # write value 0  0x0               to item id 0x20910566 in la
+Flash CFG-MSGOUT-UBX_NAV2_EOE_UART2 0x0                  # write value 0  0x0               to item id 0x20910567 in la
+Flash CFG-MSGOUT-UBX_NAV2_EOE_USB 0x0                  # write value 0  0x0               to item id 0x20910568 in laye
+Flash CFG-MSGOUT-UBX_NAV2_EOE_SPI 0x0                  # write value 0  0x0               to item id 0x20910569 in laye
+Flash CFG-MSGOUT-UBX_NAV2_TIMEQZSS_I2C 0x0                  # write value 0  0x0               to item id 0x20910575 in
+Flash CFG-MSGOUT-UBX_NAV2_TIMEQZSS_UART1 0x0                  # write value 0  0x0               to item id 0x20910576 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEQZSS_UART2 0x0                  # write value 0  0x0               to item id 0x20910577 
+Flash CFG-MSGOUT-UBX_NAV2_TIMEQZSS_USB 0x0                  # write value 0  0x0               to item id 0x20910578 in
+Flash CFG-MSGOUT-UBX_NAV2_TIMEQZSS_SPI 0x0                  # write value 0  0x0               to item id 0x20910579 in
+Flash CFG-MSGOUT-UBX_RXM_SPARTN_I2C 0x0                  # write value 0  0x0               to item id 0x20910605 in la
+Flash CFG-MSGOUT-UBX_RXM_SPARTN_UART1 0x0                  # write value 0  0x0               to item id 0x20910606 in 
+Flash CFG-MSGOUT-UBX_RXM_SPARTN_UART2 0x0                  # write value 0  0x0               to item id 0x20910607 in 
+Flash CFG-MSGOUT-UBX_RXM_SPARTN_USB 0x0                  # write value 0  0x0               to item id 0x20910608 in la
+Flash CFG-MSGOUT-UBX_RXM_SPARTN_SPI 0x0                  # write value 0  0x0               to item id 0x20910609 in la
+Flash CFG-MSGOUT-UBX_SEC_SIG_I2C 0x0                  # write value 0  0x0               to item id 0x20910634 in layer
+Flash CFG-MSGOUT-UBX_SEC_SIG_UART1 0x0                  # write value 0  0x0               to item id 0x20910635 in lay
+Flash CFG-MSGOUT-UBX_SEC_SIG_UART2 0x0                  # write value 0  0x0               to item id 0x20910636 in lay
+Flash CFG-MSGOUT-UBX_SEC_SIG_USB 0x0                  # write value 0  0x0               to item id 0x20910637 in layer
+Flash CFG-MSGOUT-UBX_SEC_SIG_SPI 0x0                  # write value 0  0x0               to item id 0x20910638 in layer
+Flash CFG-MSGOUT-NMEA_NAV2_ID_RMC_I2C 0x0                  # write value 0  0x0               to item id 0x20910652 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_RMC_UART1 0x0                  # write value 0  0x0               to item id 0x20910653 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_RMC_UART2 0x0                  # write value 0  0x0               to item id 0x20910654 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_RMC_USB 0x0                  # write value 0  0x0               to item id 0x20910655 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_RMC_SPI 0x0                  # write value 0  0x0               to item id 0x20910656 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_VTG_I2C 0x0                  # write value 0  0x0               to item id 0x20910657 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_VTG_UART1 0x0                  # write value 0  0x0               to item id 0x20910658 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_VTG_UART2 0x0                  # write value 0  0x0               to item id 0x20910659 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_VTG_USB 0x0                  # write value 0  0x0               to item id 0x2091065a in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_VTG_SPI 0x0                  # write value 0  0x0               to item id 0x2091065b in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GNS_I2C 0x0                  # write value 0  0x0               to item id 0x2091065c in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GNS_UART1 0x0                  # write value 0  0x0               to item id 0x2091065d i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GNS_UART2 0x0                  # write value 0  0x0               to item id 0x2091065e i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GNS_USB 0x0                  # write value 0  0x0               to item id 0x2091065f in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GNS_SPI 0x0                  # write value 0  0x0               to item id 0x20910660 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GGA_I2C 0x0                  # write value 0  0x0               to item id 0x20910661 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GGA_UART1 0x0                  # write value 0  0x0               to item id 0x20910662 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GGA_UART2 0x0                  # write value 0  0x0               to item id 0x20910663 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GGA_USB 0x0                  # write value 0  0x0               to item id 0x20910664 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GGA_SPI 0x0                  # write value 0  0x0               to item id 0x20910665 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GSA_I2C 0x0                  # write value 0  0x0               to item id 0x20910666 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GSA_UART1 0x0                  # write value 0  0x0               to item id 0x20910667 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GSA_UART2 0x0                  # write value 0  0x0               to item id 0x20910668 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GSA_USB 0x0                  # write value 0  0x0               to item id 0x20910669 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GSA_SPI 0x0                  # write value 0  0x0               to item id 0x2091066a in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GLL_I2C 0x0                  # write value 0  0x0               to item id 0x20910670 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GLL_UART1 0x0                  # write value 0  0x0               to item id 0x20910671 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GLL_UART2 0x0                  # write value 0  0x0               to item id 0x20910672 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GLL_USB 0x0                  # write value 0  0x0               to item id 0x20910673 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_GLL_SPI 0x0                  # write value 0  0x0               to item id 0x20910674 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_ZDA_I2C 0x0                  # write value 0  0x0               to item id 0x2091067f in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_ZDA_UART1 0x0                  # write value 0  0x0               to item id 0x20910680 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_ZDA_UART2 0x0                  # write value 0  0x0               to item id 0x20910681 i
+Flash CFG-MSGOUT-NMEA_NAV2_ID_ZDA_USB 0x0                  # write value 0  0x0               to item id 0x20910682 in 
+Flash CFG-MSGOUT-NMEA_NAV2_ID_ZDA_SPI 0x0                  # write value 0  0x0               to item id 0x20910683 in 
+Flash CFG-MSGOUT-UBX_SEC_SIGLOG_I2C 0x0                  # write value 0  0x0               to item id 0x20910689 in la
+Flash CFG-MSGOUT-UBX_SEC_SIGLOG_UART1 0x0                  # write value 0  0x0               to item id 0x2091068a in 
+Flash CFG-MSGOUT-UBX_SEC_SIGLOG_UART2 0x0                  # write value 0  0x0               to item id 0x2091068b in 
+Flash CFG-MSGOUT-UBX_SEC_SIGLOG_USB 0x0                  # write value 0  0x0               to item id 0x2091068c in la
+Flash CFG-MSGOUT-UBX_SEC_SIGLOG_SPI 0x0                  # write value 0  0x0               to item id 0x2091068d in la
+Flash CFG-MSGOUT-UBX_MON_SYS_I2C 0x0                  # write value 0  0x0               to item id 0x2091069d in layer
+Flash CFG-MSGOUT-UBX_MON_SYS_UART1 0x0                  # write value 0  0x0               to item id 0x2091069e in lay
+Flash CFG-MSGOUT-UBX_MON_SYS_UART2 0x0                  # write value 0  0x0               to item id 0x2091069f in lay
+Flash CFG-MSGOUT-UBX_MON_SYS_USB 0x0                  # write value 0  0x0               to item id 0x209106a0 in layer
+Flash CFG-MSGOUT-UBX_MON_SYS_SPI 0x0                  # write value 0  0x0               to item id 0x209106a1 in layer
+Flash CFG-MSGOUT-UBX_NAV_TIMENAVIC_I2C 0x0                  # write value 0  0x0               to item id 0x209106a2 in
+Flash CFG-MSGOUT-UBX_NAV_TIMENAVIC_UART1 0x0                  # write value 0  0x0               to item id 0x209106a3 
+Flash CFG-MSGOUT-UBX_NAV_TIMENAVIC_UART2 0x0                  # write value 0  0x0               to item id 0x209106a4 
+Flash CFG-MSGOUT-UBX_NAV_TIMENAVIC_USB 0x0                  # write value 0  0x0               to item id 0x209106a5 in
+Flash CFG-MSGOUT-UBX_NAV_TIMENAVIC_SPI 0x0                  # write value 0  0x0               to item id 0x209106a6 in
+Flash CFG-MSGOUT-UBX_NAV2_TIMENAVIC_I2C 0x0                  # write value 0  0x0               to item id 0x209106a7 i
+Flash CFG-MSGOUT-UBX_NAV2_TIMENAVIC_UART1 0x0                  # write value 0  0x0               to item id 0x209106a8
+Flash CFG-MSGOUT-UBX_NAV2_TIMENAVIC_UART2 0x0                  # write value 0  0x0               to item id 0x209106a9
+Flash CFG-MSGOUT-UBX_NAV2_TIMENAVIC_USB 0x0                  # write value 0  0x0               to item id 0x209106aa i
+Flash CFG-MSGOUT-UBX_NAV2_TIMENAVIC_SPI 0x0                  # write value 0  0x0               to item id 0x209106ab i
+Flash CFG-MSGOUT-UBX_RXM_COR_I2C 0x0                  # write value 0  0x0               to item id 0x209106b6 in layer
+Flash CFG-MSGOUT-UBX_RXM_COR_UART1 0x0                  # write value 0  0x0               to item id 0x209106b7 in lay
+Flash CFG-MSGOUT-UBX_RXM_COR_UART2 0x0                  # write value 0  0x0               to item id 0x209106b8 in lay
+Flash CFG-MSGOUT-UBX_RXM_COR_USB 0x0                  # write value 0  0x0               to item id 0x209106b9 in layer
+Flash CFG-MSGOUT-UBX_RXM_COR_SPI 0x0                  # write value 0  0x0               to item id 0x209106ba in layer
+Flash CFG-INFMSG-UBX_I2C   0x0                  # write value 0  0x0               to item id 0x20920001 in layer 2
+Flash CFG-INFMSG-UBX_UART1 0x0                  # write value 0  0x0               to item id 0x20920002 in layer 2
+Flash CFG-INFMSG-UBX_UART2 0x0                  # write value 0  0x0               to item id 0x20920003 in layer 2
+Flash CFG-INFMSG-UBX_USB   0x0                  # write value 0  0x0               to item id 0x20920004 in layer 2
+Flash CFG-INFMSG-UBX_SPI   0x0                  # write value 0  0x0               to item id 0x20920005 in layer 2
+Flash CFG-INFMSG-NMEA_I2C  0x7                  # write value 7  0x7               to item id 0x20920006 in layer 2
+Flash CFG-INFMSG-NMEA_UART1 0x7                  # write value 7  0x7               to item id 0x20920007 in layer 2
+Flash CFG-INFMSG-NMEA_UART2 0x7                  # write value 7  0x7               to item id 0x20920008 in layer 2
+Flash CFG-INFMSG-NMEA_USB  0x7                  # write value 7  0x7               to item id 0x20920009 in layer 2
+Flash CFG-INFMSG-NMEA_SPI  0x7                  # write value 7  0x7               to item id 0x2092000a in layer 2
+Flash CFG-NMEA-PROTVER     42                   # write value 42 - V411            to item id 0x20930001 in layer 2
+Flash CFG-NMEA-MAXSVS      0                    # write value 0 - UNLIM            to item id 0x20930002 in layer 2
+Flash CFG-NMEA-SVNUMBERING 0                    # write value 0 - STRICT           to item id 0x20930007 in layer 2
+Flash CFG-NMEA-MAINTALKERID 0                    # write value 0 - AUTO             to item id 0x20930031 in layer 2
+Flash CFG-NMEA-GSVTALKERID 0                    # write value 0 - GNSS             to item id 0x20930032 in layer 2
+Flash CFG-TXREADY-PIN      0x0                  # write value 0  0x0               to item id 0x20a20003 in layer 2
+Flash CFG-TXREADY-INTERFACE 0                    # write value 0 - I2C              to item id 0x20a20005 in layer 2
+Flash CFG-HW-ANT_SUP_SWITCH_PIN 0x10                 # write value 16  0x10             to item id 0x20a30036 in layer 
+Flash CFG-HW-ANT_SUP_SHORT_PIN 0xf                  # write value 15  0xf              to item id 0x20a30037 in layer 2
+Flash CFG-HW-ANT_SUP_OPEN_PIN 0xe                  # write value 14  0xe              to item id 0x20a30038 in layer 2
+Flash CFG-HW-ANT_SUP_ENGINE 0                    # write value 0 - EXT              to item id 0x20a30054 in layer 2
+Flash CFG-HW-ANT_SUP_SHORT_THR 0x0                  # write value 0  0x0               to item id 0x20a30055 in layer 2
+Flash CFG-HW-ANT_SUP_OPEN_THR 0x0                  # write value 0  0x0               to item id 0x20a30056 in layer 2
+Flash CFG-SPARTN-USE_SOURCE 0                    # write value 0 - IP               to item id 0x20a70001 in layer 2
+Flash CFG-RINV-DATA_SIZE   0x16                 # write value 22  0x16             to item id 0x20c70003 in layer 2
+Flash CFG-TP-ANT_CABLEDELAY 0x32                 # write value 50  0x32             to item id 0x30050001 in layer 2
+Flash CFG-RTCM-DF003_OUT   0x0                  # write value 0  0x0               to item id 0x30090001 in layer 2
+Flash CFG-RTCM-DF003_IN    0x0                  # write value 0  0x0               to item id 0x30090008 in layer 2
+Flash CFG-NAVSPG-WKNROLLOVER 0x8d9                # write value 2265  0x8d9          to item id 0x30110017 in layer 2
+Flash CFG-NAVSPG-OUTFIL_PDOP 0xfa                 # write value 250  0xfa            to item id 0x301100b1 in layer 2
+Flash CFG-NAVSPG-OUTFIL_TDOP 0xfa                 # write value 250  0xfa            to item id 0x301100b2 in layer 2
+Flash CFG-NAVSPG-OUTFIL_PACC 0x64                 # write value 100  0x64            to item id 0x301100b3 in layer 2
+Flash CFG-NAVSPG-OUTFIL_TACC 0x15e                # write value 350  0x15e           to item id 0x301100b4 in layer 2
+Flash CFG-NAVSPG-OUTFIL_FACC 0x96                 # write value 150  0x96            to item id 0x301100b5 in layer 2
+Flash CFG-RATE-MEAS        0xc8                 # write value 200  0xc8            to item id 0x30210001 in layer 2
+Flash CFG-RATE-NAV         0x1                  # write value 1  0x1               to item id 0x30210002 in layer 2
+Flash CFG-MOT-GNSSDIST_THRS 0x0                  # write value 0  0x0               to item id 0x3025003b in layer 2
+Flash CFG-SBAS-ACCEPT_NOT_IN_PRNMASK 0x0                  # write value 0  0x0               to item id 0x30360008 in l
+Flash CFG-QZSS-SLAS_MAX_BASELINE 0x15e                # write value 350  0x15e           to item id 0x30370008 in layer
+Flash CFG-USB-VENDOR_ID    0x1546               # write value 5446  0x1546         to item id 0x3065000a in layer 2
+Flash CFG-USB-PRODUCT_ID   0x1a9                # write value 425  0x1a9           to item id 0x3065000b in layer 2
+Flash CFG-USB-POWER        0x0                  # write value 0  0x0               to item id 0x3065000c in layer 2
+Flash CFG-NMEA-BDSTALKERID 0x0                  # write value 0  0x0               to item id 0x30930033 in layer 2
+Flash CFG-TXREADY-THRESHOLD 0x0                  # write value 0  0x0               to item id 0x30a20004 in layer 2
+Flash CFG-HW-ANT_ON_SHORT_US 0x1f4                # write value 500  0x1f4           to item id 0x30a3003c in layer 2
+Flash CFG-LOGFILTER-MIN_INTERVAL 0x0                  # write value 0  0x0               to item id 0x30de0005 in layer
+Flash CFG-LOGFILTER-TIME_THRS 0x0                  # write value 0  0x0               to item id 0x30de0006 in layer 2
+Flash CFG-LOGFILTER-SPEED_THRS 0x0                  # write value 0  0x0               to item id 0x30de0007 in layer 2
+Flash CFG-SEC-CFG_LOCK_UNLOCKGRP1 0x0                  # write value 0  0x0               to item id 0x30f6000a in laye
+Flash CFG-SEC-CFG_LOCK_UNLOCKGRP2 0x0                  # write value 0  0x0               to item id 0x30f6000b in laye
+Flash CFG-TMODE-ECEF_X     0x0                  # write value 0  0x0               to item id 0x40030003 in layer 2
+Flash CFG-TMODE-ECEF_Y     0x0                  # write value 0  0x0               to item id 0x40030004 in layer 2
+Flash CFG-TMODE-ECEF_Z     0x0                  # write value 0  0x0               to item id 0x40030005 in layer 2
+Flash CFG-TMODE-LAT        0x0                  # write value 0  0x0               to item id 0x40030009 in layer 2
+Flash CFG-TMODE-LON        0x0                  # write value 0  0x0               to item id 0x4003000a in layer 2
+Flash CFG-TMODE-HEIGHT     0x0                  # write value 0  0x0               to item id 0x4003000b in layer 2
+Flash CFG-TMODE-FIXED_POS_ACC 0x0                  # write value 0  0x0               to item id 0x4003000f in layer 2
+Flash CFG-TMODE-SVIN_MIN_DUR 0x0                  # write value 0  0x0               to item id 0x40030010 in layer 2
+Flash CFG-TMODE-SVIN_ACC_LIMIT 0x0                  # write value 0  0x0               to item id 0x40030011 in layer 2
+Flash CFG-TP-PERIOD_TP1    0xf4240              # write value 1000000  0xf4240     to item id 0x40050002 in layer 2
+Flash CFG-TP-PERIOD_LOCK_TP1 0xf4240              # write value 1000000  0xf4240     to item id 0x40050003 in layer 2
+Flash CFG-TP-LEN_TP1       0x0                  # write value 0  0x0               to item id 0x40050004 in layer 2
+Flash CFG-TP-LEN_LOCK_TP1  0x186a0              # write value 100000  0x186a0      to item id 0x40050005 in layer 2
+Flash CFG-TP-USER_DELAY_TP1 0x0                  # write value 0  0x0               to item id 0x40050006 in layer 2
+Flash CFG-TP-FREQ_TP1      0x1                  # write value 1  0x1               to item id 0x40050024 in layer 2
+Flash CFG-TP-FREQ_LOCK_TP1 0x1                  # write value 1  0x1               to item id 0x40050025 in layer 2
+Flash CFG-NAVSPG-USRDAT_DX 0.000000             # write value 0.000000             to item id 0x40110064 in layer 2
+Flash CFG-NAVSPG-USRDAT_DY 0.000000             # write value 0.000000             to item id 0x40110065 in layer 2
+Flash CFG-NAVSPG-USRDAT_DZ 0.000000             # write value 0.000000             to item id 0x40110066 in layer 2
+Flash CFG-NAVSPG-USRDAT_ROTX 0.000000             # write value 0.000000             to item id 0x40110067 in layer 2
+Flash CFG-NAVSPG-USRDAT_ROTY 0.000000             # write value 0.000000             to item id 0x40110068 in layer 2
+Flash CFG-NAVSPG-USRDAT_ROTZ 0.000000             # write value 0.000000             to item id 0x40110069 in layer 2
+Flash CFG-NAVSPG-USRDAT_SCALE 0.000000             # write value 0.000000             to item id 0x4011006a in layer 2
+Flash CFG-NAVSPG-CONSTR_ALT 0x0                  # write value 0  0x0               to item id 0x401100c1 in layer 2
+Flash CFG-NAVSPG-CONSTR_ALTVAR 0x2710               # write value 10000  0x2710        to item id 0x401100c2 in layer 2
+Flash CFG-GEOFENCE-FENCE1_LAT 0x0                  # write value 0  0x0               to item id 0x40240021 in layer 2
+Flash CFG-GEOFENCE-FENCE1_LON 0x0                  # write value 0  0x0               to item id 0x40240022 in layer 2
+Flash CFG-GEOFENCE-FENCE1_RAD 0x0                  # write value 0  0x0               to item id 0x40240023 in layer 2
+Flash CFG-GEOFENCE-FENCE2_LAT 0x0                  # write value 0  0x0               to item id 0x40240031 in layer 2
+Flash CFG-GEOFENCE-FENCE2_LON 0x0                  # write value 0  0x0               to item id 0x40240032 in layer 2
+Flash CFG-GEOFENCE-FENCE2_RAD 0x0                  # write value 0  0x0               to item id 0x40240033 in layer 2
+Flash CFG-GEOFENCE-FENCE3_LAT 0x0                  # write value 0  0x0               to item id 0x40240041 in layer 2
+Flash CFG-GEOFENCE-FENCE3_LON 0x0                  # write value 0  0x0               to item id 0x40240042 in layer 2
+Flash CFG-GEOFENCE-FENCE3_RAD 0x0                  # write value 0  0x0               to item id 0x40240043 in layer 2
+Flash CFG-GEOFENCE-FENCE4_LAT 0x0                  # write value 0  0x0               to item id 0x40240051 in layer 2
+Flash CFG-GEOFENCE-FENCE4_LON 0x0                  # write value 0  0x0               to item id 0x40240052 in layer 2
+Flash CFG-GEOFENCE-FENCE4_RAD 0x0                  # write value 0  0x0               to item id 0x40240053 in layer 2
+Flash CFG-UART1-BAUDRATE   0xe1000              # write value 921600  0xe1000      to item id 0x40520001 in layer 2
+Flash CFG-UART2-BAUDRATE   0xe1000              # write value 921600  0xe1000      to item id 0x40530001 in layer 2
+Flash CFG-LOGFILTER-POSITION_THRS 0x0                  # write value 0  0x0               to item id 0x40de0008 in laye
+Flash CFG-TP-DUTY_TP1      0.000000             # write value 0.000000             to item id 0x5005002a in layer 2
+Flash CFG-TP-DUTY_LOCK_TP1 10.000000            # write value 10.000000            to item id 0x5005002b in layer 2
+Flash CFG-NAVSPG-USRDAT_MAJA 6378137.000000       # write value 6378137.000000       to item id 0x50110062 in layer 2
+Flash CFG-NAVSPG-USRDAT_FLAT 298.257224           # write value 298.257224           to item id 0x50110063 in layer 2
+Flash CFG-SBAS-PRNSCANMASK 0x3ab88              # write value 240520  0x3ab88      to item id 0x50360006 in layer 2
+Flash CFG-USB-VENDOR_STR0  0x4120786f6c622d75   # write value 4692883231675133301  0x4120786f6c622d75 to item id 0x5065
+Flash CFG-USB-VENDOR_STR1  0x2e777777202d2047   # write value 3348276201497894983  0x2e777777202d2047 to item id 0x5065
+Flash CFG-USB-VENDOR_STR2  0x632e786f6c622d75   # write value 7146782078638632309  0x632e786f6c622d75 to item id 0x5065
+Flash CFG-USB-VENDOR_STR3  0x6d6f               # write value 28015  0x6d6f        to item id 0x50650010 in layer 2
+Flash CFG-USB-PRODUCT_STR0 0x4720786f6c622d75   # write value 5125228795902700917  0x4720786f6c622d75 to item id 0x5065
+Flash CFG-USB-PRODUCT_STR1 0x656365722053534e   # write value 7305794561368085326  0x656365722053534e to item id 0x5065
+Flash CFG-USB-PRODUCT_STR2 0x72657669           # write value 1919252073  0x72657669 to item id 0x50650013 in layer 2
+Flash CFG-USB-PRODUCT_STR3 0x0                  # write value 0  0x0               to item id 0x50650014 in layer 2
+Flash CFG-USB-SERIAL_NO_STR0 0x0                  # write value 0  0x0               to item id 0x50650015 in layer 2
+Flash CFG-USB-SERIAL_NO_STR1 0x0                  # write value 0  0x0               to item id 0x50650016 in layer 2
+Flash CFG-USB-SERIAL_NO_STR2 0x0                  # write value 0  0x0               to item id 0x50650017 in layer 2
+Flash CFG-USB-SERIAL_NO_STR3 0x0                  # write value 0  0x0               to item id 0x50650018 in layer 2
+Flash CFG-RINV-CHUNK0      0x203a656369746f4e   # write value 2322280035508318030  0x203a656369746f4e to item id 0x50c7
+Flash CFG-RINV-CHUNK1      0x2061746164206f6e   # write value 2333274043595124590  0x2061746164206f6e to item id 0x50c7
+Flash CFG-RINV-CHUNK2      0x216465766173       # write value 36715082703219  0x216465766173 to item id 0x50c70006 in l
+Flash CFG-RINV-CHUNK3      0x0                  # write value 0  0x0               to item id 0x50c70007 in layer 2
