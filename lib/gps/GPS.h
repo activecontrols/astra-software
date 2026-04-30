@@ -8,6 +8,7 @@
 
 #define EARTH_RADIUS_M 6371001.0
 
+// these must be doubles for sufficient precision
 struct GPS_Coord {
   double lat; // deg lat
   double lon; // deg lon

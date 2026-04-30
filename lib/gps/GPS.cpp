@@ -208,7 +208,7 @@ bool has_valid_recent_pos() {
 }
 
 GPS_Coord get_lat_lon_alt() {
-  return GPS_Coord{ubx.pvt_solution.data->lat / 10000000.0f, ubx.pvt_solution.data->lon / 10000000.0f, ubx.pvt_solution.data->hMSL / 1000.0f};
+  return GPS_Coord{ubx.pvt_solution.data->lat / 10000000.0, ubx.pvt_solution.data->lon / 10000000.0, ubx.pvt_solution.data->hMSL / 1000.0};
 }
 
 GPS_Velocity get_velocity() {
