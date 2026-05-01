@@ -43,7 +43,7 @@ Matrix3_3 get_vel_cov_mtx(GPS_State gps_state) {
 
 void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
-  constantsASTRA.m = 1.2490;
+  constantsASTRA.m = 1.1690;
   constantsASTRA.mag << 0.38535, 0.03198, -0.9222;
   constantsASTRA.Q = Q_gen();
 
