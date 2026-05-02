@@ -80,14 +80,18 @@ void follow_trajectory() {
         CommandRouter::receive_byte(CommsSerial.read());
       }
 
-      // TODO - add a command that triggers this
       if (!auto_land & (auto_land_cmd || ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS))) {
-        auto_land_cmd = false;
-        CommsSerial.println("Autoland sequence activated!");
-        TrajectoryLoader::header.num_points = i + 1;
-        TrajectoryLoader::trajectory[i].time = max(TrajectoryLoader::trajectory[i].up / 0.5, 1.0) + last_time_s;
-        TrajectoryLoader::trajectory[i].up = -1;
-        auto_land = true;
+        if (flight_armed) {
+          auto_land_cmd = false;
+          CommsSerial.println("Autoland sequence activated!");
+          TrajectoryLoader::header.num_points = i + 1;
+          TrajectoryLoader::trajectory[i].time = max(TrajectoryLoader::trajectory[i].up / 0.5, 1.0) + last_time_s;
+          TrajectoryLoader::trajectory[i].up = -1;
+          auto_land = true;
+        } else {
+          CommsSerial.println("Radio disconnected pre-flight");
+          kill_flag = true;
+        }
       }
 
       if (kill_flag) {
