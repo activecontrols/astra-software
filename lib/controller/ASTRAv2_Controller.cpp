@@ -54,13 +54,13 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
   Vector3 VelError = VelTarget - X.segment<3>(7);
 
   // Integral Accumulator
-  Vector3 K_I = (Vector3() << 0.5, 0.5, 1).finished();
+  Vector3 K_I = (Vector3() << 0.5, 0.5, 1.5).finished();
   float Leak = 0.4;
   Vector3 Clamp = (Vector3() << 5, 5, 3).finished();
 
   // Normalize errors (0 to 1 scale)
   Vector3 MaxAttError = (Vector3() << 0.1, 0.1, 0.5).finished();
-  Vector3 MaxVelError = (Vector3() << 0.4, 0.4, 0.1).finished();
+  Vector3 MaxVelError = (Vector3() << 0.4, 0.4, 0.3).finished();
   Vector3 NormAttErr = lastAttError.cwiseAbs().cwiseQuotient(MaxAttError);
   Vector3 NormVelErr = VelError.cwiseAbs().cwiseQuotient(MaxVelError);
 
