@@ -28,8 +28,8 @@ void begin() {
   trajectory[3] = {11, -1, 1, 2};
   trajectory[4] = {15, -1, -1, 2};
   trajectory[5] = {19, 1, -1, 2};
-  trajectory[6] = {24, 0, 0, 1};
-  trajectory[7] = {25, 0, 0, -0.5};
+  trajectory[6] = {24, 0, 0, 0.25};
+  trajectory[7] = {26, 0, 0, -1};
   if (header.num_points != sizeof(trajectory) / sizeof(traj_point_pos)) {
     CommsSerial.println("Failed to create trajectory - check array size!");
   } else {
