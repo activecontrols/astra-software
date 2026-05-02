@@ -7,135 +7,160 @@
 const char SEPARATOR = ',';
 bool first_field = true; // keep track of whether this is the first field in the current csv line we are outputting - tells us whether to prepend value with separator or not
 
-void csv_header_log(FILE *out) {
-  static const char HEADER[] =
-      "accel_x,accel_y,accel_z,gyro_yaw,gyro_pitch,gyro_roll,mag_x,mag_y,mag_z,gps_pos_north,gps_pos_west,gps_pos_up,gps_vel_north,gps_vel_west,gps_vel_up,state_q_vec_w,state_q_vec_x,state_q_"
-      "vec_y,state_q_vec_z,state_pos_north,state_pos_west,state_pos_up,state_vel_north,state_vel_west,state_vel_up,gyro_bias_yaw,gyro_bias_pitch,gyro_bias_roll,accel_bias_x,accel_bias_y,accel_"
-      "bias_z,mag_bias_x,mag_bias_y,mag_bias_z,gimbal_yaw_raw,gimbal_pitch_raw,thrust_N,roll_rad_sec_squared,target_pos_north,target_pos_west,target_pos_up,elapsed_time,GND_flag,flight_armed,"
-      "thrust_perc,diffy_perc,rtk_status,gps_hor_prec,gps_ver_prec,gps_sat_count,filtered_accel_x,filtered_accel_y,filtered_accel_z,filtered_gyro_x,filtered_gyro_y,filtered_gyro_z,filtered_mag_x,"
-      "filtered_mag_y,filtered_mag_z,velocity_target_x,velocity_target_y,velocity_target_z,accel_target_x,accel_target_y,accel_target_z,attitude_target[0],attitude_target[1],attitude_target[2],"
-      "attitude_target[3],velocity_integrator_x,velocity_integrator_y,velocity_integrator_z,attitude_integrator_x,attitude_integrator_y,attitude_integrator_z,posCovNN,posCovNE,posCovND,posCovEE,posCovED,"
-      "posCovDD,velCovNN,velCovNE,velCovND,velCovEE,velCovED,velCovDD\n";
-  // generated with gemini
-  // subtract 1 from sizeof(HEADER) so we don't output the null terminator
-  fwrite(HEADER, sizeof(HEADER) - 1, 1, out);
-  return;
-}
 
-void csv_field_log(FILE *out, float value) {
-  if (!first_field) {
-    fputc(SEPARATOR, out);
+std::string header = "";
+bool header_complete = false;
+
+std::string output_buf = "";
+
+void csv_field_log(const char col_name[], float value) {
+  if (!header_complete)
+  {
+    header += col_name;
+    if (!first_field)
+    {
+      header += SEPARATOR;
+    }
   }
-  fprintf(out, "%.8f", value);
+
+  if (!first_field) {
+    output_buf += SEPARATOR;
+  }
+  static char format_buf[32] {};
+  snprintf(format_buf, sizeof(format_buf), "%.8f", value);
+  output_buf += format_buf;
+
   first_field = false;
   return;
 }
 
 void csv_end_line(FILE *out) {
-  fputc('\n', out);
+
+  if (!header_complete)
+  {
+    header_complete = true;
+    header += '\n';
+    fwrite(header.c_str(), header.size(), 1, out);
+  }
+
+  fwrite(output_buf.c_str(), output_buf.size(), 1, out);
   first_field = true;
-  return;
-}
-
-template <int m, int n>
-void csv_log_matrix(FILE* f_csv_out, Eigen::Matrix<float, m, n> mat)
-{
-  for (int i = 0; i < mat.size(); ++i)
-  {
-    csv_field_log(f_csv_out, mat(i));
-  }
-
-  return;
-}
-
-void csv_log_array(FILE* f_csv_out, float* vals, int n)
-{
-  for (int i = 0; i < n; ++i)
-  {
-    csv_field_log(f_csv_out, vals[i]);
-  }
-
+  output_buf = "";
   return;
 }
 
 void csr_to_csv(FILE* f_csv_out, telemetry_packet_t flight_packet, Controller_Internals internals) {
-  // function calls generated with gemini
-  csv_field_log(f_csv_out, flight_packet.ci.imu.accel_x);
-  csv_field_log(f_csv_out, flight_packet.ci.imu.accel_y);
-  csv_field_log(f_csv_out, flight_packet.ci.imu.accel_z);
-  csv_field_log(f_csv_out, flight_packet.ci.imu.gyro_yaw);
-  csv_field_log(f_csv_out, flight_packet.ci.imu.gyro_pitch);
-  csv_field_log(f_csv_out, flight_packet.ci.imu.gyro_roll);
-  csv_field_log(f_csv_out, flight_packet.ci.mag.mag_x);
-  csv_field_log(f_csv_out, flight_packet.ci.mag.mag_y);
-  csv_field_log(f_csv_out, flight_packet.ci.mag.mag_z);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.pos.north);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.pos.west);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.pos.up);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.vel.north);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.vel.west);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.vel.up);
 
-  csv_field_log(f_csv_out, flight_packet.x_est.q_vec_w);
-  csv_field_log(f_csv_out, flight_packet.x_est.q_vec_x);
-  csv_field_log(f_csv_out, flight_packet.x_est.q_vec_y);
-  csv_field_log(f_csv_out, flight_packet.x_est.q_vec_z);
-  csv_field_log(f_csv_out, flight_packet.x_est.est_pos_north);
-  csv_field_log(f_csv_out, flight_packet.x_est.est_pos_west);
-  csv_field_log(f_csv_out, flight_packet.x_est.est_pos_up);
-  csv_field_log(f_csv_out, flight_packet.x_est.est_vel_north);
-  csv_field_log(f_csv_out, flight_packet.x_est.est_vel_west);
-  csv_field_log(f_csv_out, flight_packet.x_est.est_vel_up);
-  csv_field_log(f_csv_out, flight_packet.x_est.gyro_bias_yaw);
-  csv_field_log(f_csv_out, flight_packet.x_est.gyro_bias_pitch);
-  csv_field_log(f_csv_out, flight_packet.x_est.gyro_bias_roll);
-  csv_field_log(f_csv_out, flight_packet.x_est.accel_bias_x);
-  csv_field_log(f_csv_out, flight_packet.x_est.accel_bias_y);
-  csv_field_log(f_csv_out, flight_packet.x_est.accel_bias_z);
-  csv_field_log(f_csv_out, flight_packet.x_est.mag_bias_x);
-  csv_field_log(f_csv_out, flight_packet.x_est.mag_bias_y);
-  csv_field_log(f_csv_out, flight_packet.x_est.mag_bias_z);
+  csv_field_log("accel_x", flight_packet.ci.imu.accel_x);
+  csv_field_log("accel_y", flight_packet.ci.imu.accel_y);
+  csv_field_log("accel_z", flight_packet.ci.imu.accel_z);
 
-  csv_field_log(f_csv_out, flight_packet.co.gimbal_yaw_deg);
-  csv_field_log(f_csv_out, flight_packet.co.gimbal_pitch_deg);
-  csv_field_log(f_csv_out, flight_packet.co.thrust_N);
-  csv_field_log(f_csv_out, flight_packet.co.roll_rad_sec_squared);
+  csv_field_log("gyro_yaw", flight_packet.ci.imu.gyro_yaw);
+  csv_field_log("gyro_pitch", flight_packet.ci.imu.gyro_pitch);
+  csv_field_log("gyro_roll", flight_packet.ci.imu.gyro_roll);
 
-  csv_field_log(f_csv_out, flight_packet.ci.target_pos_north);
-  csv_field_log(f_csv_out, flight_packet.ci.target_pos_west);
-  csv_field_log(f_csv_out, flight_packet.ci.target_pos_up);
+  csv_field_log("mag_x", flight_packet.ci.mag.mag_x);
+  csv_field_log("mag_y", flight_packet.ci.mag.mag_y);
+  csv_field_log("mag_z", flight_packet.ci.mag.mag_z);
 
-  csv_field_log(f_csv_out, flight_packet.elapsed_time);
-  csv_field_log(f_csv_out, flight_packet.ci.GND_val);
-  csv_field_log(f_csv_out, flight_packet.flight_armed);
-  csv_field_log(f_csv_out, flight_packet.thrust_perc);
-  csv_field_log(f_csv_out, flight_packet.diffy_perc);
-  csv_field_log(f_csv_out, flight_packet.rtk_status);
-  csv_field_log(f_csv_out, flight_packet.gps_hor_prec);
-  csv_field_log(f_csv_out, flight_packet.gps_ver_prec);
-  csv_field_log(f_csv_out, flight_packet.gps_sat_count);
+  csv_field_log("gps_pos_north", flight_packet.ci.gps.pos.north);
+  csv_field_log("gps_pos_west", flight_packet.ci.gps.pos.west);
+  csv_field_log("gps_pos_up", flight_packet.ci.gps.pos.up);
 
-  csv_log_array(f_csv_out, internals.filter_out, 9);
-  csv_log_array(f_csv_out, internals.VelTarget, 3);
-  csv_log_array(f_csv_out, internals.AccelTarget, 3);
-  csv_log_array(f_csv_out, internals.TargetAtt, 4);
-  csv_log_array(f_csv_out, internals.VelErrorI, 3);
-  csv_log_array(f_csv_out, internals.AttErrorI, 3);
+  csv_field_log("gps_vel_north", flight_packet.ci.gps.vel.north);
+  csv_field_log("gps_vel_west", flight_packet.ci.gps.vel.west);
+  csv_field_log("gps_vel_up", flight_packet.ci.gps.vel.up);
 
-  csv_field_log(f_csv_out, flight_packet.ci.gps.posCovNN);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.posCovNE);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.posCovND);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.posCovEE);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.posCovED);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.posCovDD);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.velCovNN);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.velCovNE);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.velCovND);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.velCovEE);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.velCovED);
-  csv_field_log(f_csv_out, flight_packet.ci.gps.velCovDD);
+  csv_field_log("state_q_vec_w", flight_packet.x_est.q_vec_w);
+  csv_field_log("state_q_vec_x", flight_packet.x_est.q_vec_x);
+  csv_field_log("state_q_vec_y", flight_packet.x_est.q_vec_y);
+  csv_field_log("state_q_vec_z", flight_packet.x_est.q_vec_z);
 
+  csv_field_log("state_pos_north", flight_packet.x_est.est_pos_north);
+  csv_field_log("state_pos_west", flight_packet.x_est.est_pos_west);
+  csv_field_log("state_pos_up", flight_packet.x_est.est_pos_up);
+
+  csv_field_log("state_vel_north", flight_packet.x_est.est_vel_north);
+  csv_field_log("state_vel_west", flight_packet.x_est.est_vel_west);
+  csv_field_log("state_vel_up", flight_packet.x_est.est_vel_up);
+
+  csv_field_log("gyro_bias_yaw", flight_packet.x_est.gyro_bias_yaw);
+  csv_field_log("gyro_bias_pitch", flight_packet.x_est.gyro_bias_pitch);
+  csv_field_log("gyro_bias_roll", flight_packet.x_est.gyro_bias_roll);
+
+  csv_field_log("accel_bias_x", flight_packet.x_est.accel_bias_x);
+  csv_field_log("accel_bias_y", flight_packet.x_est.accel_bias_y);
+  csv_field_log("accel_bias_z", flight_packet.x_est.accel_bias_z);
+
+  csv_field_log("mag_bias_x", flight_packet.x_est.mag_bias_x);
+  csv_field_log("mag_bias_y", flight_packet.x_est.mag_bias_y);
+  csv_field_log("mag_bias_z", flight_packet.x_est.mag_bias_z);
+
+  csv_field_log("gimbal_yaw_raw", flight_packet.co.gimbal_yaw_deg);
+  csv_field_log("gimbal_pitch_raw", flight_packet.co.gimbal_pitch_deg);
+
+  csv_field_log("thrust_N", flight_packet.co.thrust_N);
+  csv_field_log("roll_rad_sec_squared", flight_packet.co.roll_rad_sec_squared);
+
+  csv_field_log("target_pos_north", flight_packet.ci.target_pos_north);
+  csv_field_log("target_pos_west", flight_packet.ci.target_pos_west);
+  csv_field_log("target_pos_up", flight_packet.ci.target_pos_up);
   
+  csv_field_log("elapsed_time", flight_packet.elapsed_time);
+  csv_field_log("GND_flag", flight_packet.ci.GND_val);
+  csv_field_log("flight_armed", flight_packet.flight_armed);
+  csv_field_log("thrust_perc", flight_packet.thrust_perc);
+  csv_field_log("diffy_perc", flight_packet.diffy_perc);
+  csv_field_log("rtk_status", flight_packet.rtk_status);
+
+  csv_field_log("gps_hor_prec", flight_packet.gps_hor_prec);
+  csv_field_log("gps_ver_prec", flight_packet.gps_ver_prec);
+  csv_field_log("gps_sat_count", flight_packet.gps_sat_count);
+
+  csv_field_log("filtered_accel_x", internals.filter_out[0]);
+  csv_field_log("filtered_accel_y", internals.filter_out[1]);
+  csv_field_log("filtered_accel_z", internals.filter_out[2]);
+  csv_field_log("filtered_gyro_x", internals.filter_out[3]);
+  csv_field_log("filtered_gyro_y", internals.filter_out[4]);
+  csv_field_log("filtered_gyro_z", internals.filter_out[5]);
+  csv_field_log("filtered_mag_x", internals.filter_out[6]);
+  csv_field_log("filtered_mag_y", internals.filter_out[7]);
+  csv_field_log("filtered_mag_z", internals.filter_out[8]);
+
+  csv_field_log("velocity_target_x", internals.VelTarget[0]);
+  csv_field_log("velocity_target_y", internals.VelTarget[1]);
+  csv_field_log("velocity_target_z", internals.VelTarget[2]);
+
+  csv_field_log("accel_target_x", internals.AccelTarget[0]);
+  csv_field_log("accel_target_y", internals.AccelTarget[1]);
+  csv_field_log("accel_target_z", internals.AccelTarget[2]);
+  
+  csv_field_log("attitude_target[0]", internals.TargetAtt[0]);
+  csv_field_log("attitude_target[1]", internals.TargetAtt[1]);
+  csv_field_log("attitude_target[2]", internals.TargetAtt[2]);
+  csv_field_log("attitude_target[3]", internals.TargetAtt[3]);
+
+  csv_field_log("velocity_integrator_x", internals.VelErrorI[0]);
+  csv_field_log("velocity_integrator_y", internals.VelErrorI[1]);
+  csv_field_log("velocity_integrator_z", internals.VelErrorI[2]);
+
+  csv_field_log("attitude_integrator_x", internals.AttErrorI[0]);
+  csv_field_log("attitude_integrator_y", internals.AttErrorI[1]);
+  csv_field_log("attitude_integrator_z", internals.AttErrorI[2]);
+
+  csv_field_log("posCovNN", flight_packet.ci.gps.posCovNN);
+  csv_field_log("posCovNE", flight_packet.ci.gps.posCovNE);
+  csv_field_log("posCovND", flight_packet.ci.gps.posCovND);
+  csv_field_log("posCovEE", flight_packet.ci.gps.posCovEE);
+  csv_field_log("posCovED", flight_packet.ci.gps.posCovED);
+  csv_field_log("posCovDD", flight_packet.ci.gps.posCovDD);
+
+  csv_field_log("velCovNN", flight_packet.ci.gps.velCovNN);
+  csv_field_log("velCovNE", flight_packet.ci.gps.velCovNE);
+  csv_field_log("velCovND", flight_packet.ci.gps.velCovND);
+  csv_field_log("velCovEE", flight_packet.ci.gps.velCovEE);
+  csv_field_log("velCovED", flight_packet.ci.gps.velCovED);
+  csv_field_log("velCovDD", flight_packet.ci.gps.velCovDD);
 
   csv_end_line(f_csv_out);
 

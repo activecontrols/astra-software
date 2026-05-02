@@ -177,11 +177,6 @@ int main(const int argc, const char* argv[]) {
 
   last_time = 0;
   ControllerAndEstimator::init_controller_and_estimator_constants();
-
-  if (csv_out != NULL)
-  {
-    csv_header_log(csv_out);
-  }
   
   while (parse_log_entry(compressed_bin, reconstructed_bin, csv_out)) {
   };
