@@ -77,6 +77,7 @@ void follow_trajectory() {
         CommandRouter::receive_byte(CommsSerial.read());
       }
 
+      // TODO - fix this and re-enable
       // if ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS) {
       //   kill_flag = true;
       // }
@@ -96,7 +97,8 @@ void follow_trajectory() {
         counter = 0;
         GPS::set_current_position_as_origin();
 
-        TrajectoryLogger::log_x_est(); // only log initial controller state, this is too much data to log every frame
+        TrajectoryLogger::log_x_est();
+        TrajectoryLogger::log_flight_p(); // only log initial controller state, this is too much data to log every frame
 
         led_on_time = millis();
         led_on = true;

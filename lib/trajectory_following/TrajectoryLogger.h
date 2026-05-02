@@ -32,6 +32,8 @@ void log_calib_flash();
 
 void log_x_est();
 
+void log_flight_p();
+
 void log_complete();
 
 void send_flash_over_serial();
