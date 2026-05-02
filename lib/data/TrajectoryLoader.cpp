@@ -10,7 +10,7 @@ namespace TrajectoryLoader {
 
 trajectory_header header;
 // time, north, west, up
-traj_point_pos trajectory[8];
+traj_point_pos trajectory[5];
 bool loaded_trajectory;
 
 void begin() {
@@ -21,15 +21,12 @@ void begin() {
   // TODO - add these commands back (don't hardcode) once SD card ready
   header.version = CURRENT_TRAJECTORYH_VERSION;
 
-  header.num_points = 8;
+  header.num_points = 5;
   trajectory[0] = {0, 0, 0, 0};
-  trajectory[1] = {3, 0, 0, 1};
-  trajectory[2] = {7, 1, 1, 2};
-  trajectory[3] = {11, -1, 1, 2};
-  trajectory[4] = {15, -1, -1, 2};
-  trajectory[5] = {19, 1, -1, 2};
-  trajectory[6] = {24, 0, 0, 0.25};
-  trajectory[7] = {26, 0, 0, -1};
+  trajectory[1] = {8, 0, 0, 3};
+  trajectory[2] = {20, 0, -6, 3};
+  trajectory[3] = {25, 0, -6, 0.5};
+  trajectory[4] = {27, 0, -6, -1};
   if (header.num_points != sizeof(trajectory) / sizeof(traj_point_pos)) {
     CommsSerial.println("Failed to create trajectory - check array size!");
   } else {
