@@ -357,11 +357,12 @@ void data_management_panel() {
     ImGui::InputTextMultiline("##serial_output", concat_msg_buf, IM_ARRAYSIZE(concat_msg_buf), ImVec2(800, 100), ImGuiInputTextFlags_ReadOnly);
 
     // autoscroll code - // TODO - only enable if autoscroll enabled
-    // ImGuiContext &g = *GImGui;
-    // const char *child_window_name = NULL;
-    // ImFormatStringToTempBuffer(&child_window_name, NULL, "%s/%s_%08X", g.CurrentWindow->Name, "##serial_output", ImGui::GetID("##serial_output"));
-    // ImGuiWindow *child_window = ImGui::FindWindowByName(child_window_name);
-    // ImGui::SetScrollY(child_window, child_window->ScrollMax.y);
+    ImGuiContext &g = *GImGui;
+    const char *child_window_name = NULL;
+    ImFormatStringToTempBuffer(&child_window_name, NULL, "%s/%s_%08X", g.CurrentWindow->Name, "##serial_output", ImGui::GetID("##serial_output"));
+    ImGuiWindow *child_window = ImGui::FindWindowByName(child_window_name);
+    ImGui::SetScrollY(child_window, child_window->ScrollMax.y);
+
   } else if (FlightDataState.data_input_mode == MODE_FILE_INPUT) {
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Flight Replay");
