@@ -66,6 +66,7 @@ void follow_trajectory() {
   unsigned long lastlogx_est = timer;
   unsigned long led_on_time = 0;
   bool led_on = false;
+  bool auto_land = false;
   last_hb = timer;
 
   float last_time_s = timer / 1000000.0;
@@ -77,10 +78,13 @@ void follow_trajectory() {
         CommandRouter::receive_byte(CommsSerial.read());
       }
 
-      // TODO - fix this and re-enable
-      // if ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS) {
-      //   kill_flag = true;
-      // }
+      if (!auto_land & ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS)) {
+        CommsSerial.println("Autoland sequence activated!");
+        TrajectoryLoader::header.num_points = i + 1;
+        TrajectoryLoader::trajectory[i].time = max(TrajectoryLoader::trajectory[i].up / 0.5, 1.0) + last_time_s;
+        TrajectoryLoader::trajectory[i].up = -1;
+        auto_land = true;
+      }
 
       if (kill_flag) {
         break;
@@ -94,6 +98,7 @@ void follow_trajectory() {
         lasttelemetry = timer;
         lastloop = timer;
         lastlogx_est = timer;
+        last_hb = timer;
         counter = 0;
         GPS::set_current_position_as_origin();
 
@@ -233,6 +238,14 @@ void follow_trajectory() {
   CommandRouter::send_command("tr", fp);
 
   CommsSerial.printf("Finished %ld loop iterations.\n", counter);
+  if (kill_flag) {
+    CommsSerial.println("Flight was terminated due to manual kill.");
+  }
+  if (auto_land) {
+    CommsSerial.println("Autoland sequence was activated.");
+  }
+
+  TrajectoryLoader::begin(); // reset trajectory in case we modified it during flight
 }
 
 void heartbeat() {
