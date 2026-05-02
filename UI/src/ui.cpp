@@ -289,8 +289,6 @@ void gimbal_output_panel() {
   ImGui::End();
 }
 
-char concat_msg_buf[1000];
-
 void data_management_panel() {
   ImGui::Begin(DATA_MANAGEMENT_PANEL);
 
@@ -452,7 +450,7 @@ void build_dock_layout(ImGuiID dockspace_id) {
   ImGui::DockBuilderDockWindow(IMU_ACCEL_PANEL, live_sensor_tl);
   ImGui::DockBuilderDockWindow(IMU_GYRO_PANEL, live_sensor_tr);
   ImGui::DockBuilderDockWindow(MAG_PANEL, live_sensor_ml);
-  ImGui::DockBuilderDockWindow(GPS_VERT_PANEL, live_sensor_mr);
+  ImGui::DockBuilderDockWindow(ACCEL_BIAS_PANEL, live_sensor_mr);
   ImGui::DockBuilderDockWindow(GPS_POS_PANEL, live_sensor_bl);
   ImGui::DockBuilderDockWindow(GPS_VEL_PANEL, live_sensor_br);
   ImGui::DockBuilderDockWindow(DATA_MANAGEMENT_PANEL, bottom_left_panel);
@@ -491,7 +489,7 @@ void render_loop() {
   imu_gyro_panel();
   mag_panel();
   // gyro_bias_panel();
-  // accel_bias_panel();
+  accel_bias_panel();
   // mag_bias_panel();
   gps_pos_panel();
   gps_vel_panel();

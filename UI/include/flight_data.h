@@ -84,6 +84,8 @@ struct flight_history_t {
 
 extern flight_history_t FlightHistory; // public interface
 extern telemetry_packet_t active_packet;
+#define OUT_BUF_SIZE 32768
+extern char concat_msg_buf[OUT_BUF_SIZE]; // for serial msgs
 
 void init_flight_data();
 void deinit_flight_data();

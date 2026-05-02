@@ -9,6 +9,9 @@ bool escaped;
 uint8_t flight_command_buffer[MAX_FLIGHT_CMD_LEN];
 int flight_command_buffer_pos;
 
+int current_buf_len = 0;
+char concat_msg_buf[OUT_BUF_SIZE];
+
 void reset() {
   escaped = false;
   flight_command_buffer_pos = 0;
@@ -22,6 +25,21 @@ void process_cmd(uint8_t *cmd_buf, int cmd_len) {
   } else {
     cmd_buf[cmd_len] = '\0';
     printf("%s\n", cmd_buf);
+    int msg_len = cmd_len + 1; // +1 for \n
+
+    if (current_buf_len > 0) {
+      concat_msg_buf[current_buf_len - 1] = '\n';
+    }
+    if (current_buf_len + msg_len >= OUT_BUF_SIZE) {
+      int half = current_buf_len / 2;
+      // Shift second half to the front
+      memmove(concat_msg_buf, concat_msg_buf + half, current_buf_len - half + 1); // +1 for the '\0'
+      current_buf_len = half;
+    }
+    strncat(concat_msg_buf, (char *)cmd_buf, OUT_BUF_SIZE - current_buf_len - 1);
+    strncat(concat_msg_buf, "\n", OUT_BUF_SIZE - current_buf_len - 1);
+    current_buf_len += msg_len;
+    concat_msg_buf[current_buf_len - 1] = '\0';
   }
 }
 
