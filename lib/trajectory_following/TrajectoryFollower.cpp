@@ -86,7 +86,7 @@ void follow_trajectory() {
           CommsSerial.println("Autoland sequence activated!");
           TrajectoryLoader::header.num_points = i + 1;
           TrajectoryLoader::trajectory[i].time = max(TrajectoryLoader::trajectory[i].up / 0.5, 1.0) + last_time_s;
-          TrajectoryLoader::trajectory[i].up = -1;
+          TrajectoryLoader::trajectory[i].up = -0.5;
           auto_land = true;
         } else {
           CommsSerial.println("Radio disconnected pre-flight");

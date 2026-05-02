@@ -24,7 +24,8 @@ Vector3 lastAttError;
 
 void ASTRAv2_Controller_reset() {
   VelErrorI = Vector3::Zero();
-  AttErrorI = Vector3::Zero();
+  // AttErrorI = Vector3::Zero();
+  AttErrorI << -0.08, -0.09, 0;
   lastAttError = Vector3::Zero();
 }
 
@@ -79,8 +80,8 @@ Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t const
   Vector3 AccelTarget = K_P.cwiseProduct(VelError) + VelErrorI + (Vector3() << 0, 0, constantsASTRA.g).finished();
 
   // Acceleration Saturation Step
-  Vector3 MaxAccelUp = (Vector3() << 1.5, 1.5, 15).finished();
-  Vector3 MaxAccelDown = (Vector3() << -1.5, -1.5, 4).finished();
+  Vector3 MaxAccelUp = (Vector3() << 1.8, 1.8, 15).finished();
+  Vector3 MaxAccelDown = (Vector3() << -1.8, -1.8, 4).finished();
   AccelTarget = AccelTarget.cwiseMin(MaxAccelUp).cwiseMax(MaxAccelDown);
 
   // Kinematics Step
