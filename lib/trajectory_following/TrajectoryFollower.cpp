@@ -26,6 +26,7 @@ namespace TrajectoryFollower {
 
 bool kill_flag;
 bool arm_flag;
+bool auto_land_cmd;
 unsigned long last_hb;
 elapsedMicros timer;
 
@@ -34,6 +35,7 @@ void follow_trajectory() {
   bool flight_armed = false;
   kill_flag = false;
   arm_flag = false;
+  auto_land_cmd = false;
 
   long counter = 0;
 
@@ -78,7 +80,9 @@ void follow_trajectory() {
         CommandRouter::receive_byte(CommsSerial.read());
       }
 
-      if (!auto_land & ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS)) {
+      // TODO - add a command that triggers this
+      if (!auto_land & (auto_land_cmd || ((timer - last_hb) / 1000.0 > HB_KILL_INTERVAL_MS))) {
+        auto_land_cmd = false;
         CommsSerial.println("Autoland sequence activated!");
         TrajectoryLoader::header.num_points = i + 1;
         TrajectoryLoader::trajectory[i].time = max(TrajectoryLoader::trajectory[i].up / 0.5, 1.0) + last_time_s;
@@ -257,6 +261,7 @@ void begin() {
   CommandRouter::add(start_flight_loop, "start_flight_loop");
   CommandRouter::add(heartbeat, "hb", "send every 0.5 seconds or flight will terminate");
   CommandRouter::add_flag(&kill_flag, "k", "terminate the flight loop early");
+  CommandRouter::add_flag(&auto_land_cmd, "a", "trigger auto land sequence");
   CommandRouter::add_flag(&arm_flag, "arm", "start following a trajectory");
 }
 
