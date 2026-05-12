@@ -292,9 +292,11 @@ void gimbal_output_panel() {
 void data_management_panel() {
   ImGui::Begin(DATA_MANAGEMENT_PANEL);
 
-  ImGui::RadioButton("Serial Input (Live Monitoring)", &FlightDataState.data_input_mode, MODE_SERIAL_INPUT);
+  ImGui::RadioButton("Serial Input (Live)", &FlightDataState.data_input_mode, MODE_SERIAL_INPUT);
   ImGui::SameLine();
-  ImGui::RadioButton("File Input (Flight Replay)", &FlightDataState.data_input_mode, MODE_FILE_INPUT);
+  ImGui::RadioButton("File Input (Replay)", &FlightDataState.data_input_mode, MODE_FILE_INPUT);
+  ImGui::SameLine();
+  ImGui::RadioButton("MATLAB", &FlightDataState.data_input_mode, MODE_MATLAB);
   ImGui::SameLine();
   ImGui::RadioButton("Flash", &FlightDataState.data_input_mode, MODE_FLASH_DUMP);
   ImGui::SameLine();
@@ -408,11 +410,25 @@ void data_management_panel() {
     ImGui::SeparatorText("Flash Link");
     ImGui::PopFont();
     FlashDump::render();
-  } else {
+  } else if (FlightDataState.data_input_mode == MODE_CSR_TRIGGER) {
     ImGui::PushFont(panel_header_font);
     ImGui::SeparatorText("Controller State Reconstruction");
     ImGui::PopFont();
     CSRTrigger::render();
+  } else if (FlightDataState.data_input_mode == MODE_MATLAB) {
+    ImGui::PushFont(panel_header_font);
+    ImGui::SeparatorText("MATLAB / Simulink Connector");
+    ImGui::PopFont();
+
+    ImGui::Text("Connect");
+    ImGui::SameLine();
+    if (ImGui::Checkbox("##socket_chkbox", &socket_open)) {
+      if (socket_open) {
+        open_socket();
+      } else {
+        close_socket();
+      }
+    }
   }
   ImGui::End();
 }
