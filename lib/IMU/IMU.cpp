@@ -183,11 +183,11 @@ int load_calibration_helper(double *dest) {
 void Sensor::load_custom_calib() {
   Calib new_calib;
 
-  const String prompts[] = {"Gyroscope bias", "Accelerometer bias", "Accelerometer gain"};
+  const char *prompts[] = {"Gyroscope bias", "Accelerometer bias", "Accelerometer gain"};
   double *destinations[] = {new_calib.gyro_bias, new_calib.accel_correction_bias, new_calib.accel_correction_gain};
 
   for (int i = 0; i < 3; ++i) {
-    CommsSerial.printf("Enter %s (X Y Z) separated by spaces: ", prompts[i].c_str());
+    CommsSerial.printf("Enter %s (X Y Z) separated by spaces: ", prompts[i]);
     int read = load_calibration_helper(destinations[i]);
     if (read != 3) {
       CommsSerial.printf("Only %d inputs read. Not saving calibration. Quitting.\n", read);

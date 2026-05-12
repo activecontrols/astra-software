@@ -138,7 +138,7 @@ void flash_test() {
     Flash::read(addr, PAGE_SIZE, read_buf);
 
     // compare the response to the programmed data
-    size_t compare_count = min((unsigned long)PAGE_SIZE, sizeof(write_buf) - addr);
+    size_t compare_count = min((unsigned long long)PAGE_SIZE, sizeof(write_buf) - addr);
 
     if (memcmp(read_buf, write_buf + addr, compare_count)) {
       CommsSerial.printf("Data comparison failed. Page address: %X\n", addr);
