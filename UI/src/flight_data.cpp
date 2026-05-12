@@ -13,6 +13,9 @@ void init_flight_data() {
   FlightHistory.write_pos = 0;
   FlightHistory.read_start_pos = FlightHistory.write_pos;
   FlightHistory.read_end_pos = FlightHistory.read_start_pos + FLIGHT_HISTORY_LENGTH - 1;
+
+  WSADATA wsa;
+  WSAStartup(MAKEWORD(2, 2), &wsa);
 }
 
 void deinit_flight_data() {
@@ -23,6 +26,10 @@ void deinit_flight_data() {
 
   FlightDataState.fv_serial.close();
   FlightDataState.rtk_serial.close();
+
+  if (socket_open) {
+    close_socket();
+  }
 }
 
 void commit_packet() {
@@ -140,6 +147,10 @@ char rtk_read_buf[RTK_READ_SIZE];
 char rtk_write_buf[RTK_WRITE_SIZE];
 int rtk_write_pos = 0;
 
+// persist socket data
+SOCKET sock;
+bool socket_open;
+
 void flight_data_periodic() {
   if (FlightDataState.data_input_mode == MODE_SERIAL_INPUT) {
     // RTK forwarding
@@ -169,6 +180,24 @@ void flight_data_periodic() {
       int fv_bytes_read = FlightDataState.fv_serial.read(fv_read_buf, FV_SERIAL_READ_SIZE);
       for (int i = 0; i < fv_bytes_read; i++) {
         flight_command_encode(fv_read_buf[i]);
+      }
+    }
+
+  } else if (FlightDataState.data_input_mode == MODE_MATLAB) {
+    if (socket_open) {
+      struct sockaddr_in sender;
+      int sender_len = sizeof(sender);
+
+      int bytes = recvfrom(sock, (char *)&active_packet, sizeof(active_packet), 0, (struct sockaddr *)&sender, &sender_len);
+
+      if (bytes == sizeof(active_packet)) {
+        commit_packet();
+        printf("%f\n", active_packet.ci.imu.accel_x);
+        printf("%d %d %d %d\n", (char *)&active_packet.ci.imu.accel_x - (char *)&active_packet, (char *)&active_packet.ci.mag.mag_x - (char *)&active_packet,
+               (char *)&active_packet.ci.gps.pos.north - (char *)&active_packet, (char *)&active_packet.ci.target_pos_up - (char *)&active_packet);
+
+      } else if (bytes >= 0) {
+        printf("rcv size error - update the matlab code: %d %d\n", bytes, sizeof(active_packet));
       }
     }
 
@@ -208,4 +237,38 @@ void write_serial_to_fv(const char *msg) {
   } else {
     printf("Failed to send serial message - make sure serial input mode is active and flight vehicle serial port is open.\n");
   }
+}
+
+void open_socket() {
+  sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+  if (sock < 0) {
+    printf("Error creating socket...");
+    socket_open = false;
+    return;
+  }
+
+  // Make socket nonblocking
+  u_long mode = 1;
+  ioctlsocket(sock, FIONBIO, &mode);
+
+  // Bind to localhost:9000
+  struct sockaddr_in addr;
+  memset(&addr, 0, sizeof(addr));
+
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(9000);
+  addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+  // use INADDR_ANY instead if desired
+
+  if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+    printf("Error binding socket...");
+    socket_open = false;
+    return;
+  }
+}
+
+void close_socket() {
+  closesocket(sock);
+  WSACleanup();
 }

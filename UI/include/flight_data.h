@@ -86,6 +86,7 @@ extern flight_history_t FlightHistory; // public interface
 extern telemetry_packet_t active_packet;
 #define OUT_BUF_SIZE 32768
 extern char concat_msg_buf[OUT_BUF_SIZE]; // for serial msgs
+extern bool socket_open;
 
 void init_flight_data();
 void deinit_flight_data();
@@ -94,5 +95,7 @@ void flight_data_periodic();
 void write_serial_to_fv(const char *msg);
 void commit_packet();
 void reply_with_heartbeat();
+void open_socket();
+void close_socket();
 
 #endif
