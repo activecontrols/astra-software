@@ -17,23 +17,14 @@ void begin() {
 }
 
 void load_trajectory_cmd() {
-  Router::println("Enter CSV filename");
+  CommsSerial.println("Enter CSV filename");
   char *filename = Router::readline();
   load_trajectory_csv(filename);
 }
 
 void load_trajectory_csv(const char *filename) {
   File f = SDCard::open(filename, FILE_READ);
-  if (f) {
-    load_trajectory_generic(false, &f);
-    f.close();
-  } else {
-    Router::println("File not found.");
-    return false;
-  }
-  return isLoaded;
-
-  Router::println("Loading trajectory");
+  CommsSerial.println("Loading trajectory");
   NumNodes = 0;
   char line[384];
   file.readBytesUntil('\n', line, sizeof(line));
@@ -47,10 +38,10 @@ void load_trajectory_csv(const char *filename) {
       continue;
 
     // Time
-    char *token = strtok(line ",");
+    char *token = strtok(line, ",");
     if (!token)
       continue;
-    nodes[NumNodes].Time = strof(token, NULL);
+    nodes[NumNodes].Time = strtof(token, NULL);
 
     // Target States
     for (int i = 0; i < 15; i++) {
@@ -68,13 +59,13 @@ void load_trajectory_csv(const char *filename) {
   }
   file.close();
   if (NumNodes == 0) {
-    Router::println("ERROR, No valid rows found in CSV.");
+    CommsSerial.println("ERROR, No valid rows found in CSV.");
     isLoaded = false;
     return false;
   }
   isLoaded = true;
-  Router::println("Succesfully Loaded trajectory with duration");
-  Router::print(nodes[NumNodes - 1].Time);
+  CommsSerial.println("Succesfully Loaded trajectory with duration");
+  CommsSerial.println(nodes[NumNodes - 1].Time);
 }
 
 void get_target(bool GND, float t, Vector15 &X_trg_out, Vector4 &U_ff_out) {
@@ -88,7 +79,7 @@ void get_target(bool GND, float t, Vector15 &X_trg_out, Vector4 &U_ff_out) {
   // Clamp post-flight
   if (t >= nodes[NumNodes - 1].Time) {
     X_trg_out = nodes[NumNodes - 1].X_trg;
-    xU_ff_out = nodes[NumNodes - 1].U_ff;
+    U_ff_out = nodes[NumNodes - 1].U_ff;
     return;
   }
 

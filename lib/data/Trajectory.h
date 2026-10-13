@@ -5,6 +5,7 @@
 #include <ArduinoEigenDense.h>
 
 #define CURRENT_TRAJECTORY_VERSION 1
+#define MAX_TRAJ_NODES 150
 
 struct TrajectoryNode {
   float Time;
@@ -13,8 +14,8 @@ struct TrajectoryNode {
 };
 
 namespace TrajectoryLoader {
-extern TrajectoryHeader header;
-extern NumNodes;
+extern TrajectoryNode nodes[MAX_TRAJ_NODES];
+extern int NumNodes;
 extern bool isLoaded;
 
 void begin();
