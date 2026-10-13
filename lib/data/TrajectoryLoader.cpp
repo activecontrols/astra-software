@@ -7,7 +7,7 @@
 
 namespace TrajectoryLoader {
 
-TrajectoryNode nodes;
+TrajectoryNode nodes[MAX_TRAJ_NODES];
 bool isLoaded;
 int NumNodes = 0;
 
@@ -18,12 +18,12 @@ void begin() {
 
 void load_trajectory_cmd() {
   CommsSerial.println("Enter CSV filename");
-  char *filename = Router::readline();
+  char *filename = CommsSerial.readline();
   load_trajectory_csv(filename);
 }
 
-void load_trajectory_csv(const char *filename) {
-  File f = SDCard::open(filename, FILE_READ);
+bool load_trajectory_csv(const char *filename) {
+  File file = SDCard::open(filename, FILE_READ);
   CommsSerial.println("Loading trajectory");
   NumNodes = 0;
   char line[384];

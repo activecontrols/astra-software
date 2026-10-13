@@ -182,6 +182,7 @@ Vector4 ASTRAv2_Controller(bool GND, const Vector15 &X_est, const Vector15 &X_tr
   Vector3 omegaTRG = C_B2I_est.transpose() * C_B2I_ref * X_trg.segment<3>(10);
 
   Vector3 att_vec = AttError.segment<3>(1);
+  float n = att_vec.norm();
   Vector3 Axis = (n > 1e-6f) ? (att_vec / att_vec.norm()) : Vector3::Zero();
   Vector3 ThetaErr = 2.0f * atan2f(att_vec.norm(), AttError(0)) * Axis;
 

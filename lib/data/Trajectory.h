@@ -9,8 +9,8 @@
 
 struct TrajectoryNode {
   float Time;
-  float X_trg[15];
-  float U_ff[4];
+  Vector15 X_trg;
+  Vector4 U_ff;
 };
 
 namespace TrajectoryLoader {

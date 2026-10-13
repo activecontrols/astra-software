@@ -15,7 +15,7 @@ Vector3 LESO_Position(bool GND, const Vector15 &X_est, const Vector4 &U_cmd, con
   Vector6 y_meas;
   y_meas << X_est.segment<3>(4), X_est.segment<3>(7);
 
-  float Mass = constants.m_dry + X_est[13] + X_est[14];
+  float Mass = constants.m + X_est[13] + X_est[14];
   Matrix3_3 C_BI = quatRot(X_est.segment<4>(0));
   Matrix3_3 C_IB = C_BI.transpose();
 
