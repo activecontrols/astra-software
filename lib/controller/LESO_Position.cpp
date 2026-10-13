@@ -23,7 +23,7 @@ Vector3 LESO_Position(bool GND, const Vector15 &X_est, const Vector4 &U_cmd, con
   float theta = U_cmd[0];
   float phi = U_cmd[1];
   float thrust = U_cmd[2];
-  Vector3 ThrustVec_B = thrust * (Matrix0_0() << cos(theta) * sin(phi), -sin(theta), cos(theta) * cos(phi)).finished();
+  Vector3 ThrustVec_B = thrust * (Vector3() << cos(theta) * sin(phi), -sin(theta), cos(theta) * cos(phi)).finished();
 
   // Nominal acceleration in inertial frame (inc. gravity correction)
   Vector3 g_vec = (Vector3() << 0, 0, -constants.g).finished();
