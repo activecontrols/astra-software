@@ -66,10 +66,10 @@ Vector4 DCM_Quat_Conversion(Matrix3_3 R);
 Vector9 DigitalNF(Vector9 IN, bool GND, float THRUST_PERC, float dT, Matrix9_4 &X, Matrix9_4 &Y);
 Matrix18_18 Q_gen();
 void ASTRAv2_Controller_reset();
-Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals *cs);
+Vector4 ASTRAv2_Controller(bool GND, const Vector15 &X_est, const Vector15 &X_trg, const Vector4 &U_ff, const constantsASTRA_t &constantsTOAD, const Vector6 &Dist_LESO, float dT,
+                           Controller_Internals *cs);
 Vector3 LESO_Position(bool GND, const Vector15 &X_est, const Vector4 &U_cmd, const Matrix9_6 &L_Thrust, const constantsASTRA_t &constants, float dT, Vector9 &xhat);
 Vector3 LESO_Attitude(bool GND, const Vector15 &X_est, const Vector4 &U_cmd, const Matrix6_3 &L_Att, const constantsASTRA_t &constants, float dT, Vector6 &xhat);
-Vector4 TOAD_TVLQI_2(bool GND, const Vector15 &X_est, const Vector15 &X_trg, const Vector4 &U_ff, const constantsASTRA_t &constants, const Vector6 &Dist_LESO, float dT, Controller_Internals *cs);
 
 // call like so: matrixExpPade6<Matrix9_9>
 template <typename MatrixN_N> MatrixN_N matrixExpPade6(MatrixN_N A) {

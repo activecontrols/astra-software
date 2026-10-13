@@ -1,148 +1,217 @@
 #include "controller_and_estimator.h"
 #include "matlab_funcs.h"
+#include <cmath>
 
-// Version 2 Controller formulation for ASTRAv2. Structure consists of 3
-// cascaded loops.
-//
-// First Loop is a P Loop in charge of Pos -> Vel commands.
-//
-// Second loop is a PI Loop in charge of Vel -> Acceleration commands, fitted
-// with anti-windup and soft-gatingcbased on attitude error.
-//
-// Second loop is an LQRi Loop in charge of Target Attitude -> Gimbal +
-// Torque commands. Integral action is fitted with anti-windup clamps and is
-// self soft-gated.
-// Tuning of the second loop is done by using a Genetic algorithm to
-// maximize a Crossover Frequency vs. Disk Margin tradeoff on all actuator
-// channels.
-//
-// By: Pablo Plata   -   11/27/25 (Happy Thanksgiving!)
+// LESO Augmented Time Varying LQR formulation
+// New controlzzz
 
-Vector3 VelErrorI;
-Vector3 AttErrorI;
-Vector3 lastAttError;
+static Vector3 I_trans = Vector3::Zero();
 
 void ASTRAv2_Controller_reset() {
-  VelErrorI = Vector3::Zero();
-  // AttErrorI = Vector3::Zero();
-  AttErrorI << -0.08, -0.09, 0;
-  lastAttError = Vector3::Zero();
+  I_trans.setZero();
 }
 
-Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals *cs) {
-  // Controller Limits
-  float thrustMax = 1.5 * 9.8;           // N
-  float gimbalMax = 11.0 * M_PI / 180.0; // rad
-  Vector4 uMin = (Vector4() << -gimbalMax, -gimbalMax, 0.4 * thrustMax, -M_PI / 6).finished();
-  Vector4 uMax = (Vector4() << gimbalMax, gimbalMax, thrustMax, M_PI / 6).finished();
-  Vector4 U = Vector4::Zero();
+Vector4 ASTRAv2_Controller(bool GND, const Vector15 &X_est, const Vector15 &X_trg, const Vector4 &U_ff, const constantsASTRA_t &constantsASTRA, const Vector6 &Dist_LESO, float dT,
+                           Controller_Internals *cs) {
 
-  // First Loop (P Loop)
-  // Position Error Vector
-  Vector3 PosError = PosTarget - X.segment<3>(4);
+  // Reset persistent states when on ground or first initialization
+  if (dT <= 0.0f || GND == 1) {
+    I_trans.setZero();
+    return Vector4::Zero();
+  }
 
-  // Velocity Command
-  Vector3 K_P = (Vector3() << 0.60, 0.60, 0.40).finished();
-  Vector3 VelTarget = K_P.cwiseProduct(PosError);
+  // Unpack gains and disturbance estimates
+  Vector3 a_dist = Dist_LESO.segment<3>(0);
+  Vector3 ang_accel_dist = Dist_LESO.segment<3>(3);
 
-  // Velocity Saturation Step
-  Vector3 MaxVel = (Vector3() << 1, 1, 1.5).finished();
-  VelTarget = VelTarget.cwiseMin(MaxVel).cwiseMax(-MaxVel);
+  float Mass = constantsASTRA.m + X_est(13) + X_est(14);
+  Vector3 g_vec = (Vector3() << 0.0f, 0.0f, -constantsASTRA.g).finished();
 
-  // Second Loop (PI Loop)
-  // Velocity Error Vector
-  Vector3 VelError = VelTarget - X.segment<3>(7);
+  // Translational Trim (Outer Loop w / Integrator)
+  Vector3 pos_err = X_est.segment<3>(4) - X_trg.segment<3>(4);
+  Vector3 vel_err = X_est.segment<3>(7) - X_trg.segment<3>(7);
 
-  // Integral Accumulator
-  Vector3 K_I = (Vector3() << 0.5, 0.5, 1.5).finished();
-  float Leak = 0.4;
-  Vector3 Clamp = (Vector3() << 5, 5, 3).finished();
+  // Leaked integration for the translational integral trim
+  I_trans = I_trans * 0.999f + pos_err * dT;
+  Vector3 MaxInt = (Vector3() << 0.35f, 0.35f, 0.15f).finished();
+  I_trans = I_trans.cwiseMin(MaxInt).cwiseMax(-MaxInt);
 
-  // Normalize errors (0 to 1 scale)
-  Vector3 MaxAttError = (Vector3() << 0.1, 0.1, 0.5).finished();
-  Vector3 MaxVelError = (Vector3() << 0.4, 0.4, 0.3).finished();
-  Vector3 NormAttErr = lastAttError.cwiseAbs().cwiseQuotient(MaxAttError);
-  Vector3 NormVelErr = VelError.cwiseAbs().cwiseQuotient(MaxVelError);
+  Vector6 trans_err;
+  trans_err << pos_err, vel_err;
+  Vector3 Delta_A = -constantsASTRA.K_trans * trans_err - constantsASTRA.K_I * I_trans;
 
-  // Combine errors (Vector magnitude)
-  Vector3 TotalErrorMetric = NormAttErr + NormVelErr;
+  // Acceleration saturation limit
+  Vector3 MaxAccelCorr = (Vector3() << 1.5f, 1.5f, 4.0f).finished();
+  Delta_A = Delta_A.cwiseMin(MaxAccelCorr).cwiseMax(-MaxAccelCorr);
 
-  // Calculate Gate using Gaussian function
-  Vector3 Gate = (1 - Leak) * (-2 * TotalErrorMetric.cwiseAbs2()).array().exp().matrix() + (Vector3() << Leak, Leak, Leak).finished();
+  // Nominal Trajectory Acceleration
+  Vector4 Q_ref = X_trg.segment<4>(0);
+  Vector4 Q_est = X_est.segment<4>(0);
+  Matrix3_3 C_B2I_ref = quatRot(Q_ref).transpose();
+  Matrix3_3 C_B2I_est = quatRot(Q_est).transpose();
 
-  // Integrator
-  K_I = K_I.cwiseProduct(Gate);
-  VelErrorI = VelErrorI + K_I.cwiseProduct(VelError) * dT;
-  VelErrorI = VelErrorI.cwiseMin(Clamp).cwiseMax(-Clamp);
-  K_P = (Vector3() << 1.8, 1.8, 2.2).finished();
+  float theta_ff = U_ff[0];
+  float phi_ff = U_ff[1];
+  float thrust_ff = U_ff[2];
 
-  // Acceleration Target
-  Vector3 AccelTarget = K_P.cwiseProduct(VelError) + VelErrorI + (Vector3() << 0, 0, constantsASTRA.g).finished();
+  Vector3 T_B_ff = thrust_ff * (Vector3() << cosf(theta_ff) * sinf(phi_ff), -sinf(theta_ff), cosf(theta_ff) * cosf(phi_ff)).finished();
+  Vector3 a_ff = (C_B2I_ref * T_B_ff) / Mass + g_vec;
 
-  // Acceleration Saturation Step
-  Vector3 MaxAccelUp = (Vector3() << 1.8, 1.8, 15).finished();
-  Vector3 MaxAccelDown = (Vector3() << -1.8, -1.8, 4).finished();
-  AccelTarget = AccelTarget.cwiseMin(MaxAccelUp).cwiseMax(MaxAccelDown);
+  // Commanded inertial acceleration with LESO disturbance compensation
+  Vector3 a_cmd = a_ff - a_dist + Delta_A;
+  Vector3 f_req = a_cmd - g_vec;
 
-  // Kinematics Step
-  // Compute thrust target
-  Vector3 TargetForce_I = constantsASTRA.m * AccelTarget;
-  U[2] = TargetForce_I.norm();
+  // Dynamic Pullout Protection & Tilt Clamping
+  // Protects and pulls the vehicle out of a trajectory if near unrecoverable
+  float tb_norm = T_B_ff.norm();
+  Vector3 Z_B_trg = C_B2I_ref * (T_B_ff / fmaxf(tb_norm, 1e-4f));
+  float z_curr = X_est[6];
+  float vz_curr = X_est[9];
 
-  // Compute target attitude via GSP.
-  AccelTarget[2] = max(AccelTarget[2], constantsASTRA.g);
-  Vector3 Z_b = AccelTarget / AccelTarget.norm();
+  // Altitude & Sink - Rate Adaptive Cone Clamping
+  // TODO (Pablo): Check if this is even worth having, or if u can simplify the logic on this.
+  // If current velocity is negative indicating descent, we calculate the
+  // stopping distance given our current altitude target and limit the
+  // tilt accordingly.
+  float MaxConeAng = 20.0f * M_PI / 180.0f;
+  if (vz_curr < -1.0f) {
+    float thrustDist = fminf(a_dist(2), 0.0f);
+    float availAccel = fmaxf((constantsASTRA.MaxThrust / Mass + thrustDist) - constantsASTRA.g, 0.4f);
+    float stopDist = 0.5f * (vz_curr * vz_curr) / availAccel;
 
-  // Heading reference (+X axis rolled to north)
-  Vector3 HDGRef = (Vector3() << 1, 0, 0).finished();
-  Vector3 Y_b = Z_b.cross(HDGRef);
-  Y_b.normalize();
+    if (z_curr < stopDist * 1.35f + 2.5f) {
+      // Emergency Braking Pullout: Lock thrust strictly vertical to maximize deceleration
+      MaxConeAng = 10.0f * M_PI / 180.0f;
+      f_req(2) = fmaxf(f_req(2), constantsASTRA.MaxThrust / Mass);
+    } else if (z_curr < stopDist * 1.50f + 5.0f) {
+      // Anticipatory Braking, squeeze cone angle smoothly
+      float coneRatio = (z_curr - stopDist) / fmaxf(stopDist, 1.0f);
+      float clampedRatio = fminf(fmaxf(coneRatio, 0.3f), 1.0f);
+      MaxConeAng = (15.0f * M_PI / 180.0f) * clampedRatio;
+      f_req(2) = fmaxf(f_req(2), constantsASTRA.g + 1.2f);
+    } else {
+      MaxConeAng = 20.0f * M_PI / 180.0f;
+    }
+  } else {
+    MaxConeAng = 20.0f * M_PI / 180.0f;
+  }
 
-  // Complete the triad
-  Vector3 X_b = Y_b.cross(Z_b);
+  // Project the required force direction into the allowable cone relative
+  // to nominal thrust axis
+  float norm_f = f_req.norm();
+  float dotVal = f_req.dot(Z_B_trg) / fmaxf(norm_f * Z_B_trg.norm(), 1e-6f);
+  if (dotVal < cosf(MaxConeAng)) {
+    Vector3 f_perp = f_req - f_req.dot(Z_B_trg) * Z_B_trg;
+    float norm_perp = f_perp.norm();
+    if (norm_perp > 1e-6f) {
+      f_perp /= norm_perp;
+      f_req = (cosf(MaxConeAng) * Z_B_trg + sinf(MaxConeAng) * f_perp) * norm_f;
+    } else {
+      f_req = Z_B_trg * norm_f;
+    }
+    norm_f = f_req.norm();
+  }
 
-  // Create DCM and convert to quaternion
-  Matrix3_3 DCM;
-  DCM << X_b[0], Y_b[0], Z_b[0], X_b[1], Y_b[1], Z_b[1], X_b[2], Y_b[2], Z_b[2];
-  Vector4 TargetAtt = DCM_Quat_Conversion(DCM);
+  Vector3 Z_t;
+  if (norm_f > 1e-6f) {
+    Z_t = f_req / norm_f;
+  } else {
+    Z_t = (Vector3() << 0.0f, 0.0f, 1.0f).finished();
+  }
 
-  // Third Loop (LQRi)
-  // Attitude Error computation
-  Vector4 Q_Conj = (Vector4() << X[0], -X.segment<3>(1)).finished();
-  Vector4 AttError = HamiltonianProd(Q_Conj) * TargetAtt;
-  if (AttError[0] < 0) {
+  // Actuator Disturbance Trim & Intermediate Frame C_T2B
+  Vector3 torque = ang_accel_dist.cwiseProduct(constantsASTRA.J);
+  Vector4 U_cmd = Vector4::Zero();
+
+  // Correct input clamping to actual limits
+  U_cmd[2] = fminf(fmaxf(norm_f * Mass, 0.2f * constantsASTRA.MaxThrust), constantsASTRA.MaxThrust);
+  float u_cmd3 = fmaxf(U_cmd[2], 1e-3f);
+
+  // Gimbal angles required to cancel CoM offset torque:
+  Vector4 U_dist = Vector4::Zero();
+  U_dist[0] = -1.0f * torque[0] / (constantsASTRA.rTB * u_cmd3);
+
+  float cos_phi_approx = 1.0f - 0.5f * theta_ff * theta_ff;
+  U_dist[1] = -1.0f * torque[1] / (constantsASTRA.rTB * cos_phi_approx * u_cmd3);
+  U_dist[2] = torque[2];
+
+  // Construct Thrust-to-Body Rotation Matrix (C_T2B)
+  float theta_eff = theta_ff - U_dist(0);
+  float phi_eff = phi_ff - U_dist(1);
+
+  Matrix3_3 R_x, R_y;
+  R_x << 1.0f, 0.0f, 0.0f, 0.0f, cosf(theta_eff), -sinf(theta_eff), 0.0f, sinf(theta_eff), cosf(theta_eff);
+
+  R_y << cosf(phi_eff), 0.0f, sinf(phi_eff), 0.0f, 1.0f, 0.0f, -sinf(phi_eff), 0.0f, cosf(phi_eff);
+
+  Matrix3_3 C_T2B = R_y * R_x;
+
+  // Triad Gen
+  Vector3 X_t_ref = C_B2I_ref * C_T2B.col(0);
+  X_t_ref = X_t_ref - X_t_ref.dot(Z_t) * Z_t;
+
+  Vector3 X_t, Y_t;
+  if (X_t_ref.norm() > 1e-6f) {
+    X_t_ref.normalize();
+    Y_t = Z_t.cross(X_t_ref);
+    Y_t.normalize();
+    X_t = Y_t.cross(Z_t);
+  } else {
+    Y_t = (Vector3() << 0.0f, 1.0f, 0.0f).finished();
+    X_t = Y_t.cross(Z_t);
+    X_t.normalize();
+    Y_t = Z_t.cross(X_t);
+  }
+
+  Matrix3_3 C_T2I_cmd;
+  C_T2I_cmd << X_t, Y_t, Z_t;
+  Matrix3_3 C_B2I_cmd = C_T2I_cmd * C_T2B.transpose();
+  Vector4 Q_cmd = DCM_Quat_Conversion(C_B2I_cmd);
+  Q_cmd.normalize();
+  if (Q_cmd(0) < 0.0f) {
+    Q_cmd = -Q_cmd;
+  }
+
+  // Rotational Inner-Loop Control
+  Vector4 Q_cmd_Conj = (Vector4() << Q_cmd(0), -Q_cmd.segment<3>(1)).finished();
+  Vector4 AttError = HamiltonianProd(Q_cmd_Conj) * X_est.segment<4>(0);
+  if (AttError(0) < 0.0f) {
     AttError = -AttError;
   }
-  lastAttError = AttError.segment<3>(1);
 
-  // Error accumulation and clamping
-  Clamp = (Vector3() << 4, 4, 0.4).finished();
-  AttErrorI = AttErrorI + AttError.segment<3>(1) * dT;
-  AttErrorI = AttErrorI.cwiseMin(Clamp).cwiseMax(-Clamp);
+  Vector3 omegaTRG = C_B2I_est.transpose() * C_B2I_ref * X_trg.segment<3>(10);
 
-  // State vector and error
-  Vector9 X_Err = (Vector9() << -AttError.segment<3>(1), X.segment<3>(10), AttErrorI).finished();
+  Vector3 att_vec = AttError.segment<3>(1);
+  Vector3 Axis = (n > 1e-6f) ? (att_vec / att_vec.norm()) : Vector3::Zero();
+  Vector3 ThetaErr = 2.0f * atan2f(att_vec.norm(), AttError(0)) * Axis;
 
-  // LQR Controller
-  Vector3 u_components = -constantsASTRA.K_Att * X_Err;
-  U[0] = u_components[0];
-  U[1] = u_components[1];
-  U[3] = u_components[2];
+  Vector6 X_err_rot;
+  X_err_rot << ThetaErr, (X_est.segment<3>(10) - omegaTRG);
+  Vector3 Delta_u = -constantsASTRA.K_rot * X_err_rot;
 
-  // Controls Saturation
-  U = U.cwiseMax(uMin).cwiseMin(uMax);
+  //  Actuator Trim Integration & Disturbance Allocation
+  float thrustMax = constantsASTRA.MaxThrust;
+  float gimbalMax = 10.0f * M_PI / 180.0f;
 
-  for (int i = 0; i < 3; ++i) {
-    cs->VelTarget[i] = VelTarget(i);
-    cs->AccelTarget[i] = AccelTarget(i);
+  // Feedback Trim Bounds
+  Vector3 MaxTrim = (Vector3() << 10.0f * M_PI / 180.0f, 10.0f * M_PI / 180.0f, 3.0f).finished();
+  Vector3 Trim_FB = Delta_u.cwiseMin(MaxTrim).cwiseMax(-MaxTrim);
 
-    cs->VelErrorI[i] = VelErrorI(i);
-    cs->AttErrorI[i] = AttErrorI(i);
-  }
+  // Active Gimbal Disturbance Trim Feedforward
+  Vector3 U_dist_chan = (Vector3() << U_dist(0), U_dist(1), U_dist(2)).finished();
+  Vector3 U_dist_req = (-U_dist_chan).cwiseMin(MaxTrim).cwiseMax(-MaxTrim);
 
-  for (int i = 0; i < 4; ++i) {
-    cs->TargetAtt[i] = TargetAtt(i);
-  }
+  // Combine feedback and disturbance trim
+  Vector3 Trim = Trim_FB + U_dist_req;
 
-  return U;
+  // Allocate to actuator channels
+  Vector3 U_ff_chan = (Vector3() << U_ff(0), U_ff(1), U_ff(3)).finished();
+  Vector3 Final_Channels = Trim + U_ff_chan;
+
+  U_cmd(0) = fminf(fmaxf(Final_Channels(0), -gimbalMax), gimbalMax); // Pitch (rad)
+  U_cmd(1) = fminf(fmaxf(Final_Channels(1), -gimbalMax), gimbalMax); // Yaw (rad)
+  U_cmd(2) = fminf(fmaxf(U_cmd(2), 0.2f * thrustMax), thrustMax);    // Thrust (N)
+  U_cmd(3) = fminf(fmaxf(Final_Channels(2), -4.0f), 4.0f);           // Roll (rad/s^2)
+
+  return U_cmd;
 }
