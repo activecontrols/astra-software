@@ -1,6 +1,6 @@
 #pragma once
-#include <ArduinoEigenDense.h>
 #include "astra_structs.h"
+#include <ArduinoEigenDense.h>
 
 // Note - using matlab funcs based off of ASTRA simulation: 3a2af9e756f0981da411d93f59ee6b421d5fa234
 // TODO - update matlab func commit
@@ -10,6 +10,7 @@ using Vector3 = Eigen::Matrix<float, 3, 1>;
 using Vector4 = Eigen::Matrix<float, 4, 1>;
 using Vector6 = Eigen::Matrix<float, 6, 1>;
 using Vector9 = Eigen::Matrix<float, 9, 1>;
+using Vector12 = Eigen::Matrix<float, 12, 1>;
 using Vector13 = Eigen::Matrix<float, 13, 1>;
 using Vector15 = Eigen::Matrix<float, 15, 1>;
 using Vector16 = Eigen::Matrix<float, 16, 1>;
@@ -18,11 +19,12 @@ using Vector19 = Eigen::Matrix<float, 19, 1>;
 using Matrix2_2 = Eigen::Matrix<float, 2, 2>;
 using Matrix3_3 = Eigen::Matrix<float, 3, 3>;
 using Matrix3_6 = Eigen::Matrix<float, 3, 6>;
+using Matrix6_6 = Eigen::Matrix<float, 6, 6>;
+using Matrix6_3 = Eigen::Matrix<float, 6, 3>;
 using Matrix3_9 = Eigen::Matrix<float, 3, 9>;
 using Matrix4_4 = Eigen::Matrix<float, 4, 4>;
-using Matrix6_6 = Eigen::Matrix<float, 6, 6>;
 using Matrix6_9 = Eigen::Matrix<float, 6, 9>;
-using Matrix9_4 = Eigen::Matrix<float, 9, 4>;
+using Matrix9_3 = Eigen::Matrix<float, 9, 3>;
 using Matrix6_18 = Eigen::Matrix<float, 6, 18>;
 using Matrix9_6 = Eigen::Matrix<float, 9, 6>;
 using Matrix9_9 = Eigen::Matrix<float, 9, 9>;
@@ -30,12 +32,27 @@ using Matrix18_6 = Eigen::Matrix<float, 18, 6>;
 using Matrix18_18 = Eigen::Matrix<float, 18, 18>;
 
 typedef struct {
-  float g;
-  float m;
+  // Kalman Filt
   Vector3 mag;
   Matrix18_18 Q;
   Matrix6_6 R;
-  Matrix3_9 K_Att;
+
+  // Controls
+  Matrix3_6 K_trans;
+  Matrix3_6 K_rot;
+  Matrix3_3 K_I;
+
+  // LESOs
+  Matrix9_6 L_Thrust;
+  Matrix6_3 L_Att;
+
+  // Vehicle Params
+  float g;
+  float m;
+  float rTB;
+  float MaxThrust;
+  Vector3 J;
+
 } constantsASTRA_t;
 
 Matrix3_3 zetaCross(Vector3 zeta);
@@ -50,6 +67,9 @@ Vector9 DigitalNF(Vector9 IN, bool GND, float THRUST_PERC, float dT, Matrix9_4 &
 Matrix18_18 Q_gen();
 void ASTRAv2_Controller_reset();
 Vector4 ASTRAv2_Controller(Vector3 PosTarget, Vector16 X, constantsASTRA_t constantsASTRA, float dT, Controller_Internals *cs);
+Vector3 LESO_Position(bool GND, const Vector15 &X_est, const Vector4 &U_cmd, const Matrix9_6 &L_Thrust, const constantsASTRA_t &constants, float dT, Vector9 &xhat);
+Vector3 LESO_Attitude(bool GND, const Vector15 &X_est, const Vector4 &U_cmd, const Matrix6_3 &L_Att, const constantsASTRA_t &constants, float dT, Vector6 &xhat);
+Vector4 TOAD_TVLQI_2(bool GND, const Vector15 &X_est, const Vector15 &X_trg, const Vector4 &U_ff, const constantsASTRA_t &constants, const Vector6 &Dist_LESO, float dT, Controller_Internals *cs);
 
 // call like so: matrixExpPade6<Matrix9_9>
 template <typename MatrixN_N> MatrixN_N matrixExpPade6(MatrixN_N A) {

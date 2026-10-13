@@ -1,5 +1,4 @@
 #include "matlab_funcs.h"
-
 #define RTK 1
 
 Matrix18_18 GroundStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2i) {

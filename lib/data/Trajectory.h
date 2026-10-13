@@ -1,14 +1,24 @@
-#define CURRENT_TRAJECTORYH_VERSION 1 // UPDATE THIS BIT IF THE STRUCT IS CHANGED - it will invalidate files created in older version
 
-typedef struct {
-  float time;  // seconds since start
-  float north; // north from origin (m)
-  float west;  // west from origin (m)
-  float up;    // up from origin (m)
-} traj_point_pos;
+#include "SDCard.h"
+#include "matlab_funcs.h"
+#include <Arduino.h>
+#include <ArduinoEigenDense.h>
 
-typedef struct {
-  int version = CURRENT_TRAJECTORYH_VERSION;
-  char trajectory_label[50]; // max 49 char string label
-  int num_points;
-} trajectory_header;
+#define CURRENT_TRAJECTORY_VERSION 1
+
+struct TrajectoryNode {
+  float Time;
+  float X_trg[15];
+  float U_ff[4];
+};
+
+namespace TrajectoryLoader {
+extern TrajectoryHeader header;
+extern NumNodes;
+extern bool isLoaded;
+
+void begin();
+bool load_trajectory_csv(const char *filename);
+void load_trajectory_cmd();
+void get_target(bool GND, float t, Vector15 &X_trg_out, Vector4 &U_ff_out);
+} // namespace TrajectoryLoader
