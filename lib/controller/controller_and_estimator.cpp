@@ -45,11 +45,21 @@ void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.1690;
   constantsASTRA.mag << 0.38535, 0.03198, -0.9222;
+  constantsASTRA.rTB = 0.26f; // TODO: Check if true
+  constantsASTRA.MaxThrust = 16.0f;
+  constantsASTRA.J << 0.067f, 0.067f, 0.02f;
+  constantsASTRA.K_I = Matrix3_3::Identity();
+  constantsASTRA.K_I.diagonal() << 0.45f, 0.45f, 0.15f;
   constantsASTRA.Q = Q_gen();
 
-  constantsASTRA.K_Att << 1.728295e+00, -1.540789e-16, -5.757607e-16, 2.476386e-01, 1.840120e-17, 1.974565e-16, -4.714045e-01, -8.981678e-16, 2.808483e-16, //
-      -7.665324e-16, 1.728295e+00, -6.661278e-16, -4.321400e-17, 2.476386e-01, -3.558853e-16, 2.782732e-16, -4.714045e-01, 1.755211e-16,                    //
-      1.210242e-17, -4.327838e-16, 6.015416e+00, 1.574587e-17, -1.201731e-16, 2.493901e+00, 1.882484e-16, -8.462698e-17, -1.581139e+00;                     //
+  // Gain Matrices (TODO: Check values)
+  constantsASTRA.K_trans << 9.583831e-01, 0, 0, 1.683824e+00, 0, 0, 0, 9.583831e-01, 0, 0, 1.683824e+00, 0, 0, 0, 9.583831e-01, 0, 0, 1.683824e+00;
+  constantsASTRA.K_rot << -7.541335e-01, -8.115214e-05, -1.362233e-04, -2.208310e-01, 2.617803e-06, -2.971590e-05, 8.246603e-05, -7.541662e-01, -1.921107e-03, -2.577455e-06, -2.208326e-01,
+      6.048713e-04, -5.516150e-05, -5.104331e-03, 8.236951e-01, 2.019352e-05, -4.129795e-04, 2.299734e-01;
+  constantsASTRA.L_Thrust << 5.616296e-03, 0, 0, 2.005830e-03, 0, 0, 0, 4.727018e-03, 4.929804e-06, 0, 2.010921e-03, 2.808143e-08, 0, 5.023681e-06, 5.088132e-03, 0, -1.601761e-07, 2.006986e-03,
+      1.889238e-04, -9.886904e-10, 0, 1.123218e-02, 0, 0, 0, 9.157307e-04, -2.406860e-05, 0, 9.845408e-03, -4.535823e-07, 0, 3.624535e-06, 2.974015e-04, 0, -3.739723e-07, 9.309009e-03, 5.350414e-04,
+      -2.769941e-09, 0, 1.575495e-02, 1.030446e-10, 0, 0, 2.273589e-03, -5.977943e-05, 0, 1.205917e-02, -1.064738e-06, 0, 8.297828e-06, 6.894103e-04, 0, -8.723946e-07, 1.079742e-02;
+  constantsASTRA.L_Att << 6.808373e-03, 0, 0, 0, 8.123445e-03, 0, 0, 0, 8.123349e-03, 5.788234e-03, 0, 0, 0, 8.242795e-03, 0, 0, 0, 8.194591e-03;
 
   constantsASTRA.R = Matrix6_6::Zero();
   constantsASTRA.R.block<3, 3>(0, 0) = Matrix3_3::Identity() * 0.050;
@@ -72,9 +82,12 @@ void init_controller_and_estimator_constants() {
   ASTRAv2_Controller_reset();
 }
 
-Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, float loop_dT, Controller_Internals *cs) {
-
+Controller_Output get_controller_output(Controller_Input ci, const Vector15 &X_trg, const Vector4 &U_ff, float ideal_dT, float loop_dT, Controller_Internals *cs) {
   Vector15 z;
+  static Vector9 xhat_pos = Vector9::Zero();
+  static Vector6 xhat_att = Vector6::Zero();
+  static Vector4 last_U_cmd = Vector4::Zero();
+
   // clang-format off
   z << ci.imu.accel_x, ci.imu.accel_y, ci.imu.accel_z, 
        ci.imu.gyro_yaw, ci.imu.gyro_pitch, ci.imu.gyro_roll,
@@ -108,10 +121,18 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
     x_est = FlightEstimator(x_est, constantsASTRA, z, loop_dT, Flight_P, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
   }
 
-  Vector16 X = StateAUG(x_est.segment<13>(0), z.segment<3>(3));
-  Vector3 TargetPos;
-  TargetPos << ci.target_pos_north, ci.target_pos_west, ci.target_pos_up;
-  Vector4 raw_co = ASTRAv2_Controller(TargetPos, X, constantsASTRA, loop_dT, cs);
+  Vector15 X_ctrl;
+  X_ctrl << x_est.segment<10>(0), z.segment<3>(3), 0.0f, 0.0f;
+
+  // Run disturbance observers
+  Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
+  Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
+  Vector6 Dist_LESO;
+  Dist_LESO << a_dist, u_dist;
+
+  // Main control loop
+  Vector4 raw_co = ASTRAv2_Controller(ci.GND_val, X_ctrl, X_trg, U_ff, constantsASTRA, Dist_LESO, loop_dT, cs);
+  last_U_cmd = raw_co;
   if (ci.GND_val) {
     raw_co = Vector4::Zero();
   }

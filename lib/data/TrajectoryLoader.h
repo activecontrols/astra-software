@@ -8,22 +8,17 @@
 
 #pragma once
 
+// TODO: Is this code redundant? Seems like Trajectory.h does all of this already.
 #include "SDCard.h"
 #include "Trajectory.h"
 
 namespace TrajectoryLoader {
+extern TrajectoryNode nodes[MAX_TRAJ_NODES];
+extern int NumNodes;
+extern bool isLoaded;
 
-extern trajectory_header header;
-extern traj_point_pos trajectory[5];
-extern bool loaded_trajectory;
-
-void begin(); // registers loader functions with the router
-// bool load_trajectory_sd(const char *filename);
-
-// // triggered by comms
-// void load_trajectory_serial(const char *);
-// void load_trajectory_sd_cmd(const char *);
-// void write_trajectory_sd(const char *);
-
-// void load_trajectory_generic(bool serial, File *f);
+void begin();
+bool load_trajectory_csv(const char *filename);
+void load_trajectory_cmd();
+void get_target(bool GND, float t, Vector15 &X_trg_out, Vector4 &U_ff_out);
 }; // namespace TrajectoryLoader
