@@ -10,8 +10,8 @@
 #include "TrajectoryFollower.h"
 #include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
-#include <Arduino.h>
 #include "fc_pins.h"
+#include <Arduino.h>
 
 CommsSerial_t<HardwareSerial> HW_CommsSerial(PIN_SERIAL_RX, PIN_SERIAL_TX);
 CommsSerial_t<USBSerial> USB_CommsSerial;
