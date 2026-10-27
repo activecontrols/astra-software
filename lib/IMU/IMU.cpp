@@ -91,14 +91,14 @@ int Sensor::init() {
      =========================================================================================*/
 
   // adjust these per the datasheet to choose the aaf filter bandwidth
-  // these values have been chosen for a filter bandwidth of 394 Hz
-  const uint8_t accel_aaf_delt = 9;
-  const uint16_t accel_aaf_deltsqr = 81;
-  const uint8_t accel_aaf_bitshift = 9;
+  // these values have been chosen for a filter bandwidth of 3979 Hz
+  const uint8_t accel_aaf_delt = 63;
+  const uint16_t accel_aaf_deltsqr = 3968;
+  const uint8_t accel_aaf_bitshift = 3;
 
-  const uint8_t gyro_aaf_delt = 9;
-  const uint16_t gyro_aaf_deltsqr = 81;
-  const uint8_t gyro_aaf_bitshift = 9;
+  const uint8_t gyro_aaf_delt = 63;
+  const uint16_t gyro_aaf_deltsqr = 3968;
+  const uint8_t gyro_aaf_bitshift = 3;
 
   // switch to user bank 1
   status = inv_icm406xx_wr_reg_bank_sel((inv_icm406xx *)this->inv_icm, 1);
@@ -139,8 +139,8 @@ int Sensor::init() {
   }
 
   // set gyro and accel odr
-  status |= inv_icm406xx_wr_gyro_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_GYRO_CONFIG0_ODR_2_KHZ);
-  status |= inv_icm406xx_wr_accel_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_ACCEL_CONFIG0_ODR_2_KHZ);
+  status |= inv_icm406xx_wr_gyro_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_GYRO_CONFIG0_ODR_8_KHZ);
+  status |= inv_icm406xx_wr_accel_config0_odr((inv_icm406xx *)this->inv_icm, ICM406XX_ACCEL_CONFIG0_ODR_8_KHZ);
 
   if (status) {
     const char *error_message = inv_error_str(status);
@@ -261,6 +261,27 @@ void Sensor::read_latest_accel_raw(int16_t *out) {
 }
 
 // output in g's and in deg/s
+void Sensor::read_latest_raw(int16_t *acc, int16_t *gyro) {
+  begin_transaction(&this->spi_interface);
+
+  this->spi_interface.spi->transfer(READ_FLAG | MPUREG_ACCEL_DATA_X1_UI);
+  // status = inv_icm406xx_read_reg((inv_icm406xx *)this->inv_icm, MPUREG_ACCEL_DATA_X1_UI, 12, (uint8_t*)temp);
+
+  for (int i = 0; i < 3; ++i) {
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+    acc[i] = ((int16_t)(upper << 8) | lower);
+  }
+
+  for (int i = 0; i < 3; ++i) {
+    uint8_t lower = this->spi_interface.spi->transfer(0x00);
+    uint8_t upper = this->spi_interface.spi->transfer(0x00);
+    gyro[i] = ((int16_t)(upper << 8) | lower);
+  }
+
+  end_transaction(&this->spi_interface);
+}
+
 void Sensor::read_latest_no_calib(Data *output) {
   begin_transaction(&this->spi_interface);
 

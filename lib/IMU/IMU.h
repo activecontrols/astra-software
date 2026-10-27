@@ -40,6 +40,7 @@ public:
   int disable_gyro();
 
   int read_accel_config(uint8_t *value);
+  void read_latest_raw(int16_t *acc, int16_t *gyro);
 
   void calibrate_gyro();
 
@@ -51,10 +52,10 @@ public:
 
   Calib calib;
 
-private:
   void read_latest_accel_raw(int16_t *);
   void read_latest_gyro_raw(int16_t *);
 
+private:
   int write_reg_mask(uint8_t addr, uint8_t mask, uint8_t val);
 
   SPI_Interface spi_interface;

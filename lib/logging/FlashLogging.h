@@ -13,11 +13,10 @@ void begin();
 
 void complete();
 
-void write(uint8_t *data, unsigned int len);
+bool write(uint8_t *data, unsigned int len);
 
-template <typename t> void write(t x) {
-  write((uint8_t *)&x, sizeof(x));
-  return;
+template <typename t> bool write(t x) {
+  return write((uint8_t *)&x, sizeof(x));
 }
 
 bool is_armed();

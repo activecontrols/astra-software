@@ -100,16 +100,33 @@ void send_flash_over_serial() {
   uint32_t addr = 0;
   int idx = 0;
 
-  while (USB_CommsSerial.available()) // empty receive buffer just in case
+  while (CommsSerial.available()) // empty receive buffer just in case
   {
-    USB_CommsSerial.read();
+    CommsSerial.read();
   }
 
   while (1) {
+    // wait for serial to send a c before sending the next page
+    int c;
+
+    uint32_t wait_start_time = millis();
+    do {
+      c = CommsSerial.read();
+
+      // if (0){
+      if (millis() - wait_start_time > 5000) {
+        CommsSerial.println("Error: flash dump timed out");
+        return;
+      }
+    } while (!(c == 'k' || c == 'c'));
+
+    if (c == 'k') {
+      return;
+    }
 
     Flash::read(addr, PAGE_SIZE, last_page);
 
-    USB_CommsSerial.write(last_page, sizeof(last_page));
+    CommsSerial.write(last_page, sizeof(last_page));
 
     bool end = true;
 
@@ -123,37 +140,19 @@ void send_flash_over_serial() {
       }
     }
 
-    USB_CommsSerial.write(cs_A);
-    USB_CommsSerial.write(cs_B);
+    CommsSerial.write(cs_A);
+    CommsSerial.write(cs_B);
 
     if (end) {
-      USB_CommsSerial.write('k');
+      CommsSerial.write('k');
       break;
     }
 
-    USB_CommsSerial.write('c');
+    CommsSerial.write('c');
 
     idx %= PAGE_SIZE;
 
     addr += PAGE_SIZE;
-
-    // wait for serial to send a c before sending the next page
-    int c;
-
-    uint32_t wait_start_time = millis();
-    do {
-      c = USB_CommsSerial.read();
-
-      // if (0){
-      if (millis() - wait_start_time > 5000) {
-        CommsSerial.println("Error: flash dump timed out");
-        return;
-      }
-    } while (!(c == 'k' || c == 'c'));
-
-    if (c == 'k') {
-      return;
-    }
   }
 
   return;

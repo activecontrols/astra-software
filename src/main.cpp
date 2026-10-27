@@ -22,10 +22,73 @@ void ping(const char *args) {
   CommsSerial.println(args == nullptr ? "null" : args);
 }
 
+struct __attribute__((packed)) imu_entry_t {
+  const uint16_t marker = 0xABCD;
+  uint32_t time_us;
+  int16_t gyro[3];  // x y z
+  int16_t accel[3]; // x y z
+};
+
+void cmd_vibe_test(void) {
+  if (!Logging::is_armed()) {
+    CommsSerial.println("Error: flash is not armed");
+    return;
+  }
+
+  CommsSerial.println("Test running.");
+  uint32_t start_us = micros();
+  // test runs until we fill up flash or until user enters "X"
+  for (uint32_t i = 0; true; ++i) {
+    bool do_break = false;
+
+    while (CommsSerial.available()) {
+      if (CommsSerial.read() == 'X') {
+        do_break = true;
+        break;
+      }
+    }
+
+    if (do_break)
+      break;
+
+    uint32_t now_us = micros();
+    uint32_t elapsed_us = now_us - start_us;
+    IMU::Data imu_data;
+
+    imu_entry_t entry = {.time_us = elapsed_us};
+
+    int16_t gyro_tmp[3];
+    int16_t accel_tmp[3];
+
+    IMU::IMUs[0].read_latest_raw(accel_tmp, gyro_tmp);
+
+    memcpy(entry.gyro, gyro_tmp, sizeof(entry.gyro));
+    memcpy(entry.accel, accel_tmp, sizeof(entry.accel));
+
+    if (!Logging::write(entry)) {
+      break; // break if we reach the end of flash / write fails
+    }
+
+    if (i % 2000 == 0) {
+      CommsSerial.printf("%u samples collected\n", i);
+    }
+
+    uint32_t target_elapsed = i * 250; // target 4KHz loop time
+    uint32_t current_us = micros() - start_us;
+    if (target_elapsed > current_us) {
+      delayMicroseconds(target_elapsed - current_us);
+    }
+  }
+
+  Logging::complete();
+
+  CommsSerial.println("Test complete.");
+}
+
 void setup() {
   delay(3000);
   SPI.begin(); // spi is a shared interface, so we always begin here
-  HW_CommsSerial.begin(57600);
+  HW_CommsSerial.begin(921600);
   USB_CommsSerial.begin(57600);
   CommsSerial.println("Controller started.");
 
@@ -58,17 +121,18 @@ void setup() {
   digitalWrite(PIN_TEST_LED, HIGH);
 
   CommandRouter::begin();
-  Prop::begin();
-  Mag::begin();
-  GPS::begin();
+  // Prop::begin();
+  // Mag::begin();
+  // GPS::begin();
   IMU::begin();
-  GimbalServos::begin();
-  TrajectoryLoader::begin();
-  TrajectoryFollower::begin();
+  // GimbalServos::begin();
+  // TrajectoryLoader::begin();
+  // TrajectoryFollower::begin();
   Logging::begin();
   TrajectoryLogger::begin();
 
   CommandRouter::add(ping, "ping"); // example registration
+  CommandRouter::add(cmd_vibe_test, "vibe_test");
 }
 
 void loop() {

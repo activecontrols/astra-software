@@ -59,9 +59,9 @@ void disarm() {
   return;
 }
 
-void write(uint8_t *data, unsigned int len) {
+bool write(uint8_t *data, unsigned int len) {
   if (!log_enable)
-    return;
+    return false;
 
   unsigned int data_index = 0;
 
@@ -80,13 +80,17 @@ void write(uint8_t *data, unsigned int len) {
       // write data to a new page in the flash
       if (!Flash::page_program(program_addr, write_buf, sizeof(write_buf))) {
         CommsSerial.print("Page Program Failed\n");
-        return;
+        return false;
       }
       program_addr += sizeof(write_buf);
       buf_index = 0;
+
+      if (program_addr >= FLASH_MAX_ADDR) {
+        return false; // indicate that we have reached the end of the memory
+      }
     }
   }
-  return;
+  return true;
 }
 
 // empty the send buffer and disable logging
