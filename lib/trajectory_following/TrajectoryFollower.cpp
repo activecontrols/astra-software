@@ -175,7 +175,9 @@ void follow_trajectory() {
       float loop_dT = time_s - last_time_s;
       float ideal_dT = COMMAND_INTERVAL_US / 1000000.0;
 
-      Controller_Output co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs);
+      Vector15 X_trg;
+      Vector4 U_ff;
+      Controller_Output co = ControllerAndEstimator::get_controller_output(ci, X_trg, U_ff, ideal_dT, loop_dT, &cs);
       float thrust_perc;
       float diffy_perc;
       get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
@@ -198,15 +200,15 @@ void follow_trajectory() {
         lasttelemetry = timer;
 
         fp.ci = ci;
-        fp.ci.imu.accel_x = cs.filter_out[0];
-        fp.ci.imu.accel_y = cs.filter_out[1];
-        fp.ci.imu.accel_z = cs.filter_out[2];
-        fp.ci.imu.gyro_yaw = cs.filter_out[3];
-        fp.ci.imu.gyro_pitch = cs.filter_out[4];
-        fp.ci.imu.gyro_roll = cs.filter_out[5];
-        fp.ci.mag.mag_x = cs.filter_out[6];
-        fp.ci.mag.mag_y = cs.filter_out[7];
-        fp.ci.mag.mag_z = cs.filter_out[8];
+        fp.ci.imu.accel_x = cs.dnf_out[0];
+        fp.ci.imu.accel_y = cs.dnf_out[1];
+        fp.ci.imu.accel_z = cs.dnf_out[2];
+        fp.ci.imu.gyro_yaw = cs.dnf_out[3];
+        fp.ci.imu.gyro_pitch = cs.dnf_out[4];
+        fp.ci.imu.gyro_roll = cs.dnf_out[5];
+        fp.ci.mag.mag_x = cs.dnf_out[6];
+        fp.ci.mag.mag_y = cs.dnf_out[7];
+        fp.ci.mag.mag_z = cs.dnf_out[8];
         fp.x_est = cs.x_est;
         fp.co = co;
 
