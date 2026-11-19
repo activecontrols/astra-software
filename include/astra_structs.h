@@ -60,9 +60,9 @@ struct Controller_Input {
   MAG_State mag;
   GPS_State gps;
 
-  float target_pos_north;
-  float target_pos_west;
-  float target_pos_up;
+  // Trajectory Inputs
+  float X_trg[15];
+  float U_ff[4];
 };
 
 struct Controller_X_Est {

@@ -9,7 +9,6 @@
 
 #include "CommandRouter.h"
 #include "CommsSerial.h"
-#include "SDCard.h"
 #include "fc_pins.h"
 
 #define WRITE_FLAG (0)

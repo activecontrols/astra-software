@@ -1,4 +1,5 @@
 #include "TrajectoryFollower.h"
+#include "ASTRA_Trajectory_Data.h"
 #include "CommandRouter.h"
 #include "CommsSerial.h"
 #include "FlashLogging.h"
@@ -8,8 +9,6 @@
 #include "Mag.h"
 #include "Prop.h"
 #include "RollControl.h"
-#include "SDCard.h"
-#include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
 #include "astra_structs.h"
 #include "controller_and_estimator.h"
@@ -30,8 +29,17 @@ bool auto_land_cmd;
 unsigned long last_hb;
 elapsedMicros timer;
 
+float lerp(float a, float b, float t0, float t1, float t) {
+  if (t <= t0)
+    return a;
+  if (t >= t1)
+    return b;
+  if (t0 == t1)
+    return b; // immediately get to b
+  return a + (b - a) * ((t - t0) / (t1 - t0));
+}
+
 void follow_trajectory() {
-  bool has_left_ground = false;
   bool flight_armed = false;
   kill_flag = false;
   arm_flag = false;
@@ -74,8 +82,8 @@ void follow_trajectory() {
   float last_time_s = timer / 1000000.0;
   float mx, my, mz;
 
-  for (int i = 0; i < TrajectoryLoader::header.num_points; i++) {
-    while (last_time_s < TrajectoryLoader::trajectory[i].time || !flight_armed) {
+  for (int pt = 0; pt < Trajectory::TRAJ_NUM_POINTS - 1; pt++) {
+    while (last_time_s < Trajectory::TRAJ_TIME[pt] || !flight_armed) {
       while (CommsSerial.available()) {
         CommandRouter::receive_byte(CommsSerial.read());
       }
@@ -84,9 +92,7 @@ void follow_trajectory() {
         if (flight_armed) {
           auto_land_cmd = false;
           CommsSerial.println("Autoland sequence activated!");
-          TrajectoryLoader::header.num_points = i + 1;
-          TrajectoryLoader::trajectory[i].time = max(TrajectoryLoader::trajectory[i].up / 0.5, 1.0) + last_time_s;
-          TrajectoryLoader::trajectory[i].up = -0.5;
+          // TODO - autoland!
           auto_land = true;
         } else {
           CommsSerial.println("Radio disconnected pre-flight");
@@ -124,8 +130,6 @@ void follow_trajectory() {
 
       Controller_Input ci;
 
-      has_left_ground = has_left_ground | (TrajectoryLoader::trajectory[i].up > 0);
-
       IMU::Data imu_reading;
       IMU::IMUs[0].read_latest(&imu_reading);
 
@@ -154,11 +158,15 @@ void follow_trajectory() {
       ci.gps.pos = gps_rel_pos;
       ci.gps.vel = gps_vel;
 
-      ci.target_pos_north = TrajectoryLoader::trajectory[i].north;
-      ci.target_pos_west = TrajectoryLoader::trajectory[i].west;
-      ci.target_pos_up = TrajectoryLoader::trajectory[i].up;
+      // trajectory lerp
+      for (int i = 0; i < 15; i++) {
+        ci.X_trg[i] = lerp(Trajectory::TRAJ_STATES[pt][i], Trajectory::TRAJ_STATES[pt + 1][i], Trajectory::TRAJ_TIME[pt], Trajectory::TRAJ_TIME[pt + 1], timer / 1000000.0);
+      }
+      for (int i = 0; i < 4; i++) {
+        ci.U_ff[i] = lerp(Trajectory::TRAJ_INPUTS[pt][i], Trajectory::TRAJ_INPUTS[pt + 1][i], Trajectory::TRAJ_TIME[pt], Trajectory::TRAJ_TIME[pt + 1], timer / 1000000.0);
+      }
 
-      ci.GND_val = !has_left_ground;
+      ci.GND_val = !flight_armed;
 
       if (ci.GND_val) { // GPS lock
         ci.gps.pos = {north : 0, west : 0, up : 0.31};
@@ -175,9 +183,7 @@ void follow_trajectory() {
       float loop_dT = time_s - last_time_s;
       float ideal_dT = COMMAND_INTERVAL_US / 1000000.0;
 
-      Vector15 X_trg;
-      Vector4 U_ff;
-      Controller_Output co = ControllerAndEstimator::get_controller_output(ci, X_trg, U_ff, ideal_dT, loop_dT, &cs);
+      Controller_Output co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs);
       float thrust_perc;
       float diffy_perc;
       get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
@@ -188,7 +194,7 @@ void follow_trajectory() {
 
       if (flight_armed) // we only want to log flight data, not pre-flight
       {
-        TrajectoryLogger::flash_log_sensor(time_s, i, ci, co);
+        TrajectoryLogger::flash_log_sensor(time_s, pt, ci, co);
 
         if (timer - lastlogx_est > LOG_X_EST_INTERVAL_US) {
           TrajectoryLogger::log_x_est();
@@ -254,8 +260,6 @@ void follow_trajectory() {
   if (auto_land) {
     CommsSerial.println("Autoland sequence was activated.");
   }
-
-  TrajectoryLoader::begin(); // reset trajectory in case we modified it during flight
 }
 
 void heartbeat() {
@@ -273,11 +277,6 @@ void begin() {
 
 // prompt user for log file name, then follow trajectory
 void start_flight_loop() {
-  if (!TrajectoryLoader::loaded_trajectory) {
-    CommsSerial.println("FAILURE: no trajectory loaded.");
-    return;
-  }
-
   if (!Logging::is_armed()) {
     CommsSerial.println("FAILURE: Flash logging is not armed. Use command log_arm.");
     return;

@@ -3,8 +3,6 @@
 #include "CommsSerial.h"
 #include "FlashLogging.h"
 #include "GPS.h"
-#include "SDCard.h"
-#include "TrajectoryLoader.h"
 
 #include "flash.h"
 
@@ -20,17 +18,18 @@ void log_x_est() {
 }
 
 void log_trajectory() {
-  Logging::write(ENTRY_TRAJECTORY);
+  // TODO - add this back
+  // Logging::write(ENTRY_TRAJECTORY);
 
-  // next uint32_t specifies length in # of points
-  uint32_t len = TrajectoryLoader::header.num_points;
+  // // next uint32_t specifies length in # of points
+  // uint32_t len = TrajectoryLoader::header.num_points;
 
-  static_assert(sizeof(traj_point_pos) == 16, "sizeof(traj_point_pos) != 16");
+  // static_assert(sizeof(traj_point_pos) == 16, "sizeof(traj_point_pos) != 16");
 
-  Logging::write(len);
+  // Logging::write(len);
 
-  Logging::write((uint8_t *)(TrajectoryLoader::trajectory), sizeof(traj_point_pos) * len);
-  return;
+  // Logging::write((uint8_t *)(TrajectoryLoader::trajectory), sizeof(traj_point_pos) * len);
+  // return;
 }
 
 void log_flight_p() {

@@ -8,7 +8,6 @@
 #include "Prop.h"
 #include "SPI.h"
 #include "TrajectoryFollower.h"
-#include "TrajectoryLoader.h"
 #include "TrajectoryLogger.h"
 #include "fc_pins.h"
 #include <Arduino.h>
@@ -63,7 +62,6 @@ void setup() {
   GPS::begin();
   IMU::begin();
   GimbalServos::begin();
-  TrajectoryLoader::begin();
   TrajectoryFollower::begin();
   Logging::begin();
   TrajectoryLogger::begin();

@@ -3,7 +3,6 @@
 #include <CommandRouter.h>
 #include <CommsSerial.h>
 #include <Mag_Calib.h>
-#include <SDCard.h>
 #include <Wire.h>
 
 #include <SparkFun_MMC5983MA_Arduino_Library.h>

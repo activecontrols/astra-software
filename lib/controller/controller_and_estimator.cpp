@@ -101,7 +101,7 @@ void init_controller_and_estimator_constants() {
   ASTRAv2_Controller_reset();
 }
 
-Controller_Output get_controller_output(Controller_Input ci, Vector15 X_trg, Vector4 U_ff, float ideal_dT, float loop_dT, Controller_Internals *cs) {
+Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, float loop_dT, Controller_Internals *cs) {
   Vector15 z;
   // clang-format off
   z << ci.imu.accel_x, ci.imu.accel_y, ci.imu.accel_z, 
@@ -110,6 +110,16 @@ Controller_Output get_controller_output(Controller_Input ci, Vector15 X_trg, Vec
        ci.gps.pos.north, ci.gps.pos.west, ci.gps.pos.up, 
        ci.gps.vel.north, ci.gps.vel.west, ci.gps.vel.up;
   // clang-format on
+
+  Vector15 X_trg;
+  for (int i = 0; i < 15; i++) {
+    X_trg(i) = ci.X_trg[i];
+  }
+
+  Vector4 U_ff;
+  for (int i = 0; i < 4; i++) {
+    U_ff(i) = ci.U_ff[i];
+  }
 
   Vector9 imu = z.segment<9>(0);
   if (last_thrust < 1) { // prevent div by 0 in filter
