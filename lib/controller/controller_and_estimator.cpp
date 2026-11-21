@@ -14,7 +14,7 @@ Vector6 xhat_att;
 Vector4 last_U_cmd;
 float last_thrust;
 bool last_GND;
-const float tau = 0.002; // seconds - time constant for ema low pass filter applied to gimbal angles
+const float tau = 0.01; // seconds - time constant for ema low pass filter applied to gimbal angles
 
 // Hand off ground attitude/pos/vel/gyro-bias covariance and reset OU mag-bias slack for flight.
 void init_flight_covariance() {
@@ -35,15 +35,16 @@ void init_controller_and_estimator_constants() {
   constantsASTRA.K_I.diagonal() << 0.15f, 0.15f, 0.05f;
   constantsASTRA.Q = Q_gen();
 
-  // Gain Matrices (TODO: Check values)
-  constantsASTRA.K_trans << 9.982694e-01, 0, 0, 1.730052e+00, 0, 0, 0, 9.982694e-01, 0, 0, 1.730052e+00, 0, 0, 0, 2.988404e+00, 0, 0, 3.861005e+00;
-  constantsASTRA.K_rot << -5.867653e-01, -7.171442e-05, -6.699845e-06, -2.179070e-01, 1.061392e-06, 5.317069e-06, 7.171184e-05, -5.867654e-01, -1.629788e-05, -1.043975e-06, -2.179071e-01,
-      2.393766e-06, -1.919781e-05, -6.319698e-06, 8.237270e-01, -4.350950e-06, -1.350637e-06, 2.299779e-01;
+  // Gain Matrices
+  constantsASTRA.K_trans << 7.489237e-01, 0, 0, 1.434829e+00, 0, 0, 0, 7.489237e-01, 0, 0, 1.434829e+00, 0, 0, 0, 2.136482e+00, 0, 0, 2.972797e+00;
 
-  constantsASTRA.L_Thrust << 5.616296e-03, 0, 0, 2.005830e-03, 0, 0, 0, 4.727018e-03, 4.929804e-06, 0, 2.010921e-03, 2.808143e-08, 0, 5.023681e-06, 5.088132e-03, 0, -1.601761e-07, 2.006986e-03,
-      1.889238e-04, -9.886904e-10, 0, 1.123218e-02, 0, 0, 0, 9.157307e-04, -2.406860e-05, 0, 9.845408e-03, -4.535823e-07, 0, 3.624535e-06, 2.974015e-04, 0, -3.739723e-07, 9.309009e-03, 5.350414e-04,
-      -2.769941e-09, 0, 1.575495e-02, 1.030446e-10, 0, 0, 2.273589e-03, -5.977943e-05, 0, 1.205917e-02, -1.064738e-06, 0, 8.297828e-06, 6.894103e-04, 0, -8.723946e-07, 1.079742e-02;
-  constantsASTRA.L_Att << 6.808373e-03, 0, 0, 0, 8.123445e-03, 0, 0, 0, 8.123349e-03, 5.788234e-03, 0, 0, 0, 8.242795e-03, 0, 0, 0, 8.194591e-03;
+  constantsASTRA.K_rot << -4.736094e-01, 0, 0, -2.078351e-01, 0, 0, 0, -4.736094e-01, 0, 0, -2.078351e-01, 0, 0, 0, 4.945653e-01, 0, 0, 2.167021e-01;
+
+  constantsASTRA.L_Thrust << 6.379708e-03, 0, 0, 2.006645e-03, 0, 0, 0, 5.369761e-03, -5.355184e-07, 0, 2.012529e-03, -3.013035e-09, 0, -5.456470e-07, 5.780200e-03, 0, 1.763092e-08, 2.007902e-03,
+      2.277628e-04, 2.564385e-09, 0, 1.275894e-02, 0, 0, 0, 1.026969e-03, 2.566898e-06, 0, 1.118423e-02, 4.778304e-08, 0, -3.768781e-07, 3.236476e-04, 0, 3.945702e-08, 1.057488e-02, 7.326955e-04,
+      8.160697e-09, 0, 2.032911e-02, -3.069875e-10, 0, 0, 2.895867e-03, 7.240287e-06, 0, 1.556194e-02, 1.274101e-07, 0, -9.800014e-07, 8.521664e-04, 0, 1.045619e-07, 1.393367e-02;
+
+  constantsASTRA.L_Att << 9.278389e-03, 0, 0, 0, 1.106923e-02, 0, 0, 0, 1.106905e-02, 1.074992e-02, 0, 0, 0, 1.530486e-02, 0, 0, 0, 1.521536e-02;
 
   constantsASTRA.R = Matrix6_6::Zero();
   constantsASTRA.R.block<3, 3>(0, 0) = Matrix3_3::Identity() * 0.002f;
@@ -124,11 +125,11 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
 
   // Run disturbance observers
   Vector6 Dist_LESO = Vector6::Zero();
-  // if (!ci.GND_val) {
-  //   Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
-  //   Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
-  //   Dist_LESO << a_dist, u_dist;
-  // }
+  if (!ci.GND_val) {
+    Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
+    Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
+    Dist_LESO << a_dist, u_dist;
+  }
 
   for (int i = 0; i < 6; i++) {
     cs->disturbance[i] = Dist_LESO(i);

@@ -15,6 +15,7 @@ using Vector15 = Eigen::Matrix<float, 15, 1>;
 using Vector19 = Eigen::Matrix<float, 19, 1>;
 using Matrix2_2 = Eigen::Matrix<float, 2, 2>;
 using Matrix3_3 = Eigen::Matrix<float, 3, 3>;
+using Matrix3_4 = Eigen::Matrix<float, 3, 4>;
 using Matrix3_6 = Eigen::Matrix<float, 3, 6>;
 using Matrix3_15 = Eigen::Matrix<float, 3, 15>;
 using Matrix4_4 = Eigen::Matrix<float, 4, 4>;

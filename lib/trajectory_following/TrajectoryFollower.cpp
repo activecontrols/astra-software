@@ -17,9 +17,9 @@
 #include <Arduino.h>
 
 #define TELEMETRY_INTERVAL_US 250000
-#define COMMAND_INTERVAL_US 1000
+#define COMMAND_INTERVAL_US 2000
 #define LOG_X_EST_INTERVAL_US 100000
-#define HB_KILL_INTERVAL_MS 5000 // if we don't see a heartbeat command every 0.5 seconds during flight, disable gimbal and props
+#define HB_KILL_INTERVAL_MS 1000 // if we don't see a heartbeat command every 0.5 seconds during flight, disable gimbal and props
 
 namespace TrajectoryFollower {
 
@@ -187,8 +187,8 @@ void follow_trajectory() {
       float diffy_perc;
       get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
       if (flight_armed) {
-        // Prop::set_throttle_roll(thrust_perc, diffy_perc);
-        GimbalServos::setGimbalAngle(-co.gimbal_pitch_deg, co.gimbal_yaw_deg);
+        Prop::set_throttle_roll(thrust_perc, diffy_perc);
+        GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
       }
 
       if (flight_armed) // we only want to log flight data, not pre-flight

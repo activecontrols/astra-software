@@ -3,10 +3,10 @@
 Matrix18_18 Q_gen(float dt) {
   const float gyro_cov = 5e-6f;
   const float gyro_bias_cov = 1e-9f;
-  const float accel_proc_cov = 2e-2f;
-  const float accel_bias_cov = 1e-14f;
+  const float accel_proc_cov = 1e-2f;
+  const float accel_bias_cov = 1e-13f;
   // Ornstein-Uhlenbeck mag bias slack: tau_m = 60 s, sigma_ss = 0.015 raw units -> q = 2*sigma_ss^2/tau_m
-  const float mag_bias_cov = 1e-9f;
+  const float mag_bias_cov = 1e-12f;
 
   const float dt2 = dt * dt;
   const float dt3 = dt2 * dt;

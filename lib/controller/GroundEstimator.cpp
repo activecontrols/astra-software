@@ -7,7 +7,7 @@ Matrix15_15 GroundStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2
   F.block<3, 3>(0, 9) = -Matrix3_3::Identity();
   F.block<3, 3>(3, 6) = Matrix3_3::Identity();
   F.block<3, 3>(6, 0) = -R_b2i * zetaCross(accel);
-  F.block<3, 3>(6, 12) = -R_b2i;
+  // F.block<3, 3>(6, 12) = -R_b2i;
   return F;
 }
 
@@ -82,6 +82,7 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
 
     // A priori covariance and Kalman gain
     Matrix15_4 L = P * H.transpose() * (H * P * H.transpose() + R).inverse();
+    L.block<3, 4>(12, 0) = Matrix3_4::Zero();
 
     // Predicted measurements
     Vector4 residual = (Vector4() << (z.segment<3>(0) - g_B), y_psi).finished();
@@ -110,6 +111,7 @@ Vector19 GroundEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector
 
     // A priori covariance and Kalman gain
     Matrix15_6 L = P * H.transpose() * (H * P * H.transpose() + R).inverse();
+    L.block<3, 6>(12, 0) = Matrix3_6::Zero();
 
     // Predicted measurements
     Vector6 z_hat = (Vector6() << x_est.segment<3>(4), x_est.segment<3>(7)).finished();
