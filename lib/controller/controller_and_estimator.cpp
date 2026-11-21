@@ -154,10 +154,13 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   X_ctrl << x_est.segment<10>(0), omega_body, 0.0f, 0.0f;
 
   // Run disturbance observers
-  Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
-  Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
-  Vector6 Dist_LESO;
-  Dist_LESO << a_dist, u_dist;
+  Vector6 Dist_LESO = Vector6::Zero();
+  if (!ci.GND_val) {
+    Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
+    Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
+    Dist_LESO << a_dist, u_dist;
+  }
+
   for (int i = 0; i < 6; i++) {
     cs->disturbance[i] = Dist_LESO(i);
   }
