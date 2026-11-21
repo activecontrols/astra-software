@@ -93,6 +93,7 @@ void follow_trajectory() {
           CommsSerial.println("Autoland sequence activated!");
           // TODO - autoland!
           auto_land = true;
+          kill_flag = true;
         } else {
           CommsSerial.println("Radio disconnected pre-flight");
           kill_flag = true;

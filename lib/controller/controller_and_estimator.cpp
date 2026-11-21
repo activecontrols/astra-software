@@ -36,9 +36,9 @@ void init_controller_and_estimator_constants() {
   constantsASTRA.Q = Q_gen();
 
   // Gain Matrices
-  constantsASTRA.K_trans << 7.489237e-01, 0, 0, 1.434829e+00, 0, 0, 0, 7.489237e-01, 0, 0, 1.434829e+00, 0, 0, 0, 2.136482e+00, 0, 0, 2.972797e+00;
+  constantsASTRA.K_trans << 1.998674e-01, 0, 0, 6.630850e-01, 0, 0, 0, 1.998674e-01, 0, 0, 6.630850e-01, 0, 0, 0, 3.330395e-01, 0, 0, 8.814728e-01;
 
-  constantsASTRA.K_rot << -4.736094e-01, 0, 0, -2.078351e-01, 0, 0, 0, -4.736094e-01, 0, 0, -2.078351e-01, 0, 0, 0, 4.945653e-01, 0, 0, 2.167021e-01;
+  constantsASTRA.K_rot << -4.734074e-01, 0, 0, -2.077134e-01, 0, 0, 0, -4.734074e-01, 0, 0, -2.077134e-01, 0, 0, 0, 4.945653e-01, 0, 0, 2.167021e-01;
 
   constantsASTRA.L_Thrust << 6.379708e-03, 0, 0, 2.006645e-03, 0, 0, 0, 5.369761e-03, -5.355184e-07, 0, 2.012529e-03, -3.013035e-09, 0, -5.456470e-07, 5.780200e-03, 0, 1.763092e-08, 2.007902e-03,
       2.277628e-04, 2.564385e-09, 0, 1.275894e-02, 0, 0, 0, 1.026969e-03, 2.566898e-06, 0, 1.118423e-02, 4.778304e-08, 0, -3.768781e-07, 3.236476e-04, 0, 3.945702e-08, 1.057488e-02, 7.326955e-04,
@@ -125,11 +125,11 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
 
   // Run disturbance observers
   Vector6 Dist_LESO = Vector6::Zero();
-  if (!ci.GND_val) {
-    Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
-    Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
-    Dist_LESO << a_dist, u_dist;
-  }
+  // if (!ci.GND_val) {
+  //   Vector3 a_dist = LESO_Position(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Thrust, constantsASTRA, loop_dT, xhat_pos);
+  //   Vector3 u_dist = LESO_Attitude(ci.GND_val, X_ctrl, last_U_cmd, constantsASTRA.L_Att, constantsASTRA, loop_dT, xhat_att);
+  //   Dist_LESO << a_dist, u_dist;
+  // }
 
   for (int i = 0; i < 6; i++) {
     cs->disturbance[i] = Dist_LESO(i);
