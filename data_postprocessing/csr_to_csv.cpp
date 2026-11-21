@@ -14,7 +14,7 @@ void csv_header_log(FILE *out) {
       "bias_z,mag_bias_x,mag_bias_y,mag_bias_z,gimbal_yaw_raw,gimbal_pitch_raw,thrust_N,roll_rad_sec_squared,target_pos_north,target_pos_west,target_pos_up,elapsed_time,GND_flag,flight_armed,"
       "thrust_perc,diffy_perc,rtk_status,gps_hor_prec,gps_ver_prec,gps_sat_count,filtered_accel_x,filtered_accel_y,filtered_accel_z,filtered_gyro_x,filtered_gyro_y,filtered_gyro_z,filtered_mag_x,"
       "filtered_mag_y,filtered_mag_z,accel_target_x,accel_target_y,accel_target_z,attitude_target[0],attitude_target[1],attitude_target[2],"
-      "attitude_target[3]\n";
+      "attitude_target[3],I_trans[0],I_trans[1],I_trans[2]\n";
   // generated with gemini
   // subtract 1 from sizeof(HEADER) so we don't output the null terminator
   fwrite(HEADER, sizeof(HEADER) - 1, 1, out);
@@ -116,6 +116,8 @@ void csr_to_csv(FILE *f_csv_out, telemetry_packet_t flight_packet, Controller_In
   csv_log_array(f_csv_out, internals.TargetAtt, 4);
   // csv_log_array(f_csv_out, internals.VelErrorI, 3);
   // csv_log_array(f_csv_out, internals.AttErrorI, 3);
+
+  csv_log_array(f_csv_out, internals.I_trans, 3);
 
   // csv_field_log(f_csv_out, flight_packet.ci.gps.posCovNN);
   // csv_field_log(f_csv_out, flight_packet.ci.gps.posCovNE);

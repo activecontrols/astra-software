@@ -1,9 +1,9 @@
+#include "RollControl.h"
 #include "TrajectoryLogger.h"
 #include "astra_structs.h"
-#include "RollControl.h"
 #include "controller_and_estimator.h"
-#include <stdio.h>
 #include "csr_to_csv.h"
+#include <stdio.h>
 
 struct IMU_Calib {
   double gyro_bias[3];
@@ -80,7 +80,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE *csv_ou
 
     float loop_dT = this_time - last_time;
     last_time = this_time;
-    float ideal_dT = 1 / 1000.0;
+    float ideal_dT = 2 / 1000.0; // TODO - make this automatic
 
     Controller_Output constructed_co = ControllerAndEstimator::get_controller_output(ci, ideal_dT, loop_dT, &cs);
     // TODO - check constructed_co against real data

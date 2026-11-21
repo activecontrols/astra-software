@@ -189,7 +189,7 @@ void follow_trajectory() {
       get_prop_perc(co.thrust_N, co.roll_rad_sec_squared, &thrust_perc, &diffy_perc);
       if (flight_armed) {
         Prop::set_throttle_roll(thrust_perc, diffy_perc);
-        GimbalServos::setGimbalAngle(co.gimbal_yaw_deg, co.gimbal_pitch_deg);
+        GimbalServos::setGimbalAngle(-co.gimbal_pitch_deg, co.gimbal_yaw_deg);
       }
 
       if (flight_armed) // we only want to log flight data, not pre-flight

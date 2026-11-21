@@ -197,5 +197,9 @@ Vector4 ASTRAv2_Controller(bool GND, const Vector15 &X_est, const Vector15 &X_tr
     cs->TargetAtt[i] = Q_cmd(i);
   }
 
+  for (int i = 0; i < 3; ++i) {
+    cs->I_trans[i] = I_trans(i);
+  }
+
   return U_cmd;
 }
