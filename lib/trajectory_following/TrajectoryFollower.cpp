@@ -82,7 +82,7 @@ void follow_trajectory() {
   float mx, my, mz;
 
   for (int pt = 0; pt < Trajectory::TRAJ_NUM_POINTS - 1; pt++) {
-    while (last_time_s < Trajectory::TRAJ_TIME[pt] || !flight_armed) {
+    while (last_time_s < Trajectory::TRAJ_TIME[pt + 1] || !flight_armed) {
       while (CommsSerial.available()) {
         CommandRouter::receive_byte(CommsSerial.read());
       }
