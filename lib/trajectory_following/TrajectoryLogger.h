@@ -24,7 +24,7 @@ struct __packed LoopState {
 static_assert(sizeof(LoopState) == 81, "sizeof(LoopState) error");
 static_assert(sizeof(IMU_State) == 24, "sizeof(IMU_MAG_State) error");
 static_assert(sizeof(MAG_State) == 12, "sizeof(IMU_MAG_State) error");
-static_assert(sizeof(GPS_State) == 18 * 4, "sizeof(GPS_State) error");
+static_assert(sizeof(GPS_State) == 24, "sizeof(GPS_State) error");
 
 namespace TrajectoryLogger {
 

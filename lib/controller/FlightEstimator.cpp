@@ -12,8 +12,7 @@ Matrix15_15 FlightStateTransitionMat(Vector3 accel, Vector3 gyro, Matrix3_3 R_b2
   return F;
 }
 
-Vector19 FlightEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector15 z, float dT, Matrix15_15 &P, bool new_mag_packet, bool new_gps_packet, Matrix3_3 gps_vel_covar,
-                         Matrix3_3 gps_pos_covar) {
+Vector19 FlightEstimator(Vector19 x_est, constantsASTRA_t constantsASTRA, Vector15 z, float dT, Matrix15_15 &P, bool new_mag_packet, bool new_gps_packet) {
   // M-EKF Implementation
   // Remove bias from IMU and magnetometer
   z.segment<3>(0) = z.segment<3>(0) - x_est.segment<3>(13);

@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
   // io.ConfigDockingTransparentPayload = true;
 
   // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
+  ImGui::StyleColorsLight();
 
   // Setup scaling
   ImGuiStyle &style = ImGui::GetStyle();

@@ -36,19 +36,6 @@ struct __packed MAG_State {
 struct __packed GPS_State {
   GPS_Point pos;
   GPS_Velocity vel;
-
-  float posCovNN; // m^2
-  float posCovNE; // m^2
-  float posCovND; // m^2
-  float posCovEE; // m^2
-  float posCovED; // m^2
-  float posCovDD; // m^2
-  float velCovNN; // m^2/s^2
-  float velCovNE; // m^2/s^2
-  float velCovND; // m^2/s^2
-  float velCovEE; // m^2/s^2
-  float velCovED; // m^2/s^2
-  float velCovDD; // m^2/s^2
 };
 
 struct Controller_Input {

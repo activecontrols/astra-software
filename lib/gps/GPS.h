@@ -50,7 +50,7 @@ GPS_Velocity get_velocity();
 void print_gps_pos();
 void print_rel_pos();
 
-void fill_covariances(GPS_State *gps_state);
+// void fill_covariances(GPS_State *gps_state);
 void get_gps_precision(float *hor, float *ver, int *sats);
 
 bool is_vel_cov_valid();

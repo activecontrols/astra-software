@@ -138,21 +138,21 @@ bool is_pos_cov_valid() {
   return (ubx.cov.data->posCovValid);
 }
 
-void fill_covariances(GPS_State *gps_state) {
-  gps_state->posCovNN = GPS::ubx.cov.data->posCovNN;
-  gps_state->posCovNE = GPS::ubx.cov.data->posCovNE;
-  gps_state->posCovND = GPS::ubx.cov.data->posCovND;
-  gps_state->posCovEE = GPS::ubx.cov.data->posCovEE;
-  gps_state->posCovED = GPS::ubx.cov.data->posCovED;
-  gps_state->posCovDD = GPS::ubx.cov.data->posCovDD;
+// void fill_covariances(GPS_State *gps_state) {
+//   gps_state->posCovNN = GPS::ubx.cov.data->posCovNN;
+//   gps_state->posCovNE = GPS::ubx.cov.data->posCovNE;
+//   gps_state->posCovND = GPS::ubx.cov.data->posCovND;
+//   gps_state->posCovEE = GPS::ubx.cov.data->posCovEE;
+//   gps_state->posCovED = GPS::ubx.cov.data->posCovED;
+//   gps_state->posCovDD = GPS::ubx.cov.data->posCovDD;
 
-  gps_state->velCovNN = GPS::ubx.cov.data->velCovNN;
-  gps_state->velCovNE = GPS::ubx.cov.data->velCovNE;
-  gps_state->velCovND = GPS::ubx.cov.data->velCovND;
-  gps_state->velCovEE = GPS::ubx.cov.data->velCovEE;
-  gps_state->velCovED = GPS::ubx.cov.data->velCovED;
-  gps_state->velCovDD = GPS::ubx.cov.data->velCovDD;
-}
+//   gps_state->velCovNN = GPS::ubx.cov.data->velCovNN;
+//   gps_state->velCovNE = GPS::ubx.cov.data->velCovNE;
+//   gps_state->velCovND = GPS::ubx.cov.data->velCovND;
+//   gps_state->velCovEE = GPS::ubx.cov.data->velCovEE;
+//   gps_state->velCovED = GPS::ubx.cov.data->velCovED;
+//   gps_state->velCovDD = GPS::ubx.cov.data->velCovDD;
+// }
 
 // returns in meters
 void get_gps_precision(float *hor, float *ver, int *sats) {

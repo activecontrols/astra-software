@@ -24,34 +24,6 @@ void init_flight_covariance() {
   x_est.segment<3>(16).setZero();
 }
 
-Matrix3_3 get_pos_cov_mtx(GPS_State gps_state) {
-  Matrix3_3 pos_cov_mtx;
-  pos_cov_mtx(0, 0) = gps_state.posCovNN;
-  pos_cov_mtx(0, 1) = -gps_state.posCovNE;
-  pos_cov_mtx(0, 2) = -gps_state.posCovND;
-  pos_cov_mtx(1, 0) = -gps_state.posCovNE;
-  pos_cov_mtx(1, 1) = gps_state.posCovEE;
-  pos_cov_mtx(1, 2) = gps_state.posCovED;
-  pos_cov_mtx(2, 0) = -gps_state.posCovND;
-  pos_cov_mtx(2, 1) = gps_state.posCovED;
-  pos_cov_mtx(2, 2) = gps_state.posCovDD;
-  return pos_cov_mtx;
-}
-
-Matrix3_3 get_vel_cov_mtx(GPS_State gps_state) {
-  Matrix3_3 vel_cov_mtx;
-  vel_cov_mtx(0, 0) = gps_state.velCovNN;
-  vel_cov_mtx(0, 1) = -gps_state.velCovNE;
-  vel_cov_mtx(0, 2) = -gps_state.velCovND;
-  vel_cov_mtx(1, 0) = -gps_state.velCovNE;
-  vel_cov_mtx(1, 1) = gps_state.velCovEE;
-  vel_cov_mtx(1, 2) = gps_state.velCovED;
-  vel_cov_mtx(2, 0) = -gps_state.velCovND;
-  vel_cov_mtx(2, 1) = gps_state.velCovED;
-  vel_cov_mtx(2, 2) = gps_state.velCovDD;
-  return vel_cov_mtx;
-}
-
 void init_controller_and_estimator_constants() {
   constantsASTRA.g = 9.8015;
   constantsASTRA.m = 1.1690;
@@ -139,13 +111,10 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
     ASTRAv2_Controller_reset(); // reset integral gains in the controller itself
   }
 
-  Matrix3_3 gps_vel_covar = get_vel_cov_mtx(ci.gps);
-  Matrix3_3 gps_pos_covar = get_pos_cov_mtx(ci.gps);
-
   if (ci.GND_val) {
-    x_est = GroundEstimator(x_est, constantsASTRA, z, loop_dT, Ground_P, ci.new_mag_packet, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
+    x_est = GroundEstimator(x_est, constantsASTRA, z, loop_dT, Ground_P, ci.new_mag_packet, ci.new_gps_packet);
   } else {
-    x_est = FlightEstimator(x_est, constantsASTRA, z, loop_dT, Flight_P, ci.new_mag_packet, ci.new_gps_packet, gps_vel_covar, gps_pos_covar);
+    x_est = FlightEstimator(x_est, constantsASTRA, z, loop_dT, Flight_P, ci.new_mag_packet, ci.new_gps_packet);
   }
 
   // CHANGE: Bias corrected rates
