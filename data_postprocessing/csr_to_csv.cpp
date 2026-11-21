@@ -13,8 +13,8 @@ void csv_header_log(FILE *out) {
       "vec_y,state_q_vec_z,state_pos_north,state_pos_west,state_pos_up,state_vel_north,state_vel_west,state_vel_up,gyro_bias_yaw,gyro_bias_pitch,gyro_bias_roll,accel_bias_x,accel_bias_y,accel_"
       "bias_z,mag_bias_x,mag_bias_y,mag_bias_z,gimbal_yaw_raw,gimbal_pitch_raw,thrust_N,roll_rad_sec_squared,target_pos_north,target_pos_west,target_pos_up,elapsed_time,GND_flag,flight_armed,"
       "thrust_perc,diffy_perc,rtk_status,gps_hor_prec,gps_ver_prec,gps_sat_count,filtered_accel_x,filtered_accel_y,filtered_accel_z,filtered_gyro_x,filtered_gyro_y,filtered_gyro_z,filtered_mag_x,"
-      "filtered_mag_y,filtered_mag_z,velocity_target_x,velocity_target_y,velocity_target_z,accel_target_x,accel_target_y,accel_target_z,attitude_target[0],attitude_target[1],attitude_target[2],"
-      "attitude_target[3],velocity_integrator_x,velocity_integrator_y,velocity_integrator_z,attitude_integrator_x,attitude_integrator_y,attitude_integrator_z,posCovNN,posCovNE,posCovND,posCovEE,posCovED,"
+      "filtered_mag_y,filtered_mag_z,accel_target_x,accel_target_y,accel_target_z,attitude_target[0],attitude_target[1],attitude_target[2],"
+      "attitude_target[3],posCovNN,posCovNE,posCovND,posCovEE,posCovED,"
       "posCovDD,velCovNN,velCovNE,velCovND,velCovEE,velCovED,velCovDD\n";
   // generated with gemini
   // subtract 1 from sizeof(HEADER) so we don't output the null terminator
@@ -38,27 +38,23 @@ void csv_end_line(FILE *out) {
 }
 
 template <int m, int n>
-void csv_log_matrix(FILE* f_csv_out, Eigen::Matrix<float, m, n> mat)
-{
-  for (int i = 0; i < mat.size(); ++i)
-  {
+void csv_log_matrix(FILE *f_csv_out, Eigen::Matrix<float, m, n> mat) {
+  for (int i = 0; i < mat.size(); ++i) {
     csv_field_log(f_csv_out, mat(i));
   }
 
   return;
 }
 
-void csv_log_array(FILE* f_csv_out, float* vals, int n)
-{
-  for (int i = 0; i < n; ++i)
-  {
+void csv_log_array(FILE *f_csv_out, float *vals, int n) {
+  for (int i = 0; i < n; ++i) {
     csv_field_log(f_csv_out, vals[i]);
   }
 
   return;
 }
 
-void csr_to_csv(FILE* f_csv_out, telemetry_packet_t flight_packet, Controller_Internals internals) {
+void csr_to_csv(FILE *f_csv_out, telemetry_packet_t flight_packet, Controller_Internals internals) {
   // function calls generated with gemini
   csv_field_log(f_csv_out, flight_packet.ci.imu.accel_x);
   csv_field_log(f_csv_out, flight_packet.ci.imu.accel_y);
@@ -101,9 +97,9 @@ void csr_to_csv(FILE* f_csv_out, telemetry_packet_t flight_packet, Controller_In
   csv_field_log(f_csv_out, flight_packet.co.thrust_N);
   csv_field_log(f_csv_out, flight_packet.co.roll_rad_sec_squared);
 
-  csv_field_log(f_csv_out, flight_packet.ci.target_pos_north);
-  csv_field_log(f_csv_out, flight_packet.ci.target_pos_west);
-  csv_field_log(f_csv_out, flight_packet.ci.target_pos_up);
+  csv_field_log(f_csv_out, flight_packet.ci.X_trg[4]);
+  csv_field_log(f_csv_out, flight_packet.ci.X_trg[5]);
+  csv_field_log(f_csv_out, flight_packet.ci.X_trg[6]);
 
   csv_field_log(f_csv_out, flight_packet.elapsed_time);
   csv_field_log(f_csv_out, flight_packet.ci.GND_val);
@@ -115,12 +111,12 @@ void csr_to_csv(FILE* f_csv_out, telemetry_packet_t flight_packet, Controller_In
   csv_field_log(f_csv_out, flight_packet.gps_ver_prec);
   csv_field_log(f_csv_out, flight_packet.gps_sat_count);
 
-  csv_log_array(f_csv_out, internals.filter_out, 9);
-  csv_log_array(f_csv_out, internals.VelTarget, 3);
+  csv_log_array(f_csv_out, internals.dnf_out, 9);
+  // csv_log_array(f_csv_out, internals.VelTarget, 3);
   csv_log_array(f_csv_out, internals.AccelTarget, 3);
   csv_log_array(f_csv_out, internals.TargetAtt, 4);
-  csv_log_array(f_csv_out, internals.VelErrorI, 3);
-  csv_log_array(f_csv_out, internals.AttErrorI, 3);
+  // csv_log_array(f_csv_out, internals.VelErrorI, 3);
+  // csv_log_array(f_csv_out, internals.AttErrorI, 3);
 
   csv_field_log(f_csv_out, flight_packet.ci.gps.posCovNN);
   csv_field_log(f_csv_out, flight_packet.ci.gps.posCovNE);
@@ -134,8 +130,6 @@ void csr_to_csv(FILE* f_csv_out, telemetry_packet_t flight_packet, Controller_In
   csv_field_log(f_csv_out, flight_packet.ci.gps.velCovEE);
   csv_field_log(f_csv_out, flight_packet.ci.gps.velCovED);
   csv_field_log(f_csv_out, flight_packet.ci.gps.velCovDD);
-
-  
 
   csv_end_line(f_csv_out);
 

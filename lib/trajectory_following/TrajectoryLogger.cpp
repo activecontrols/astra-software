@@ -17,21 +17,6 @@ void log_x_est() {
   return;
 }
 
-void log_trajectory() {
-  // TODO - add this back
-  // Logging::write(ENTRY_TRAJECTORY);
-
-  // // next uint32_t specifies length in # of points
-  // uint32_t len = TrajectoryLoader::header.num_points;
-
-  // static_assert(sizeof(traj_point_pos) == 16, "sizeof(traj_point_pos) != 16");
-
-  // Logging::write(len);
-
-  // Logging::write((uint8_t *)(TrajectoryLoader::trajectory), sizeof(traj_point_pos) * len);
-  // return;
-}
-
 void log_flight_p() {
   Logging::write(ENTRY_FLIGHT_P);
 
@@ -47,6 +32,12 @@ void flash_log_sensor(float time, int phase, Controller_Input ci, Controller_Out
   LoopState loopState{};
   loopState.time = time;
   loopState.phase = phase;
+  for (int i = 0; i < 15; i++) {
+    loopState.X_trg[i] = ci.X_trg[i];
+  }
+  for (int i = 0; i < 4; i++) {
+    loopState.U_ff[i] = ci.U_ff[i];
+  }
 
   Logging::write((uint8_t *)&loopState, sizeof(loopState));
 

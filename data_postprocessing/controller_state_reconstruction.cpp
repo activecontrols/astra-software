@@ -1,10 +1,8 @@
-#include "Trajectory.h"
 #include "TrajectoryLogger.h"
 #include "astra_structs.h"
 #include "RollControl.h"
 #include "controller_and_estimator.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include "csr_to_csv.h"
 
 struct IMU_Calib {
@@ -23,11 +21,10 @@ struct Mag_Calib {
 float last_time;
 float this_time;
 Controller_Input ci;
-traj_point_pos *traj;
 Mag_Calib mcal;
 IMU_Calib ical;
 
-bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_out) {
+bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE *csv_out) {
   uint8_t entry_type;
   size_t did_read = fread(&entry_type, sizeof(uint8_t), 1, compressed_bin);
   if (did_read != sizeof(uint8_t)) {
@@ -36,16 +33,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
 
   // printf("Read log entry.\n");
 
-
   switch (entry_type) {
-
-  case ENTRY_TRAJECTORY: {
-    uint32_t len;
-    fread(&len, sizeof(uint32_t), 1, compressed_bin);
-    traj = (traj_point_pos *)malloc(sizeof(traj_point_pos) * len);
-    fread(traj, sizeof(traj_point_pos), len, compressed_bin);
-    break;
-  }
 
   case ENTRY_LOOP_STATE: {
     LoopState ls;
@@ -56,9 +44,14 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
     ci.GND_val = false;
     ci.new_mag_packet = false;
     ci.new_gps_packet = false;
-    ci.target_pos_north = traj[ls.phase].north;
-    ci.target_pos_west = traj[ls.phase].west;
-    ci.target_pos_up = traj[ls.phase].up;
+
+    for (int i = 0; i < 15; i++) {
+      ci.X_trg[i] = ls.X_trg[i];
+    }
+    for (int i = 0; i < 4; i++) {
+      ci.U_ff[i] = ls.U_ff[i];
+    }
+
     break;
   }
 
@@ -105,8 +98,7 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
 
     fwrite(&fp, sizeof(fp), 1, reconstructed_bin);
 
-    if (csv_out)
-    {
+    if (csv_out) {
       csr_to_csv(csv_out, fp, cs);
     }
     break;
@@ -141,9 +133,8 @@ bool parse_log_entry(FILE *compressed_bin, FILE *reconstructed_bin, FILE* csv_ou
   return true;
 }
 
-int main(const int argc, const char* argv[]) {
-  if (argc < 3)
-  {
+int main(const int argc, const char *argv[]) {
+  if (argc < 3) {
     printf("Usage:\n./app.exe <infile> <outfile>\n");
     return EXIT_FAILURE;
   }
@@ -160,14 +151,12 @@ int main(const int argc, const char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  FILE* csv_out = nullptr;
+  FILE *csv_out = nullptr;
 
-  if (argc == 4)
-  {
+  if (argc == 4) {
     csv_out = fopen(argv[3], "wb");
 
-    if (csv_out == NULL)
-    {
+    if (csv_out == NULL) {
       fclose(compressed_bin);
       fclose(reconstructed_bin);
       printf("Failed to create csv output file.");
@@ -178,11 +167,10 @@ int main(const int argc, const char* argv[]) {
   last_time = 0;
   ControllerAndEstimator::init_controller_and_estimator_constants();
 
-  if (csv_out != NULL)
-  {
+  if (csv_out != NULL) {
     csv_header_log(csv_out);
   }
-  
+
   while (parse_log_entry(compressed_bin, reconstructed_bin, csv_out)) {
   };
 
@@ -191,8 +179,7 @@ int main(const int argc, const char* argv[]) {
   fclose(compressed_bin);
   fclose(reconstructed_bin);
 
-  if (csv_out != NULL)
-  {
+  if (csv_out != NULL) {
     fclose(csv_out);
   }
 

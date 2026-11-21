@@ -68,7 +68,6 @@ void follow_trajectory() {
   GPS::set_current_position_as_origin();
 
   TrajectoryLogger::log_calib_flash();
-  TrajectoryLogger::log_trajectory();
 
   timer = elapsedMicros();
   unsigned long lasttelemetry = timer;

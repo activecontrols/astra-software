@@ -85,9 +85,10 @@ void commit_packet() {
   FlightHistory.thrust_N = active_packet.co.thrust_N;
   FlightHistory.roll_rad_sec_squared = active_packet.co.roll_rad_sec_squared;
 
-  FlightHistory.target_pos_north = active_packet.ci.target_pos_north;
-  FlightHistory.target_pos_west = active_packet.ci.target_pos_west;
-  FlightHistory.target_pos_up = active_packet.ci.target_pos_up;
+  // state vec: 0-3 quat, 4-6 pos, 7-9 vel, 10-12 ang rate, 13-14 mass
+  FlightHistory.target_pos_north = active_packet.ci.X_trg[4];
+  FlightHistory.target_pos_west = active_packet.ci.X_trg[5];
+  FlightHistory.target_pos_up = active_packet.ci.X_trg[6];
 
   FlightHistory.elapsed_time = active_packet.elapsed_time;
   FlightHistory.GND_flag = active_packet.ci.GND_val;
