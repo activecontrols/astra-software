@@ -10,6 +10,9 @@
 #include "ui_components.h"
 #include "ui_graphs.h"
 
+// for planned trajectory plot
+#include "ASTRA_Trajectory_Data.h"
+
 bool text_box_active;
 
 void imu_accel_panel() {
@@ -156,9 +159,12 @@ void gps_vel_panel() {
 
     double gps_x[2] = {0, -FlightHistory.gps_vel_west};
     double gps_y[2] = {0, FlightHistory.gps_vel_north};
+    double target_x[2] = {0, -FlightHistory.target_vel_west};
+    double target_y[2] = {0, FlightHistory.target_vel_north};
     ImPlotSpec spec;
     spec.LineWeight = 4;
-    ImPlot::PlotLine("##GPS Velocity", gps_x, gps_y, 2, spec);
+    ImPlot::PlotLine("State", gps_x, gps_y, 2, spec);
+    ImPlot::PlotLine("Target", target_x, target_y, 2, spec);
 
     ImPlot::EndPlot();
   }
@@ -192,10 +198,32 @@ void estimated_pos_panel() {
     double target_y[2] = {FlightHistory.target_pos_north, FlightHistory.target_pos_north};
     double target_z[2] = {0, FlightHistory.target_pos_up};
 
+    // planned trajectory
+    double traj[3][Trajectory::TRAJ_NUM_POINTS];
+    double max_x = 0;
+    double max_y = 0;
+    double max_z = 0;
+
+    for (int i = 0; i < Trajectory::TRAJ_NUM_POINTS; i++) {
+      traj[1][i] = Trajectory::TRAJ_STATES[i][4];  // north
+      traj[0][i] = -Trajectory::TRAJ_STATES[i][5]; // west
+      traj[2][i] = Trajectory::TRAJ_STATES[i][6];  // up
+
+      if (abs(traj[0][i]) + 1 > max_x) {
+        max_x = abs(traj[0][i]) + 1;
+      }
+      if (abs(traj[1][i]) + 1 > max_y) {
+        max_y = abs(traj[1][i]) + 1;
+      }
+      if (abs(traj[2][i]) + 1 > max_z) {
+        max_z = abs(traj[2][i]) + 1;
+      }
+    }
+
     ImPlot3D::SetupAxes("East (m)", "North (m)", "Up (m)");
-    ImPlot3D::SetupAxisLimits(ImAxis3D_Z, 0, 2.5);
-    ImPlot3D::SetupAxisLimits(ImAxis3D_X, -1, 1);
-    ImPlot3D::SetupAxisLimits(ImAxis3D_Y, -1, 1);
+    ImPlot3D::SetupAxisLimits(ImAxis3D_X, -max_x, max_x);
+    ImPlot3D::SetupAxisLimits(ImAxis3D_Y, -max_y, max_y);
+    ImPlot3D::SetupAxisLimits(ImAxis3D_Z, 0, max_z);
 
     ImPlot3DSpec marker_spec;
     marker_spec.Marker = ImPlot3DMarker_Circle;
@@ -216,6 +244,10 @@ void estimated_pos_panel() {
     line_spec.LineColor = ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep);
     line_spec.LineWeight = 2;
     ImPlot3D::PlotLine("Target", target_x, target_y, target_z, 2, line_spec);
+
+    line_spec.LineColor = ImPlot3D::GetColormapColor(1, ImPlot3DColormap_Deep);
+    line_spec.LineWeight = 2;
+    ImPlot3D::PlotLine("##Path", traj[0], traj[1], traj[2], Trajectory::TRAJ_NUM_POINTS, line_spec);
 
     ImPlot3D::EndPlot();
   }

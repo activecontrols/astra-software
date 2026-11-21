@@ -64,6 +64,10 @@ struct flight_history_t {
   float target_pos_west;
   float target_pos_up;
 
+  float target_vel_north;
+  float target_vel_west;
+  float target_vel_up;
+
   float elapsed_time;
   bool GND_flag;
   bool flight_armed;

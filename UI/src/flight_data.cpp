@@ -90,6 +90,10 @@ void commit_packet() {
   FlightHistory.target_pos_west = active_packet.ci.X_trg[5];
   FlightHistory.target_pos_up = active_packet.ci.X_trg[6];
 
+  FlightHistory.target_vel_north = active_packet.ci.X_trg[7];
+  FlightHistory.target_vel_west = active_packet.ci.X_trg[8];
+  FlightHistory.target_vel_up = active_packet.ci.X_trg[9];
+
   FlightHistory.elapsed_time = active_packet.elapsed_time;
   FlightHistory.GND_flag = active_packet.ci.GND_val;
   FlightHistory.flight_armed = active_packet.flight_armed;
