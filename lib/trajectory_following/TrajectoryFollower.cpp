@@ -158,10 +158,10 @@ void follow_trajectory() {
       ci.gps.vel = gps_vel;
 
       // trajectory lerp
-      for (int i = 0; i < 15; i++) {
+      for (int i = 0; i < Trajectory::TRAJ_NUM_STATES; i++) {
         ci.X_trg[i] = lerp(Trajectory::TRAJ_STATES[pt][i], Trajectory::TRAJ_STATES[pt + 1][i], Trajectory::TRAJ_TIME[pt], Trajectory::TRAJ_TIME[pt + 1], timer / 1000000.0);
       }
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < Trajectory::TRAJ_NUM_INPUTS; i++) {
         ci.U_ff[i] = lerp(Trajectory::TRAJ_INPUTS[pt][i], Trajectory::TRAJ_INPUTS[pt + 1][i], Trajectory::TRAJ_TIME[pt], Trajectory::TRAJ_TIME[pt + 1], timer / 1000000.0);
       }
 

@@ -1,4 +1,6 @@
 #pragma once
+// TODO - invert this dependency, put size constants here
+#include "ASTRA_Trajectory_Data.h"
 #define __packed __attribute__((__packed__)) // patch this in on all platforms
 
 // this file contains shared structs for use across the embedded code and UI
@@ -61,8 +63,8 @@ struct Controller_Input {
   GPS_State gps;
 
   // Trajectory Inputs
-  float X_trg[15];
-  float U_ff[4];
+  float X_trg[Trajectory::TRAJ_NUM_STATES];
+  float U_ff[Trajectory::TRAJ_NUM_INPUTS];
 };
 
 struct Controller_X_Est {

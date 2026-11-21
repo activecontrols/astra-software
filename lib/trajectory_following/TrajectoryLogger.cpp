@@ -32,10 +32,10 @@ void flash_log_sensor(float time, int phase, Controller_Input ci, Controller_Out
   LoopState loopState{};
   loopState.time = time;
   loopState.phase = phase;
-  for (int i = 0; i < 15; i++) {
+  for (int i = 0; i < Trajectory::TRAJ_NUM_STATES; i++) {
     loopState.X_trg[i] = ci.X_trg[i];
   }
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < Trajectory::TRAJ_NUM_INPUTS; i++) {
     loopState.U_ff[i] = ci.U_ff[i];
   }
 

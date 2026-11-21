@@ -112,12 +112,14 @@ Controller_Output get_controller_output(Controller_Input ci, float ideal_dT, flo
   // clang-format on
 
   Vector15 X_trg;
-  for (int i = 0; i < 15; i++) {
+  static_assert(decltype(X_trg)::RowsAtCompileTime == Trajectory::TRAJ_NUM_STATES);
+  for (int i = 0; i < Trajectory::TRAJ_NUM_STATES; i++) {
     X_trg(i) = ci.X_trg[i];
   }
 
   Vector4 U_ff;
-  for (int i = 0; i < 4; i++) {
+  static_assert(decltype(U_ff)::RowsAtCompileTime == Trajectory::TRAJ_NUM_INPUTS);
+  for (int i = 0; i < Trajectory::TRAJ_NUM_INPUTS; i++) {
     U_ff(i) = ci.U_ff[i];
   }
 
